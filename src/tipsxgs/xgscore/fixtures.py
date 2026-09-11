@@ -54,7 +54,11 @@ def _fixtures_from_json(cfg: AppConfig, page_cfg: PageConfig, blobs: list[dict])
             found = jmespath.search(page_cfg.json_list_path, blob)
         except jmespath.exceptions.JMESPathError:
             continue
-        if isinstance(found, list):
+        # Only accept a *non-empty* match -- a page often fires several
+        # unrelated JSON responses, and json_list_path may resolve to an
+        # empty list against one of those (rather than erroring) before
+        # reaching the blob that actually holds the fixtures.
+        if isinstance(found, list) and found:
             items = found
             break
 
@@ -109,8 +113,14 @@ def _row_to_fixture(cfg: AppConfig, row: dict) -> Fixture | None:
         except (ValueError, OverflowError):
             logger.debug("could not parse kickoff time %r", kickoff_raw)
 
+    # Prefer the site's own real slug (e.g. config.yaml's `slug` field
+    # from game.slug) over re-deriving one from team display names --
+    # display names are often shortened ("Union" vs. "Union Berlin") and
+    # would silently drift from the real preview URL's own slug.
+    slug = row.get("slug") or _slugify(f"{home}-{away}")
+
     return Fixture(
-        slug=_slugify(f"{home}-{away}"),
+        slug=str(slug),
         league=_slugify(str(league)),
         home_team=str(home),
         away_team=str(away),

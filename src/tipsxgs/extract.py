@@ -38,6 +38,41 @@ def slugify(text: str) -> str:
     slug = re.sub(r"[^a-zA-Z0-9]+", "-", ascii_only).strip("-").lower()
     return slug
 
+
+def deep_parse_json_strings(value: Any, _depth: int = 0) -> Any:
+    """Recursively decode string values that are themselves JSON-encoded.
+
+    Some APIs (xGScore's included -- e.g. a market-probability field
+    shipped as the *string* ``'[["1",54.5,12.7,2.4],...]'`` instead of a
+    real nested array) double-encode part of their payload as JSON-inside-
+    JSON. Applying this once to a captured/embedded blob lets every
+    JMESPath field rule in config.yaml treat it as a normal nested
+    structure, no code changes needed per site.
+
+    Any string that isn't valid JSON, or that decodes to something other
+    than a list/dict (a plain date string, an href, ...), is left exactly
+    as-is. ``_depth`` caps recursion so a pathological blob can't spin
+    forever.
+    """
+    if _depth > 6:
+        return value
+    if isinstance(value, dict):
+        return {k: deep_parse_json_strings(v, _depth + 1) for k, v in value.items()}
+    if isinstance(value, list):
+        return [deep_parse_json_strings(v, _depth + 1) for v in value]
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped[:1] in "[{":
+            try:
+                parsed = json.loads(stripped)
+            except (json.JSONDecodeError, ValueError):
+                return value
+            if isinstance(parsed, (list, dict)):
+                return deep_parse_json_strings(parsed, _depth + 1)
+        return value
+    return value
+
+
 # Common variable/script-id names used by SPA frameworks to embed initial
 # state. Extend ``embedded_json_hints`` in config.yaml if a site uses a
 # different convention.
@@ -76,7 +111,7 @@ def find_embedded_json(html: str, hints: list[str] | None = None) -> list[dict]:
         if match:
             candidate = match.group(1)
         try:
-            found.append(json.loads(candidate))
+            found.append(deep_parse_json_strings(json.loads(candidate)))
         except (json.JSONDecodeError, ValueError):
             continue
     return found

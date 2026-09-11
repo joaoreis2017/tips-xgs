@@ -40,7 +40,11 @@ def _rows_from_json(page_cfg: PageConfig, blobs: list[dict]) -> list[dict]:
             found = jmespath.search(page_cfg.json_list_path, blob)
         except jmespath.exceptions.JMESPathError:
             continue
-        if isinstance(found, list):
+        # Only accept a *non-empty* match -- see the identical guard in
+        # xgscore/fixtures.py for why (a page can fire several unrelated
+        # JSON responses, and json_list_path may resolve to an empty list
+        # against one of those before reaching the real fixtures blob).
+        if isinstance(found, list) and found:
             items = found
             break
 

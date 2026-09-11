@@ -13,6 +13,8 @@ import time
 from contextlib import contextmanager
 from typing import Iterator
 
+from .extract import deep_parse_json_strings
+
 logger = logging.getLogger(__name__)
 
 
@@ -117,7 +119,7 @@ class BrowserSession:
                     return
                 if url_substring_filter and url_substring_filter not in response.url:
                     return
-                captured.append(response.json())
+                captured.append(deep_parse_json_strings(response.json()))
             except Exception:  # noqa: BLE001 - best-effort capture
                 logger.debug("could not decode JSON response from %s", response.url, exc_info=True)
 

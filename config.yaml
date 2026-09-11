@@ -19,66 +19,116 @@ xgscore:
   base_url: "https://xgscore.io"
 
   fixtures:
-    # TODO(calibrate): confirm this is really where "today's games" live.
-    # xgscore.io's homepage may show today's fixtures directly, or there
-    # may be a dedicated /fixtures or /today page -- check with
-    # scripts/inspect_site.py.
+    # CALIBRATED (2026-09-11): xgscore.io's homepage ships a "top value
+    # bets" JSON feed (captured as a plain XHR array response, no
+    # wrapper key -- see json_list_path below) alongside a couple of
+    # unrelated small blobs ({"geo": "PT"} and a list of ISO datetimes)
+    # that are ignored automatically since they don't match any field.
+    #
+    # Each item is one xGScore-picked bet for one game, e.g.:
+    #   {"oddsCategory": "r", "oddsLabel": "1", "chance": 0.638,
+    #    "text": "Home Win", "valueBet": 0.02,
+    #    "game": {"slug": "hacken-mjallby", "datetime": "...",
+    #      "tournament": {"name": "Sweden Allsvenskan", "slug": "sweden-allsvenskan"},
+    #      "teams": {"h": {"name": "Häcken"}, "a": {"name": "Mjällby"}},
+    #      "forecastScore": {"h": 2.05, "a": 0.92}}}
+    #
+    # `game.slug` + `game.tournament.slug` give us the *exact* preview
+    # URL xGScore itself uses (confirmed: "bundesliga" + "union-berlin-
+    # schalke" reproduces this project's original example URL exactly --
+    # see preview_url below) -- much safer than re-slugifying team names
+    # ourselves, which breaks on apostrophes etc. (e.g. "Newell's OB" is
+    # really slugged "newells-ob", not "newell-s-ob").
+    #
+    # STILL TO DO / CAVEAT: this feed seems to be xGScore's own *picked*
+    # value bets (one row per game, one specific market outcome each --
+    # e.g. only "Home Win" for one game, only "Total Over 3" for
+    # another), not necessarily every game xGScore has data for. If a
+    # day's dashboard looks sparse, check for a more complete "today's
+    # fixtures" endpoint/page (e.g. a full schedule view) and repoint
+    # `url` at that instead -- the field mappings below should carry over
+    # unchanged since they're relative to one `game` object either way.
     url: "https://xgscore.io/"
 
-    # If the fixtures are embedded as JSON (e.g. a Next.js __NEXT_DATA__
-    # blob), set this to a JMESPath expression that resolves to the list
-    # of fixture objects, and give each field below a `json_path`
-    # (evaluated relative to *one* fixture item). Leave both this and
-    # `fields[].json_path` unset to fall back to CSS selectors instead.
-    json_list_path: null   # e.g. "props.pageProps.fixtures"
-
-    # One CSS selector matching each fixture row/card on the page (used
-    # only if json_list_path above is not set / yields nothing).
-    list_item_selector: null   # e.g. "div.fixture-row"
+    # "[?game]" rather than a bare "@": the page also fires two other,
+    # unrelated small JSON responses ({"geo": "PT"} and a plain array of
+    # ISO datetime strings) -- filtering for elements that have a `game`
+    # key picks out the actual bets array regardless of which blob shows
+    # up first, and safely resolves to an empty list (not a crash) against
+    # the other two.
+    json_list_path: "[?game]"
 
     fields:
-      # Each field is either CSS-based (selector [+ attr] [+ regex]) or
-      # JSON-based (json_path). `preview_url` may be omitted entirely --
-      # if missing, it's built automatically as
-      # {base_url}/{league}/{home-slug}-{away-slug}/preview
       - key: league
-        selector: null        # e.g. ".fixture-row .league-name"
+        json_path: "game.tournament.name"
       - key: home_team
-        selector: null        # e.g. ".fixture-row .team-home"
+        json_path: "game.teams.h.name"
       - key: away_team
-        selector: null        # e.g. ".fixture-row .team-away"
+        json_path: "game.teams.a.name"
       - key: kickoff
-        selector: null        # e.g. ".fixture-row time" (attr: datetime)
-        attr: null
+        json_path: "game.datetime"
+      - key: slug
+        json_path: "game.slug"   # real slug, used as-is (see _row_to_fixture) instead of re-deriving one from team names
       - key: preview_url
-        selector: null        # e.g. ".fixture-row a" (attr: href)
-        attr: href
+        json_path: "join('/', ['', game.tournament.slug, game.slug, 'preview'])"
 
   preview:
     # No `url` here -- the preview page URL comes from each Fixture
     # (either scraped above, or built from base_url/league/home-away).
     json_list_path: null   # preview pages have one game, not a list
 
+    # CALIBRATED (2026-09-11), from inspecting the Union Berlin - Schalke
+    # preview page: it fires a LOT of captured JSON responses (team form,
+    # league standings, head-to-head, last-5-games history, a
+    # per-bookmaker odds-comparison array with entries for 1xbet/
+    # Pinnacle888/GGBet/etc...) but exactly ONE of them -- a small object
+    # with a `metadataId` field, no wrapping list -- holds xGScore's own
+    # computed market probabilities:
+    #   {"r": "[[\"1\",54.5,12.7,2.4],[\"x\",23.7,-3.6,1.8],[\"2\",21.7,-10.7,0.7]]",
+    #    "dc": "[[\"1x\",78.3,8.1,0.7],...]", "bts": "[[\"yes\",67.1,...
+    #    "tm": "[[\"0.5\",94.8,...],[\"2.5\",63.9,4.9,7],...]",   # Over X
+    #    "tl": "[[\"0.5\",5.2,...],[\"2.5\",36.1,...],...]",      # Under X
+    #    "h1"/"h2": handicap, "cs": correct score (often null),
+    #    "gameId": "...", "metadataId": "..."}
+    #
+    # Each market's value is a JSON *string* (not a real nested array) --
+    # BrowserSession/find_embedded_json now run every captured/embedded
+    # blob through extract.deep_parse_json_strings(), which decodes any
+    # such double-encoded field automatically, so the json_path rules
+    # below can just index into "r"/"tm"/"tl"/"bts" as normal arrays.
+    #
+    # A near-identical-looking but *separate* per-bookmaker odds array
+    # also has "r"/"dc"/"bts"/"tm"/"tl" keys (there: real decimal ODDS,
+    # e.g. 2.5/3.635/2.937, not probabilities) plus a `bookmakerId` field
+    # -- but since it's a *list* of several such objects (one per
+    # bookmaker + MAX/AVG aggregates), not a single dict, a bare `.r`
+    # field access naturally resolves to null against it and only
+    # matches the one probabilities object. No filtering needed for that
+    # disambiguation, only for which row of "r"/"tm"/"tl" we want.
+    #
+    # Each row is `[label, chance_percent, ...more columns we ignore]` --
+    # `[?[0]=='<label>'] | [0][1]` picks out one row's percentage
+    # (normalize_probabilities() below divides by 100 automatically).
+    #
+    # STILL TO DO: "cs" (correct score) is often null for a not-yet-
+    # played game with few tracked bookmaker odds -- same call as on the
+    # Betclic side, left uncalibrated for now (1X2 + BTTS + O/U 2.5 is
+    # what we compare against Betclic's odds either way).
     fields:
-      # Populate with whatever markets xGScore's preview page actually
-      # shows (goal probabilities, 1X2, BTTS, over/under, correct score,
-      # etc.) -- add as many rows as there are numbers you want to
-      # capture. `key` is an arbitrary raw name; map it to a canonical
-      # market/outcome in market_aliases below.
       - key: prob_home_win
-        selector: null   # e.g. "[data-market='1x2'] .outcome-home .prob"
+        json_path: "r[?[0]=='1'] | [0][1]"
       - key: prob_draw
-        selector: null
+        json_path: "r[?[0]=='x'] | [0][1]"
       - key: prob_away_win
-        selector: null
+        json_path: "r[?[0]=='2'] | [0][1]"
       - key: prob_btts_yes
-        selector: null
+        json_path: "bts[?[0]=='yes'] | [0][1]"
       - key: prob_btts_no
-        selector: null
+        json_path: "bts[?[0]=='no'] | [0][1]"
       - key: prob_over_2_5
-        selector: null
+        json_path: "tm[?[0]=='2.5'] | [0][1]"
       - key: prob_under_2_5
-        selector: null
+        json_path: "tl[?[0]=='2.5'] | [0][1]"
 
     # Maps each raw `key` above to "<canonical_market>.<outcome>" (see
     # src/tipsxgs/markets.py for the full vocabulary + PT labels used in

@@ -35,12 +35,30 @@ um painel vazio (com avisos no log a dizer exatamente o que falta).
 
 ## Instalação
 
+macOS/Linux (bash/zsh):
+
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 pip install -e .
 playwright install chromium
 ```
+
+Windows (PowerShell):
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pip install -e .
+playwright install chromium
+```
+
+Se o PowerShell bloquear o `Activate.ps1` por política de execução, corre
+antes (uma vez por sessão): `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
+Todos os outros comandos deste README (`python -m tipsxgs run`, `pytest`,
+etc.) funcionam da mesma forma em qualquer terminal, uma vez o venv
+ativado.
 
 ## Uso
 

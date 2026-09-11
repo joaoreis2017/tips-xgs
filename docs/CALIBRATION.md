@@ -10,12 +10,8 @@ no código.
 
 ## Passo 1 — instalar localmente
 
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
-playwright install chromium
-```
+Ver instruções de instalação (macOS/Linux e Windows/PowerShell) no
+[`README.md`](../README.md#instalação).
 
 ## Passo 2 — inspecionar cada página
 

@@ -77,7 +77,10 @@ def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
         raise RuntimeError("betclic.fixtures.url (or betclic.base_url) is not set in config.yaml")
 
     html, blobs_captured = session.get_html_and_captured_json(
-        url, wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000
+        url,
+        wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000,
+        scroll_count=page_cfg.scroll_count,
+        scroll_pause_ms=page_cfg.scroll_pause_ms,
     )
     blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
 

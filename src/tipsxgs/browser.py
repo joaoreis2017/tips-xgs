@@ -98,7 +98,12 @@ class BrowserSession:
             )
 
     def get_html_and_captured_json(
-        self, url: str, url_substring_filter: str | None = None, wait_ms: int = 2000
+        self,
+        url: str,
+        url_substring_filter: str | None = None,
+        wait_ms: int = 2000,
+        scroll_count: int = 0,
+        scroll_pause_ms: int = 800,
     ) -> tuple[str, list[dict]]:
         """Navigate to ``url``, capture any JSON XHR/fetch responses, and
         return ``(html, [decoded_json_bodies])``.
@@ -109,6 +114,13 @@ class BrowserSession:
         whose URL contains that substring (e.g. "api" or "predictions") --
         leave it unset to capture every JSON response, which is a good
         first step when calibrating (see scripts/inspect_site.py).
+
+        ``scroll_count`` scrolls to the bottom of the page that many times
+        (pausing ``scroll_pause_ms`` after each, to let a lazy-loading
+        list fetch its next page) -- use this for an infinite-scroll list
+        that renders only an initial batch of items regardless of how
+        long you wait otherwise (a symptom that shows up as "coverage
+        stays exactly the same no matter how high wait_ms goes").
         """
         captured: list[dict] = []
 
@@ -136,6 +148,9 @@ class BrowserSession:
             page.on("response", _on_response)
             self._goto(page, url)
             page.wait_for_timeout(wait_ms)
+            for _ in range(scroll_count):
+                page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                page.wait_for_timeout(scroll_pause_ms)
             html = page.content()
         return html, captured
 

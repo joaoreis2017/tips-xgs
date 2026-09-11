@@ -40,7 +40,7 @@ REAL_SHAPE_BLOB = {
 
 
 class FakeSession:
-    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000):
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
         return "<html></html>", [REAL_SHAPE_BLOB]
 
 
@@ -143,7 +143,7 @@ MULTI_KEY_BLOB = {
 
 
 class MultiKeyFakeSession:
-    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000):
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
         return "<html></html>", [MULTI_KEY_BLOB]
 
 
@@ -286,7 +286,7 @@ class TwoStepFakeSession:
     def __init__(self):
         self.calls = []
 
-    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000):
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
         self.calls.append(url)
         if len(self.calls) == 1:
             return "<html></html>", [FIXTURES_LIST_BLOB]

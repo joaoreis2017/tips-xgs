@@ -54,6 +54,12 @@ class PageConfig:
     # everything in by the time we read `captured`. None keeps that
     # default.
     wait_ms: int | None = None
+    # How many times to scroll to the bottom of the page (pausing
+    # scroll_pause_ms after each) before reading it -- for an
+    # infinite-scroll list that only renders an initial batch of items no
+    # matter how long wait_ms is. 0 (default) never scrolls.
+    scroll_count: int = 0
+    scroll_pause_ms: int = 800
 
 
 @dataclass
@@ -96,6 +102,8 @@ def _page_config(raw: dict | None) -> PageConfig:
         market_aliases=raw.get("market_aliases", {}) or {},
         wait_selector=raw.get("wait_selector"),
         wait_ms=raw.get("wait_ms"),
+        scroll_count=int(raw.get("scroll_count", 0) or 0),
+        scroll_pause_ms=int(raw.get("scroll_pause_ms", 800) or 800),
     )
 
 

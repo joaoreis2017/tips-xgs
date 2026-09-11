@@ -34,7 +34,18 @@ logger = logging.getLogger(__name__)
 def _rows_from_json(page_cfg: PageConfig, blobs: list[dict]) -> list[dict]:
     if not page_cfg.json_list_path:
         return []
+
+    # Merge items from *every* blob that matches, not just the first one
+    # found -- an infinite-scroll list (see betclic.fixtures.scroll_count)
+    # fires a separate XHR per page as you scroll, so each additional page
+    # shows up as its own blob in `blobs`, holding a *different* slice of
+    # matches rather than a bigger one. Taking only the first match here
+    # silently threw away every page after the first (confirmed live:
+    # scrolling changed which matches turned up, but the total count
+    # stayed flat at one page's worth until this fix). Dedup by matchId
+    # where present, since pages can overlap.
     items: list[dict] = []
+    seen_match_ids: set = set()
     for blob in blobs:
         try:
             found = jmespath.search(page_cfg.json_list_path, blob)
@@ -44,9 +55,15 @@ def _rows_from_json(page_cfg: PageConfig, blobs: list[dict]) -> list[dict]:
         # xgscore/fixtures.py for why (a page can fire several unrelated
         # JSON responses, and json_list_path may resolve to an empty list
         # against one of those before reaching the real fixtures blob).
-        if isinstance(found, list) and found:
-            items = found
-            break
+        if not isinstance(found, list) or not found:
+            continue
+        for item in found:
+            match_id = item.get("matchId") if isinstance(item, dict) else None
+            if match_id is not None:
+                if match_id in seen_match_ids:
+                    continue
+                seen_match_ids.add(match_id)
+            items.append(item)
 
     rows = []
     for item in items:

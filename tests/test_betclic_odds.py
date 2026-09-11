@@ -167,6 +167,82 @@ def test_scrape_today_odds_merges_live_and_upcoming_matches_from_one_blob():
     assert also_upcoming.markets == {"1x2": {"home": 1.75, "draw": 3.6, "away": 4.6}}
 
 
+# Regression for a real bug (2026-09-11 live run): betclic.fixtures.url is
+# an infinite-scroll list, so scrolling (scroll_count in config.yaml)
+# fires a *separate* XHR per page -- each page is captured as its own,
+# separate blob in `blobs` (unlike the single-blob-multiple-grpc-keys case
+# above), holding a *different* slice of matches. Taking only the first
+# blob's matches silently dropped every later page: live, the total
+# offer count stayed flat at one page's worth no matter how much
+# scrolling happened, until _rows_from_json was fixed to merge across
+# every blob instead of stopping at the first non-empty one.
+PAGE_1_BLOB = {
+    "grpc:1111111111": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "1",
+                        "matchDateUtc": "2026-09-12T14:30:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [{"name": "Aali"}, {"name": "Malkiya"}],
+                        "competition": {"name": "Bahrein - Liga"},
+                        "market": {
+                            "mainSelections": [
+                                {"name": "Aali", "odds": 1.5},
+                                {"name": "Empate", "odds": 3.5},
+                                {"name": "Malkiya", "odds": 5.0},
+                            ]
+                        },
+                    }
+                ]
+            }
+        }
+    }
+}
+
+# A second, separate captured response -- as if triggered by a
+# scroll-to-bottom -- with a *different* match (not a repeat of page 1).
+PAGE_2_BLOB = {
+    "grpc:2222222222": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "2",
+                        "matchDateUtc": "2026-09-12T18:45:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [{"name": "Sevilla"}, {"name": "Valencia"}],
+                        "competition": {"name": "Espanha - La Liga"},
+                        "market": {
+                            "mainSelections": [
+                                {"name": "Sevilla", "odds": 1.9},
+                                {"name": "Empate", "odds": 3.4},
+                                {"name": "Valencia", "odds": 4.2},
+                            ]
+                        },
+                    }
+                ]
+            }
+        }
+    }
+}
+
+
+class MultiPageFakeSession:
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        return "<html></html>", [PAGE_1_BLOB, PAGE_2_BLOB]
+
+
+def test_scrape_today_odds_merges_matches_across_scroll_triggered_pages():
+    cfg = load_config()
+    offers = scrape_today_odds(cfg, session=MultiPageFakeSession())
+
+    assert len(offers) == 2
+    by_teams = {(o.home_team, o.away_team) for o in offers}
+    assert by_teams == {("Aali", "Malkiya"), ("Sevilla", "Valencia")}
+
+
 # Third confirmed shape (2026-09-11): a match's own detail page, requested
 # specifically to calibrate BTTS / over-under (the listing page above only
 # carries the inline 1X2 market). Same Angular TransferState pattern, but

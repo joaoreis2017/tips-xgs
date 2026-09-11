@@ -1,0 +1,159 @@
+# tipsxgs configuration.
+#
+# IMPORTANT: the `selector` / `json_path` values below are PLACEHOLDERS.
+# This project's dev sandbox has no network access to xgscore.io or
+# betclic.pt, so none of these could be verified against the live sites.
+# Run `python scripts/inspect_site.py <url>` from a machine that *can*
+# reach them, then fill in the real values here -- see docs/CALIBRATION.md
+# for the step by step. Nothing else in the code needs to change.
+
+timezone: "Europe/Lisbon"
+data_dir: "data"        # where daily games.json snapshots are written
+reports_dir: "data"     # where the daily index.html dashboard is written
+value_bet_threshold: 1.0     # value_ratio above this counts as a "value bet"
+min_match_confidence: 80     # fuzzy-match score (0-100) required to pair a fixture with a Betclic offer
+max_concurrent_previews: 3
+headless: true
+
+xgscore:
+  base_url: "https://xgscore.io"
+
+  fixtures:
+    # TODO(calibrate): confirm this is really where "today's games" live.
+    # xgscore.io's homepage may show today's fixtures directly, or there
+    # may be a dedicated /fixtures or /today page -- check with
+    # scripts/inspect_site.py.
+    url: "https://xgscore.io/"
+
+    # If the fixtures are embedded as JSON (e.g. a Next.js __NEXT_DATA__
+    # blob), set this to a JMESPath expression that resolves to the list
+    # of fixture objects, and give each field below a `json_path`
+    # (evaluated relative to *one* fixture item). Leave both this and
+    # `fields[].json_path` unset to fall back to CSS selectors instead.
+    json_list_path: null   # e.g. "props.pageProps.fixtures"
+
+    # One CSS selector matching each fixture row/card on the page (used
+    # only if json_list_path above is not set / yields nothing).
+    list_item_selector: null   # e.g. "div.fixture-row"
+
+    fields:
+      # Each field is either CSS-based (selector [+ attr] [+ regex]) or
+      # JSON-based (json_path). `preview_url` may be omitted entirely --
+      # if missing, it's built automatically as
+      # {base_url}/{league}/{home-slug}-{away-slug}/preview
+      - key: league
+        selector: null        # e.g. ".fixture-row .league-name"
+      - key: home_team
+        selector: null        # e.g. ".fixture-row .team-home"
+      - key: away_team
+        selector: null        # e.g. ".fixture-row .team-away"
+      - key: kickoff
+        selector: null        # e.g. ".fixture-row time" (attr: datetime)
+        attr: null
+      - key: preview_url
+        selector: null        # e.g. ".fixture-row a" (attr: href)
+        attr: href
+
+  preview:
+    # No `url` here -- the preview page URL comes from each Fixture
+    # (either scraped above, or built from base_url/league/home-away).
+    json_list_path: null   # preview pages have one game, not a list
+
+    fields:
+      # Populate with whatever markets xGScore's preview page actually
+      # shows (goal probabilities, 1X2, BTTS, over/under, correct score,
+      # etc.) -- add as many rows as there are numbers you want to
+      # capture. `key` is an arbitrary raw name; map it to a canonical
+      # market/outcome in market_aliases below.
+      - key: prob_home_win
+        selector: null   # e.g. "[data-market='1x2'] .outcome-home .prob"
+      - key: prob_draw
+        selector: null
+      - key: prob_away_win
+        selector: null
+      - key: prob_btts_yes
+        selector: null
+      - key: prob_btts_no
+        selector: null
+      - key: prob_over_2_5
+        selector: null
+      - key: prob_under_2_5
+        selector: null
+
+    # Maps each raw `key` above to "<canonical_market>.<outcome>" (see
+    # src/tipsxgs/markets.py for the full vocabulary + PT labels used in
+    # the dashboard). Extend this as you add more fields.
+    market_aliases:
+      prob_home_win: "1x2.home"
+      prob_draw: "1x2.draw"
+      prob_away_win: "1x2.away"
+      prob_btts_yes: "btts.yes"
+      prob_btts_no: "btts.no"
+      prob_over_2_5: "over_under_2.5.over"
+      prob_under_2_5: "over_under_2.5.under"
+
+betclic:
+  base_url: "https://www.betclic.pt"
+  request_delay_seconds: 2.0   # be polite -- one request every N seconds
+
+  fixtures:
+    # TODO(calibrate): the football hub URL on betclic.pt (locale-specific
+    # path segments change fairly often -- check the live site).
+    url: "https://www.betclic.pt/futebol-s1"
+    json_list_path: null
+    list_item_selector: null   # e.g. "div.event-card"
+
+    fields:
+      - key: home_team
+        selector: null
+      - key: away_team
+        selector: null
+      - key: kickoff
+        selector: null
+      - key: match_url
+        selector: null
+        attr: href
+      # 1X2 odds are often shown directly on the list page -- if so,
+      # capture them here too (aliased below) so you don't need a detail
+      # page hop at all for the main market.
+      - key: odd_home
+        selector: null
+      - key: odd_draw
+        selector: null
+      - key: odd_away
+        selector: null
+
+    market_aliases:
+      odd_home: "1x2.home"
+      odd_draw: "1x2.draw"
+      odd_away: "1x2.away"
+
+  odds:
+    # Detail page for one match (its `match_url` from the fixtures list
+    # above) -- this is where BTTS / over-under / correct score odds
+    # usually live. Leave `fields` empty to skip this hop entirely and
+    # rely only on whatever the fixtures list already captured.
+    fields:
+      - key: odd_home
+        selector: null
+      - key: odd_draw
+        selector: null
+      - key: odd_away
+        selector: null
+      - key: odd_btts_yes
+        selector: null
+      - key: odd_btts_no
+        selector: null
+      - key: odd_over_2_5
+        selector: null
+      - key: odd_under_2_5
+        selector: null
+
+    market_aliases:
+      odd_home: "1x2.home"
+      odd_draw: "1x2.draw"
+      odd_away: "1x2.away"
+      odd_btts_yes: "btts.yes"
+      odd_btts_no: "btts.no"
+      odd_over_2_5: "over_under_2.5.over"
+      odd_under_2_5: "over_under_2.5.under"

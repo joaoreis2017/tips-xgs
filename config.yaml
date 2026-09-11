@@ -97,31 +97,44 @@ betclic:
   request_delay_seconds: 2.0   # be polite -- one request every N seconds
 
   fixtures:
-    # TODO(calibrate): the football hub URL on betclic.pt (locale-specific
-    # path segments change fairly often -- check the live site).
-    url: "https://www.betclic.pt/futebol-s1"
-    json_list_path: null
-    list_item_selector: null   # e.g. "div.event-card"
+    # CALIBRATED (2026-09-11): betclic.pt is an Angular app that embeds its
+    # data as JSON in a `<script>` tag (Angular TransferState / hydration
+    # cache -- keys look like "grpc:<hash>"). One of those keys holds
+    # {"response": {"payload": {"matches": [...]}}} -- the JMESPath below
+    # finds it under *whatever* hash key it lands on, so it survives the
+    # hash changing between requests.
+    #
+    # STILL TO DO: the page's default view (and what our one inspection
+    # captured) is the "Em Direto" (live) tab -- these matches all had
+    # isLive: true. To get *upcoming* (not yet kicked off) games too, open
+    # a specific competition page (e.g. click "Liga Portugal Betclic" on
+    # the site) and re-run scripts/inspect_site.py on that URL -- same
+    # "matches" JSON shape is expected (isLive: false, no scoreboard), so
+    # the fields below should keep working unchanged; you may just need a
+    # second `fixtures.url` per competition/day, or to confirm one URL
+    # already lists the whole day.
+    url: "https://www.betclic.pt/futebol-sfootball"
+    json_list_path: "*.response.payload.matches[]"
 
     fields:
+      - key: league
+        json_path: "competition.name"
       - key: home_team
-        selector: null
+        json_path: "contestants[0].name"
       - key: away_team
-        selector: null
+        json_path: "contestants[1].name"
       - key: kickoff
-        selector: null
-      - key: match_url
-        selector: null
-        attr: href
-      # 1X2 odds are often shown directly on the list page -- if so,
-      # capture them here too (aliased below) so you don't need a detail
-      # page hop at all for the main market.
+        json_path: "matchDateUtc"
+      # 1X2 ("Resultado (Tempo Regulamentar)") comes inline in the same
+      # match object, as market.mainSelections in [home, draw, away]
+      # order -- confirmed against real data, no detail-page hop needed
+      # for this market.
       - key: odd_home
-        selector: null
+        json_path: "market.mainSelections[0].odds"
       - key: odd_draw
-        selector: null
+        json_path: "market.mainSelections[1].odds"
       - key: odd_away
-        selector: null
+        json_path: "market.mainSelections[2].odds"
 
     market_aliases:
       odd_home: "1x2.home"
@@ -129,31 +142,17 @@ betclic:
       odd_away: "1x2.away"
 
   odds:
-    # Detail page for one match (its `match_url` from the fixtures list
-    # above) -- this is where BTTS / over-under / correct score odds
-    # usually live. Leave `fields` empty to skip this hop entirely and
-    # rely only on whatever the fixtures list already captured.
-    fields:
-      - key: odd_home
-        selector: null
-      - key: odd_draw
-        selector: null
-      - key: odd_away
-        selector: null
-      - key: odd_btts_yes
-        selector: null
-      - key: odd_btts_no
-        selector: null
-      - key: odd_over_2_5
-        selector: null
-      - key: odd_under_2_5
-        selector: null
-
-    market_aliases:
-      odd_home: "1x2.home"
-      odd_draw: "1x2.draw"
-      odd_away: "1x2.away"
-      odd_btts_yes: "btts.yes"
-      odd_btts_no: "btts.no"
-      odd_over_2_5: "over_under_2.5.over"
-      odd_under_2_5: "over_under_2.5.under"
+    # NOT YET CALIBRATED: BTTS / over-under / correct score odds don't
+    # appear in the listing payload above -- they likely need a visit to
+    # the match's own page. We don't yet have a reliable `match_url` (the
+    # listing JSON doesn't include one, and Betclic's URL pattern is
+    # /{sport}-s{sportId}/{competition}-c{competitionId}/{match}-m{matchId}
+    # with a slugified name whose exact slugification rules are unconfirmed).
+    # To calibrate: open one match manually on betclic.pt, copy its real
+    # URL, and run scripts/inspect_site.py on it -- likely the same
+    # "matches[0].market"-shaped JSON, just with more markets/selections,
+    # or a list of markets per match. Until then, the pipeline runs on the
+    # 1X2 market alone (matches xgscore's 1X2 probabilities), which is
+    # already enough for the value-bet ranking on that market.
+    fields: []
+    market_aliases: {}

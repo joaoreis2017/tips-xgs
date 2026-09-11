@@ -48,7 +48,14 @@ xgscore:
     # fixtures" endpoint/page (e.g. a full schedule view) and repoint
     # `url` at that instead -- the field mappings below should carry over
     # unchanged since they're relative to one `game` object either way.
+    #
+    # KNOWN ISSUE (2026-09-11 live runs): flaky -- one run found 9
+    # fixtures, the very next run found 0 with an identical config, most
+    # likely because the "top value bets" widget's XHR doesn't always
+    # fire within BrowserSession's default 2000ms wait. Bumped below;
+    # raise further if a run still comes back with 0 fixtures.
     url: "https://xgscore.io/"
+    wait_ms: 6000
 
     # "[?game]" rather than a bare "@": the page also fires two other,
     # unrelated small JSON responses ({"geo": "PT"} and a plain array of
@@ -76,6 +83,13 @@ xgscore:
     # No `url` here -- the preview page URL comes from each Fixture
     # (either scraped above, or built from base_url/league/home-away).
     json_list_path: null   # preview pages have one game, not a list
+
+    # This page fires even more separate JSON requests than the fixtures
+    # page above (team form, standings, h2h, per-bookmaker odds, the
+    # metadata object we actually want, ...) -- given that page needed
+    # more than the 2000ms default on at least one real run, give this
+    # one some headroom too rather than wait to see it fail the same way.
+    wait_ms: 4000
 
     # CALIBRATED (2026-09-11), from inspecting the Union Berlin - Schalke
     # preview page: it fires a LOT of captured JSON responses (team form,

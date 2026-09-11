@@ -88,7 +88,10 @@ def normalize_markets(
         canonical = alias_map.get(raw_key)
         if not canonical or "." not in canonical:
             continue
-        market, outcome = canonical.split(".", 1)
+        # rsplit, not split: the *market* half can itself contain a dot
+        # (e.g. "over_under_2.5.over" -> market "over_under_2.5", outcome
+        # "over") -- only the outcome (the last segment) never does.
+        market, outcome = canonical.rsplit(".", 1)
         out.setdefault(market, {})[outcome] = value
     return out
 

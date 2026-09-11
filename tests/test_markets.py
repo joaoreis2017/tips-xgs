@@ -9,6 +9,16 @@ def test_normalize_markets_maps_raw_keys_via_alias():
     assert result == {"1x2": {"home": 0.62, "draw": 0.24}}
 
 
+def test_normalize_markets_handles_dotted_market_names():
+    # The market half of a canonical key can itself contain a dot (e.g. an
+    # over/under line like "2.5") -- only the *outcome* (last segment)
+    # never does, so this must rsplit, not split, on ".".
+    raw = {"over_2_5": 1.84, "under_2_5": 1.68}
+    alias = {"over_2_5": "over_under_2.5.over", "under_2_5": "over_under_2.5.under"}
+    result = normalize_markets(raw, alias)
+    assert result == {"over_under_2.5": {"over": 1.84, "under": 1.68}}
+
+
 def test_normalize_probabilities_converts_percentages():
     assert normalize_probabilities({"a": 62, "b": 0.24, "c": None}) == {"a": 0.62, "b": 0.24}
 

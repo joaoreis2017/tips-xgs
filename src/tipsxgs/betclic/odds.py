@@ -24,7 +24,7 @@ from dateutil import parser as dateparser
 
 from ..browser import BrowserSession, polite_delay
 from ..config import AppConfig, PageConfig
-from ..extract import extract_by_selectors, extract_json_path, find_embedded_json, parse_odds
+from ..extract import extract_by_selectors, extract_json_path, find_embedded_json, parse_odds, slugify
 from ..markets import normalize_markets
 from ..models import OddsOffer
 
@@ -113,13 +113,42 @@ def _scrape_detail_markets(cfg: AppConfig, match_url: str, session: BrowserSessi
     return normalize_markets(odds, page_cfg.market_aliases)
 
 
+def _build_match_url(cfg: AppConfig, row: dict) -> str | None:
+    """Build a match detail page URL from Betclic's own routing template
+    (confirmed 2026-09-11 straight from the site's ``metatags`` payload:
+    ``"/{sportName}-s{sportId}/{competitionName}-c{competitionId}/{matchName}-m{matchId}"``).
+
+    Requires ``match_id`` and ``competition_id`` fields to be configured
+    on ``betclic.fixtures.fields`` (see config.yaml) -- without those we
+    have no way to build the URL, and this returns ``None`` so the
+    pipeline just skips the detail-page hop (1X2 from the listing still
+    works either way).
+
+    NOTE: the *slug* text (competition/match name -> lowercase,
+    hyphenated, accents stripped) is our best-effort reproduction of
+    Betclic's own slugification -- confirmed for the URL *shape*, not
+    yet verified character-for-character against a live rendered link.
+    """
+    match_id = row.get("match_id")
+    competition_id = row.get("competition_id")
+    home = row.get("home_team")
+    away = row.get("away_team")
+    league = row.get("league")
+    if not (match_id and competition_id and home and away and league):
+        return None
+    sport_slug = "futebol-s1"
+    competition_slug = f"{slugify(str(league))}-c{competition_id}"
+    match_slug = f"{slugify(str(home))}-{slugify(str(away))}-m{match_id}"
+    return f"/{sport_slug}/{competition_slug}/{match_slug}"
+
+
 def _row_to_offer(cfg: AppConfig, row: dict) -> tuple[OddsOffer, str | None] | None:
     home = row.get("home_team")
     away = row.get("away_team")
     if not home or not away:
         return None
 
-    match_url = row.get("match_url")
+    match_url = row.get("match_url") or _build_match_url(cfg, row)
     if match_url and not str(match_url).startswith("http"):
         match_url = urljoin(cfg.betclic.base_url, str(match_url))
 
@@ -132,7 +161,13 @@ def _row_to_offer(cfg: AppConfig, row: dict) -> tuple[OddsOffer, str | None] | N
             logger.debug("could not parse kickoff time %r", kickoff_raw)
 
     list_page_cfg = cfg.betclic.page("fixtures")
-    inline_odds = parse_odds({k: v for k, v in row.items() if k not in ("home_team", "away_team", "kickoff", "match_url", "league")})
+    inline_odds = parse_odds(
+        {
+            k: v
+            for k, v in row.items()
+            if k not in ("home_team", "away_team", "kickoff", "match_url", "league", "match_id", "competition_id")
+        }
+    )
     inline_markets = normalize_markets(inline_odds, list_page_cfg.market_aliases)
 
     offer = OddsOffer(

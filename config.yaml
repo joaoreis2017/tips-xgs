@@ -140,6 +140,13 @@ betclic:
         json_path: "market.mainSelections[1].odds"
       - key: odd_away
         json_path: "market.mainSelections[2].odds"
+      # match_id + competition_id aren't odds -- they're just IDs used
+      # (in src/tipsxgs/betclic/odds.py::_build_match_url) to build the
+      # detail-page URL below, from Betclic's own routing template.
+      - key: match_id
+        json_path: "matchId"
+      - key: competition_id
+        json_path: "competition.id"
 
     market_aliases:
       odd_home: "1x2.home"
@@ -147,17 +154,73 @@ betclic:
       odd_away: "1x2.away"
 
   odds:
-    # NOT YET CALIBRATED: BTTS / over-under / correct score odds don't
-    # appear in the listing payload above -- they likely need a visit to
-    # the match's own page. We don't yet have a reliable `match_url` (the
-    # listing JSON doesn't include one, and Betclic's URL pattern is
-    # /{sport}-s{sportId}/{competition}-c{competitionId}/{match}-m{matchId}
-    # with a slugified name whose exact slugification rules are unconfirmed).
-    # To calibrate: open one match manually on betclic.pt, copy its real
-    # URL, and run scripts/inspect_site.py on it -- likely the same
-    # "matches[0].market"-shaped JSON, just with more markets/selections,
-    # or a list of markets per match. Until then, the pipeline runs on the
-    # 1X2 market alone (matches xgscore's 1X2 probabilities), which is
-    # already enough for the value-bet ranking on that market.
-    fields: []
-    market_aliases: {}
+    # CALIBRATED (2026-09-11), from inspecting one match's own page
+    # (e.g. .../futebol-s1/liga-portugal-betclic-c32/cd-nacional-fc-alverca-m<id>):
+    # same Angular TransferState blob, but this time a *different*
+    # grpc:<hash> key holds {"response": {"payload": {"match": {...}}}}
+    # (singular "match", not a "matches" list) -- one match, with every
+    # market grouped under match.subCategories[].markets[]. Each market
+    # has a `name` (Portuguese) and either:
+    #   - `mainSelections` (flat list, e.g. 1X2 -- already covered by
+    #     betclic.fixtures above, no need to repeat it here), or
+    #   - `selectionMatrix` (a list of *rows*, each with a `selections`
+    #     list) -- used for everything else, but with an inconsistent
+    #     shape between markets: some rows hold plain
+    #     {name, odds, ...} objects (e.g. "Total de golos - acima/abaixo"),
+    #     others wrap each one as
+    #     {"selectionOneof": {"oneofKind": "selection", "selection": {name, odds, ...}}}
+    #     (e.g. "As duas equipas marcam" / BTTS). The json_path below for
+    #     each field matches whichever shape that specific market used --
+    #     verified against real data in
+    #     tests/test_betclic_odds.py::test_scrape_today_odds_reads_btts_and_over_under_from_match_detail_page.
+    #
+    # STILL TO DO: `url` below is left unset -- `match_url` is instead
+    # *built* per-fixture from Betclic's own routing template (see
+    # betclic.fixtures.fields' match_id/competition_id above), which is
+    # confirmed for the URL *shape* but not yet character-for-character
+    # verified against a live rendered link (the exact slugification of
+    # accented team/competition names is a best-effort guess -- see
+    # _build_match_url in src/tipsxgs/betclic/odds.py). If `python -m
+    # tipsxgs run -v` logs 404s / empty detail-page extraction, paste one
+    # real match URL from betclic.pt here as a sanity check.
+    #
+    # "Resultado correcto" (correct score) is NOT calibrated yet -- its
+    # selectionMatrix is a large, variable-size grid (dozens of
+    # scorelines, with null cells for handicap-implied "impossible" rows)
+    # that needs its own extraction pass; the 1X2 + BTTS + O/U 2.5 below
+    # already cover the value-bet markets asked for.
+    fields:
+      # Every path below starts with `*.response.payload.match.` -- same
+      # wildcard-over-every-grpc-key trick as betclic.fixtures, since the
+      # match detail page embeds its data the same way (one grpc:<hash>
+      # key holds {"response": {"payload": {"match": {...}}}}).
+      - key: btts_yes
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='As duas equipas marcam'] |
+          [0].selectionMatrix[0].selections[] |
+          [?selectionOneof.selection.name=='Sim'] |
+          [0].selectionOneof.selection.odds
+      - key: btts_no
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='As duas equipas marcam'] |
+          [0].selectionMatrix[0].selections[] |
+          [?selectionOneof.selection.name=='Não'] |
+          [0].selectionOneof.selection.odds
+      - key: over_2_5
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Total de golos - acima/abaixo'] |
+          [0].selectionMatrix[].selections[] | [?name=='Acima de 2,5'] | [0].odds
+      - key: under_2_5
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Total de golos - acima/abaixo'] |
+          [0].selectionMatrix[].selections[] | [?name=='Abaixo de 2,5'] | [0].odds
+
+    market_aliases:
+      btts_yes: "btts.yes"
+      btts_no: "btts.no"
+      over_2_5: "over_under_2.5.over"
+      under_2_5: "over_under_2.5.under"

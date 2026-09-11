@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from typing import Any
 
 import jmespath
@@ -25,6 +26,17 @@ from bs4 import BeautifulSoup
 from .config import ExtractRule
 
 NUMBER_RE = re.compile(r"-?\d+(?:[.,]\d+)?")
+
+
+def slugify(text: str) -> str:
+    """Lowercase, accent-stripped, hyphen-separated slug -- e.g. for
+    building a URL from a name (``"Cedric Nuozzi"`` -> ``"cedric-nuozzi"``).
+    Generic text utility, not tied to any one site.
+    """
+    normalized = unicodedata.normalize("NFKD", text)
+    ascii_only = normalized.encode("ascii", "ignore").decode("ascii")
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", ascii_only).strip("-").lower()
+    return slug
 
 # Common variable/script-id names used by SPA frameworks to embed initial
 # state. Extend ``embedded_json_hints`` in config.yaml if a site uses a

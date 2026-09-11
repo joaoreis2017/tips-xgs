@@ -5,7 +5,7 @@ betclic.fixtures section for where this structure came from.
 
 from datetime import datetime, timezone
 
-from tipsxgs.betclic.odds import scrape_today_odds
+from tipsxgs.betclic.odds import _build_match_url, scrape_today_odds
 from tipsxgs.config import load_config
 
 REAL_SHAPE_BLOB = {
@@ -165,3 +165,164 @@ def test_scrape_today_odds_merges_live_and_upcoming_matches_from_one_blob():
 
     also_upcoming = by_teams[("FC Porto", "Braga")]
     assert also_upcoming.markets == {"1x2": {"home": 1.75, "draw": 3.6, "away": 4.6}}
+
+
+# Third confirmed shape (2026-09-11): a match's own detail page, requested
+# specifically to calibrate BTTS / over-under (the listing page above only
+# carries the inline 1X2 market). Same Angular TransferState pattern, but
+# this grpc:<hash> key holds {"response": {"payload": {"match": {...}}}}
+# (singular "match") with every market grouped under
+# match.subCategories[].markets[] -- real example: "CD Nacional - FC
+# Alverca" (Liga Portugal Betclic). Two selection shapes coexist in the
+# same payload: "As duas equipas marcam" (BTTS) wraps each selection as
+# {"selectionOneof": {"oneofKind": "selection", "selection": {...}}}, while
+# "Total de golos - acima/abaixo" (over/under) uses plain {name, odds}
+# objects -- config.yaml's betclic.odds.fields matches each shape exactly.
+MATCH_DETAIL_BLOB = {
+    "grpc:2547122988": {
+        "response": {
+            "oneofKind": "payload",
+            "payload": {
+                "match": {
+                    "matchId": "1217462611771392",
+                    "subCategories": [
+                        {
+                            "markets": [
+                                {
+                                    "id": "1217462616989698",
+                                    "name": "Resultado (Tempo Regulamentar)",
+                                    "mainSelections": [
+                                        {"name": "CD Nacional", "odds": 2.55},
+                                        {"name": "Empate", "odds": 3.2},
+                                        {"name": "FC Alverca", "odds": 2.67},
+                                    ],
+                                },
+                                {
+                                    "id": "1217463160180773",
+                                    "name": "Total de golos - acima/abaixo",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {"name": "Acima de 0,5", "odds": 1.03},
+                                                {"name": "Abaixo de 0,5", "odds": 5.75},
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"name": "Acima de 2,5", "odds": 1.84},
+                                                {"name": "Abaixo de 2,5", "odds": 1.68},
+                                            ]
+                                        },
+                                    ],
+                                },
+                                {
+                                    "id": "1217463160180824",
+                                    "name": "As duas equipas marcam",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "oneofKind": "selection",
+                                                        "selection": {"name": "Sim", "odds": 1.68},
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "oneofKind": "selection",
+                                                        "selection": {"name": "Não", "odds": 1.83},
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    ],
+                                },
+                            ]
+                        }
+                    ],
+                }
+            },
+        }
+    }
+}
+
+FIXTURES_LIST_BLOB = {
+    "grpc:3335296709": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "1217462611771392",
+                        "name": "CD Nacional - FC Alverca",
+                        "matchDateUtc": "2026-09-12T14:30:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [
+                            {"contestantId": "a", "name": "CD Nacional"},
+                            {"contestantId": "b", "name": "FC Alverca"},
+                        ],
+                        "competition": {"id": "32", "name": "Liga Portugal Betclic"},
+                        "market": {
+                            "name": "Resultado (Tempo Regulamentar)",
+                            "mainSelections": [
+                                {"name": "CD Nacional", "odds": 2.55},
+                                {"name": "Empate", "odds": 3.2},
+                                {"name": "FC Alverca", "odds": 2.67},
+                            ],
+                        },
+                    }
+                ]
+            }
+        }
+    }
+}
+
+
+class TwoStepFakeSession:
+    """First call (the fixtures list) returns FIXTURES_LIST_BLOB; every
+    subsequent call (one per match's detail page) returns MATCH_DETAIL_BLOB
+    -- mirrors scrape_today_odds()'s "list page, then hop to each match's
+    own page" flow."""
+
+    def __init__(self):
+        self.calls = []
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000):
+        self.calls.append(url)
+        if len(self.calls) == 1:
+            return "<html></html>", [FIXTURES_LIST_BLOB]
+        return "<html></html>", [MATCH_DETAIL_BLOB]
+
+
+def test_build_match_url_from_betclic_routing_template():
+    cfg = load_config()
+    row = {
+        "home_team": "CD Nacional",
+        "away_team": "FC Alverca",
+        "league": "Liga Portugal Betclic",
+        "match_id": "1217462611771392",
+        "competition_id": "32",
+    }
+    url = _build_match_url(cfg, row)
+    assert url == "/futebol-s1/liga-portugal-betclic-c32/cd-nacional-fc-alverca-m1217462611771392"
+
+
+def test_scrape_today_odds_reads_btts_and_over_under_from_match_detail_page():
+    cfg = load_config()
+    session = TwoStepFakeSession()
+    offers = scrape_today_odds(cfg, session=session)
+
+    assert len(offers) == 1
+    offer = offers[0]
+    assert offer.home_team == "CD Nacional"
+    assert offer.away_team == "FC Alverca"
+    # 1x2 from the listing page + btts/over-under from the detail-page hop.
+    assert offer.markets == {
+        "1x2": {"home": 2.55, "draw": 3.2, "away": 2.67},
+        "btts": {"yes": 1.68, "no": 1.83},
+        "over_under_2.5": {"over": 1.84, "under": 1.68},
+    }
+    # scrape_today_odds should have hopped to the built detail-page URL.
+    assert len(session.calls) == 2
+    assert session.calls[1].endswith(
+        "/futebol-s1/liga-portugal-betclic-c32/cd-nacional-fc-alverca-m1217462611771392"
+    )

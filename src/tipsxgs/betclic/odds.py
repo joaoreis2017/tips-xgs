@@ -76,7 +76,9 @@ def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
     if not url:
         raise RuntimeError("betclic.fixtures.url (or betclic.base_url) is not set in config.yaml")
 
-    html, blobs_captured = session.get_html_and_captured_json(url)
+    html, blobs_captured = session.get_html_and_captured_json(
+        url, wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000
+    )
     blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
 
     rows = _rows_from_json(page_cfg, blobs)
@@ -98,7 +100,9 @@ def _scrape_detail_markets(cfg: AppConfig, match_url: str, session: BrowserSessi
     if not page_cfg.url and not page_cfg.fields:
         return {}
 
-    html, blobs_captured = session.get_html_and_captured_json(match_url)
+    html, blobs_captured = session.get_html_and_captured_json(
+        match_url, wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000
+    )
     blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
 
     raw: dict = {}

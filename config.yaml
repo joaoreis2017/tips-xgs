@@ -168,7 +168,22 @@ betclic:
     # STILL TO DO: this only gives the inline 1X2 market. BTTS/over-under/
     # correct-score odds need a visit to each match's own page -- see
     # betclic.odds below.
+    #
+    # KNOWN ISSUE (2026-09-11 live run): only 20 odds offers came back,
+    # apparently a partial/early batch (minor leagues only -- Poland,
+    # Turkey, Serbia, Bahrain, ... -- not the bigger ones like Bundesliga,
+    # La Liga, Ligue 1 that xGScore's fixtures included), which meant only
+    # 1/9 fixtures matched a Betclic offer that day. Most likely cause:
+    # BrowserSession's default 2000ms isn't enough time for this page's
+    # SPA to fire every league's XHR before we stop listening. Bumped
+    # wait_ms up front; if coverage is still low, raise it further (or,
+    # if that's still not enough, this page may need a scroll/"load more"
+    # interaction that a fixed wait can't help with -- worth re-running
+    # scripts/inspect_site.py with a high --wait-ms and comparing how many
+    # matches show up in captured_json vs. what betclic.pt itself lists
+    # for today).
     url: "https://www.betclic.pt/futebol-sfootball"
+    wait_ms: 8000
     json_list_path: "*.response.payload.matches[]"
 
     fields:

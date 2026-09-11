@@ -144,7 +144,9 @@ def scrape_today_fixtures(cfg: AppConfig, session: BrowserSession | None = None)
     if own_session:
         session = BrowserSession(headless=cfg.headless, user_agent=cfg.user_agent).__enter__()
     try:
-        html, blobs_captured = session.get_html_and_captured_json(url)
+        html, blobs_captured = session.get_html_and_captured_json(
+            url, wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000
+        )
         blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
 
         fixtures = _fixtures_from_json(cfg, page_cfg, blobs)

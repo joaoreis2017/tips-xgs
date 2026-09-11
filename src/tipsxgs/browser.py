@@ -113,6 +113,15 @@ class BrowserSession:
         captured: list[dict] = []
 
         def _on_response(response):
+            # A redirect (3xx) response has no readable body -- Playwright
+            # raises on response.json() for those. Skip it up front rather
+            # than hitting that exception on every single redirected
+            # request (very common -- e.g. a built URL whose slug isn't
+            # byte-for-byte what the site itself uses, so it 301s to the
+            # real one before the real JSON response comes in on the
+            # *next* response event).
+            if 300 <= response.status < 400:
+                return
             try:
                 ct = response.headers.get("content-type", "")
                 if "json" not in ct:

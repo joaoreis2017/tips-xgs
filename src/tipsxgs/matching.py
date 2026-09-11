@@ -74,13 +74,36 @@ def match_fixtures_to_odds(
         assigned_offer_for_fixture[fixture.id] = idx
         used_offer_idx.add(idx)
 
+    # Best score seen for each fixture, even below threshold -- purely so
+    # the log line below can tell "Betclic just doesn't have this game
+    # today" (no candidate came close) apart from "it's there, but under
+    # a different-enough name" (a close-but-rejected candidate), without
+    # needing a second run with extra logging to find out which.
+    best_for_fixture: dict[str, tuple[float, OddsOffer]] = {}
+    for score, idx, fixture in candidates:
+        current = best_for_fixture.get(fixture.id)
+        if current is None or score > current[0]:
+            best_for_fixture[fixture.id] = (score, odds_offers[idx])
+
     games = []
     for fixture in fixtures:
         offer_idx = assigned_offer_for_fixture.get(fixture.id)
         offer = odds_offers[offer_idx] if offer_idx is not None else None
         confidence = _score(fixture, offer) if offer else None
         if offer is None:
-            logger.info("no Betclic odds matched for %s", fixture.label)
+            best = best_for_fixture.get(fixture.id)
+            if best is None:
+                logger.info("no Betclic odds matched for %s (no Betclic offers scraped at all)", fixture.label)
+            else:
+                best_score, best_offer = best
+                logger.info(
+                    "no Betclic odds matched for %s (closest candidate: %s - %s, score %.0f < min_confidence %.0f)",
+                    fixture.label,
+                    best_offer.home_team,
+                    best_offer.away_team,
+                    best_score,
+                    min_confidence,
+                )
         games.append(
             MatchedGame(
                 fixture=fixture,

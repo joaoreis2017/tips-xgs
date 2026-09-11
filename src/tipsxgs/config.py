@@ -47,6 +47,13 @@ class PageConfig:
     embedded_json_hints: list[str] = field(default_factory=list)
     market_aliases: dict[str, str] = field(default_factory=dict)
     wait_selector: str | None = None
+    # Extra time (ms) to let the page's JS keep firing XHR/fetch requests
+    # after the DOM is ready, before we stop capturing responses -- some
+    # pages (e.g. a SPA that loads "today's fixtures" league by league)
+    # need much longer than BrowserSession's 2000ms default to have
+    # everything in by the time we read `captured`. None keeps that
+    # default.
+    wait_ms: int | None = None
 
 
 @dataclass
@@ -88,6 +95,7 @@ def _page_config(raw: dict | None) -> PageConfig:
         embedded_json_hints=raw.get("embedded_json_hints", []) or [],
         market_aliases=raw.get("market_aliases", {}) or {},
         wait_selector=raw.get("wait_selector"),
+        wait_ms=raw.get("wait_ms"),
     )
 
 

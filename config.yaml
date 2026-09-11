@@ -99,20 +99,25 @@ betclic:
   fixtures:
     # CALIBRATED (2026-09-11): betclic.pt is an Angular app that embeds its
     # data as JSON in a `<script>` tag (Angular TransferState / hydration
-    # cache -- keys look like "grpc:<hash>"). One of those keys holds
-    # {"response": {"payload": {"matches": [...]}}} -- the JMESPath below
-    # finds it under *whatever* hash key it lands on, so it survives the
-    # hash changing between requests.
+    # cache -- keys look like "grpc:<hash>"). Several of those keys can
+    # hold {"response": {"payload": {"matches": [...]}}} *at the same
+    # time*, side by side in the very same blob -- e.g. one grpc:<hash>
+    # key for the "Em Direto" (live) matches and a different grpc:<hash>
+    # key for a specific competition's upcoming fixtures (confirmed with a
+    # real "Liga Portugal Betclic" example: isLive: false, real future
+    # matchDateUtc, same market.mainSelections shape).
     #
-    # STILL TO DO: the page's default view (and what our one inspection
-    # captured) is the "Em Direto" (live) tab -- these matches all had
-    # isLive: true. To get *upcoming* (not yet kicked off) games too, open
-    # a specific competition page (e.g. click "Liga Portugal Betclic" on
-    # the site) and re-run scripts/inspect_site.py on that URL -- same
-    # "matches" JSON shape is expected (isLive: false, no scoreboard), so
-    # the fields below should keep working unchanged; you may just need a
-    # second `fixtures.url` per competition/day, or to confirm one URL
-    # already lists the whole day.
+    # The JMESPath below (`*.response.payload.matches[]`) is a wildcard
+    # over *every* top-level key of the blob, so it merges matches from
+    # ALL such grpc keys found in one page load into a single flat list --
+    # confirmed in tests/test_betclic_odds.py
+    # (test_scrape_today_odds_merges_live_and_upcoming_matches_from_one_blob).
+    # In practice this means one visit to this URL already returns both
+    # live and upcoming games without needing a per-competition URL.
+    #
+    # STILL TO DO: this only gives the inline 1X2 market. BTTS/over-under/
+    # correct-score odds need a visit to each match's own page -- see
+    # betclic.odds below.
     url: "https://www.betclic.pt/futebol-sfootball"
     json_list_path: "*.response.payload.matches[]"
 

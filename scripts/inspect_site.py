@@ -53,6 +53,8 @@ def main() -> None:
     parser.add_argument("--headless", action="store_true", default=True)
     parser.add_argument("--show", action="store_true", help="Run with a visible browser window instead of headless")
     parser.add_argument("--out", default="inspect_out")
+    parser.add_argument("--wait-ms", type=int, default=4000, help="Extra time (ms) to let JS finish rendering after the DOM is ready -- raise this for slow/heavy pages")
+    parser.add_argument("--timeout-ms", type=int, default=45_000, help="Max time (ms) to wait for the initial page load")
     args = parser.parse_args()
 
     out_dir = Path(args.out) / slugify(args.url)
@@ -61,8 +63,8 @@ def main() -> None:
 
     headless = not args.show
     print(f"Loading {args.url} (headless={headless})...")
-    with BrowserSession(headless=headless) as session:
-        html, captured = session.get_html_and_captured_json(args.url, url_substring_filter=args.json_filter, wait_ms=3000)
+    with BrowserSession(headless=headless, timeout_ms=args.timeout_ms) as session:
+        html, captured = session.get_html_and_captured_json(args.url, url_substring_filter=args.json_filter, wait_ms=args.wait_ms)
 
     (out_dir / "page.html").write_text(html, encoding="utf-8")
     print(f"Saved rendered HTML -> {out_dir / 'page.html'} ({len(html)} bytes)")

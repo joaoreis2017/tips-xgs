@@ -65,16 +65,35 @@ class BrowserSession:
         ``wait_selector``, if given, is awaited before reading the DOM
         (use this once you know a real, stable selector for the page's
         main content -- see docs/CALIBRATION.md). Otherwise we just give
-        the SPA ``wait_ms`` to finish its initial render after network
-        idle.
+        the SPA ``wait_ms`` to finish its initial render after the DOM is
+        ready.
+
+        We wait for ``"domcontentloaded"`` rather than ``"networkidle"``:
+        pages with live/polling data (odds, scores) or websockets --
+        Betclic especially -- never go network-idle, so waiting for that
+        just times out. If even ``domcontentloaded`` doesn't fire in time
+        (slow site, redirect chain) we log it and fall back to whatever
+        rendered so far instead of raising.
         """
         with self._page() as page:
-            page.goto(url, wait_until="networkidle")
+            self._goto(page, url)
             if wait_selector:
                 page.wait_for_selector(wait_selector)
             else:
                 page.wait_for_timeout(wait_ms)
             return page.content()
+
+    def _goto(self, page, url: str) -> None:
+        from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+
+        try:
+            page.goto(url, wait_until="domcontentloaded")
+        except PlaywrightTimeoutError:
+            logger.warning(
+                "Timed out waiting for %s to finish loading -- continuing with "
+                "whatever rendered so far (the page may be incomplete).",
+                url,
+            )
 
     def get_html_and_captured_json(
         self, url: str, url_substring_filter: str | None = None, wait_ms: int = 2000
@@ -104,7 +123,7 @@ class BrowserSession:
 
         with self._page() as page:
             page.on("response", _on_response)
-            page.goto(url, wait_until="networkidle")
+            self._goto(page, url)
             page.wait_for_timeout(wait_ms)
             html = page.content()
         return html, captured

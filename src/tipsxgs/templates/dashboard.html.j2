@@ -132,8 +132,12 @@
       {% endfor %}
       </tbody>
     </table>
-    {% else %}
+    {% elif not game.has_predictions %}
     <p class="empty">Sem previsões extraídas para este jogo (ver docs/CALIBRATION.md).</p>
+    {% elif game.match_confidence is none %}
+    <p class="empty">Há previsões do xGScore para este jogo, mas sem odds Betclic emparelhadas não há nada para comparar (por isso a tabela fica vazia por definição).</p>
+    {% else %}
+    <p class="empty">Há previsões do xGScore e odds Betclic para este jogo, mas nenhum acontecimento passa dos limites configurados (probabilidade &gt; {{ "%.0f"|format(min_probability * 100) }}%, odd &gt; {{ "%.2f"|format(min_odd) }}).</p>
     {% endif %}
 
     <div class="section-title">Melhores apostas de valor deste jogo</div>

@@ -40,6 +40,14 @@ def build_context(
             for e in g.events_by_probability
             if e.probability > min_probability and e.odd is not None and e.odd > min_odd
         ]
+        # Distinct from "events is empty" below: this says whether
+        # scraping actually got *any* xGScore probabilities for this game
+        # at all, regardless of the min_probability/min_odd filter above
+        # -- an empty `events` table has two very different causes
+        # ("nothing was scraped, go check CALIBRATION.md" vs. "plenty was
+        # scraped, it's just filtered out because no Betclic odd cleared
+        # the thresholds") and the template needs to tell them apart.
+        has_predictions = bool(g.prediction and g.prediction.markets)
         game_ctx.append(
             {
                 "slug": g.fixture.slug,
@@ -48,6 +56,7 @@ def build_context(
                 "away_team": g.fixture.away_team,
                 "kickoff": _fmt_kickoff(g.fixture.kickoff),
                 "preview_url": g.fixture.preview_url,
+                "has_predictions": has_predictions,
                 "match_confidence": g.match_confidence,
                 "events": events,
                 "value_bets": g.value_bets_ranked,
@@ -73,6 +82,8 @@ def build_context(
         "games": game_ctx,
         "top_value_bets": top_ctx,
         "demo": demo,
+        "min_probability": min_probability,
+        "min_odd": min_odd,
     }
 
 

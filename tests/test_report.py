@@ -81,3 +81,19 @@ def test_events_threshold_is_configurable():
     # Lowering the threshold includes it.
     ctx = build_context(date(2026, 9, 12), [game], min_probability=0.3, min_odd=1.2)
     assert len(ctx["games"][0]["events"]) == 1
+
+
+def test_has_predictions_distinguishes_genuinely_empty_from_filtered_out():
+    # An empty `events` table can mean two very different things -- the
+    # dashboard template needs `has_predictions` to tell them apart
+    # rather than showing the same "nothing was scraped" message for
+    # both (a real bug report from a user who had plenty of xGScore
+    # predictions, just none clearing the Betclic-odd filter above).
+    scraped_but_filtered = _game(markets={"1x2": {"home": 0.9}}, odds_markets=None)
+    genuinely_empty = _game(markets={}, odds_markets=None)
+
+    ctx = build_context(date(2026, 9, 12), [scraped_but_filtered, genuinely_empty])
+    assert ctx["games"][0]["has_predictions"] is True
+    assert ctx["games"][0]["events"] == []
+    assert ctx["games"][1]["has_predictions"] is False
+    assert ctx["games"][1]["events"] == []

@@ -22,7 +22,7 @@ from ..extract import (
     find_embedded_json,
     normalize_probabilities,
 )
-from ..markets import normalize_markets
+from ..markets import expand_array_market, merge_markets, normalize_markets
 from ..models import Fixture, Prediction
 
 logger = logging.getLogger(__name__)
@@ -71,6 +71,19 @@ def scrape_preview(cfg: AppConfig, fixture: Fixture, session: BrowserSession | N
             {k: v for k, v in raw.items() if isinstance(v, (int, float))}
         )
         markets = normalize_markets(probabilities, page_cfg.market_aliases)
+
+        # array_markets: whole-array fields (every over/under line, every
+        # handicap line, ...) that expand into several canonical
+        # market.outcome entries each, rather than one field per line --
+        # see markets.expand_array_market() and config.yaml's
+        # xgscore.preview.array_markets for the real rules.
+        for rule in page_cfg.array_markets:
+            rows = extract_json_path(blobs, rule.json_path)
+            if not isinstance(rows, list):
+                continue
+            markets = merge_markets(
+                markets, expand_array_market(rows, rule.market_template, rule.outcome_template)
+            )
 
         extra_stats = {k: v for k, v in raw.items() if k not in probabilities}
 

@@ -36,6 +36,22 @@ class ExtractRule:
 
 
 @dataclass
+class ArrayMarketRule:
+    """Expand one whole market array (rows of ``[label, value, ...]``,
+    e.g. one row per over/under line or per handicap line) into several
+    canonical ``market.outcome`` entries at once -- see
+    ``markets.expand_array_market`` for the templating rules and
+    ``config.yaml``'s ``xgscore.preview.array_markets`` for real examples.
+    Use this instead of one ``ExtractRule`` per line when a market has an
+    open-ended or large number of outcomes sharing one shape.
+    """
+
+    json_path: str
+    market_template: str
+    outcome_template: str
+
+
+@dataclass
 class PageConfig:
     """Extraction rules for one page (fixtures list, a preview page, or
     the odds listing)."""
@@ -44,6 +60,7 @@ class PageConfig:
     list_item_selector: str | None = None  # CSS: one match per list entry
     json_list_path: str | None = None  # JMESPath: resolves to a list of items
     fields: list[ExtractRule] = field(default_factory=list)
+    array_markets: list[ArrayMarketRule] = field(default_factory=list)
     embedded_json_hints: list[str] = field(default_factory=list)
     market_aliases: dict[str, str] = field(default_factory=dict)
     wait_selector: str | None = None
@@ -98,6 +115,7 @@ def _page_config(raw: dict | None) -> PageConfig:
         list_item_selector=raw.get("list_item_selector"),
         json_list_path=raw.get("json_list_path"),
         fields=[ExtractRule(**item) for item in (raw.get("fields") or [])],
+        array_markets=[ArrayMarketRule(**item) for item in (raw.get("array_markets") or [])],
         embedded_json_hints=raw.get("embedded_json_hints", []) or [],
         market_aliases=raw.get("market_aliases", {}) or {},
         wait_selector=raw.get("wait_selector"),

@@ -125,9 +125,11 @@ xgscore:
     # (normalize_probabilities() below divides by 100 automatically).
     #
     # STILL TO DO: "cs" (correct score) is often null for a not-yet-
-    # played game with few tracked bookmaker odds -- same call as on the
-    # Betclic side, left uncalibrated for now (1X2 + BTTS + O/U 2.5 is
-    # what we compare against Betclic's odds either way).
+    # played game with few tracked bookmaker odds -- left uncalibrated
+    # for now (its rows are scorelines like "2-1", not numeric lines, but
+    # the exact same array_markets mechanism below would cover it too,
+    # e.g. market_template: "correct_score", outcome_template: "{label}",
+    # once a populated real example confirms it's shaped the same way).
     fields:
       - key: prob_home_win
         json_path: "r[?[0]=='1'] | [0][1]"
@@ -139,10 +141,6 @@ xgscore:
         json_path: "bts[?[0]=='yes'] | [0][1]"
       - key: prob_btts_no
         json_path: "bts[?[0]=='no'] | [0][1]"
-      - key: prob_over_2_5
-        json_path: "tm[?[0]=='2.5'] | [0][1]"
-      - key: prob_under_2_5
-        json_path: "tl[?[0]=='2.5'] | [0][1]"
 
     # Maps each raw `key` above to "<canonical_market>.<outcome>" (see
     # src/tipsxgs/markets.py for the full vocabulary + PT labels used in
@@ -153,8 +151,55 @@ xgscore:
       prob_away_win: "1x2.away"
       prob_btts_yes: "btts.yes"
       prob_btts_no: "btts.no"
-      prob_over_2_5: "over_under_2.5.over"
-      prob_under_2_5: "over_under_2.5.under"
+
+    # CALIBRATED (2026-09-12): every *other* market xGScore's metadata
+    # object carries, all confirmed against a real populated example
+    # (Union Berlin - Schalke) -- each is a whole array of
+    # `[line_or_selection, chance_percent, ...]` rows, one row per
+    # outcome, expanded in one go via markets.expand_array_market()
+    # instead of one `fields` entry per line (over/under alone has 11
+    # lines per team per direction -- 44+ entries just for that).
+    #
+    # - tm/tl: total match goals over/under, *every* line (0.5 .. 5.5+)
+    #   -> canonical "over_under_<line>.over"/".under" (same taxonomy the
+    #   2.5-only version used before -- this just covers every line now).
+    # - itm1/itl1: the HOME team's own total goals over/under
+    #   -> "home_total_<line>.over"/".under" (new markets).
+    # - itm2/itl2: the AWAY team's own total goals over/under
+    #   -> "away_total_<line>.over"/".under" (new markets).
+    # - h1/h2: Asian handicap coverage chance, home/away
+    #   -> "handicap_home"/"handicap_away", one outcome per line (e.g.
+    #   "-1.5", "0", "1"): the *probability that team covers that line*.
+    # - dc: double chance (already-known outcome labels "1x"/"12"/"x2"
+    #   match markets.OUTCOME_LABELS directly) -> "double_chance.<label>".
+    array_markets:
+      - json_path: "tm"
+        market_template: "over_under_{label}"
+        outcome_template: "over"
+      - json_path: "tl"
+        market_template: "over_under_{label}"
+        outcome_template: "under"
+      - json_path: "itm1"
+        market_template: "home_total_{label}"
+        outcome_template: "over"
+      - json_path: "itl1"
+        market_template: "home_total_{label}"
+        outcome_template: "under"
+      - json_path: "itm2"
+        market_template: "away_total_{label}"
+        outcome_template: "over"
+      - json_path: "itl2"
+        market_template: "away_total_{label}"
+        outcome_template: "under"
+      - json_path: "h1"
+        market_template: "handicap_home"
+        outcome_template: "{label}"
+      - json_path: "h2"
+        market_template: "handicap_away"
+        outcome_template: "{label}"
+      - json_path: "dc"
+        market_template: "double_chance"
+        outcome_template: "{label}"
 
 betclic:
   base_url: "https://www.betclic.pt"

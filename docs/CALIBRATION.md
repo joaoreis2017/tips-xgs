@@ -52,6 +52,18 @@ arbitrária, e depois é traduzido para o vocabulário canónico do painel
 `"over_under_2.5.over"`) — ver `src/tipsxgs/markets.py` para a lista
 completa de mercados/labels já conhecidos (podes adicionar mais).
 
+Quando um mercado vem como um **array inteiro** com uma linha por
+resultado (ex.: over/under com uma linha para cada valor de golos, ou um
+handicap com uma linha por valor) — em vez de escreveres um `field` por
+linha, usa `array_markets` (ver `xgscore.preview.array_markets` no
+`config.yaml` já calibrado como exemplo, e `markets.expand_array_market`
+no código): um único `json_path` para o array todo, mais dois "moldes"
+(`market_template`/`outcome_template`) que descrevem como o `label` de
+cada linha se transforma no mercado/resultado canónico, ex.:
+`over_under_{label}` + `over` para golos totais, ou `handicap_home` +
+`{label}` quando é o próprio valor da linha (ex. "-1.5") que é o
+resultado.
+
 - `xgscore.fixtures` — lista de jogos do dia (equipa casa/fora, liga,
   hora, e o link para a página de preview de cada jogo).
 - `xgscore.preview` — os mercados/probabilidades dentro da página de um

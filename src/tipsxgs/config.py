@@ -57,6 +57,15 @@ class PageConfig:
     the odds listing)."""
 
     url: str | None = None
+    # Alternative to `url` for a list page that needs *several* separate
+    # visits merged into one result -- e.g. one specific competition's
+    # page per league, rather than one generic "all football" page whose
+    # infinite-scroll coverage is unpredictable from run to run. When
+    # set, every scraper that supports it visits each URL in turn (same
+    # wait_ms/scroll_count/scroll_pause_ms for all of them) and merges
+    # every page's rows together, same as it already merges rows found
+    # within one page. Takes precedence over `url` where both are set.
+    urls: list[str] = field(default_factory=list)
     list_item_selector: str | None = None  # CSS: one match per list entry
     json_list_path: str | None = None  # JMESPath: resolves to a list of items
     fields: list[ExtractRule] = field(default_factory=list)
@@ -123,6 +132,7 @@ def _page_config(raw: dict | None) -> PageConfig:
     raw = raw or {}
     return PageConfig(
         url=raw.get("url"),
+        urls=list(raw.get("urls") or []),
         list_item_selector=raw.get("list_item_selector"),
         json_list_path=raw.get("json_list_path"),
         fields=[ExtractRule(**item) for item in (raw.get("fields") or [])],

@@ -31,7 +31,13 @@ from ..models import OddsOffer
 logger = logging.getLogger(__name__)
 
 
-def _rows_from_json(page_cfg: PageConfig, blobs: list[dict]) -> list[dict]:
+def _items_from_json(page_cfg: PageConfig, blobs: list[dict], seen_match_ids: set) -> list[dict]:
+    """Collect every item ``page_cfg.json_list_path`` resolves to across
+    *all* of ``blobs``, deduped by ``matchId`` against ``seen_match_ids``
+    (shared across calls when scraping several pages/URLs -- see
+    ``_scrape_list`` -- so an overlapping match found on two different
+    pages/blobs is only kept once).
+    """
     if not page_cfg.json_list_path:
         return []
 
@@ -42,10 +48,8 @@ def _rows_from_json(page_cfg: PageConfig, blobs: list[dict]) -> list[dict]:
     # matches rather than a bigger one. Taking only the first match here
     # silently threw away every page after the first (confirmed live:
     # scrolling changed which matches turned up, but the total count
-    # stayed flat at one page's worth until this fix). Dedup by matchId
-    # where present, since pages can overlap.
+    # stayed flat at one page's worth until this fix).
     items: list[dict] = []
-    seen_match_ids: set = set()
     for blob in blobs:
         try:
             found = jmespath.search(page_cfg.json_list_path, blob)
@@ -64,7 +68,10 @@ def _rows_from_json(page_cfg: PageConfig, blobs: list[dict]) -> list[dict]:
                     continue
                 seen_match_ids.add(match_id)
             items.append(item)
+    return items
 
+
+def _items_to_rows(page_cfg: PageConfig, items: list[dict]) -> list[dict]:
     rows = []
     for item in items:
         row = {}
@@ -89,28 +96,45 @@ def _rows_from_css(page_cfg: PageConfig, html: str) -> list[dict]:
 
 def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
     page_cfg = cfg.betclic.page("fixtures")
-    url = page_cfg.url or cfg.betclic.base_url
-    if not url:
-        raise RuntimeError("betclic.fixtures.url (or betclic.base_url) is not set in config.yaml")
+    # `urls` (several competition-specific pages -- more reliable than one
+    # generic "all football" page's unpredictable infinite-scroll
+    # coverage) takes precedence over the single `url` fallback.
+    urls = list(page_cfg.urls) or ([page_cfg.url] if page_cfg.url else [])
+    if not urls and cfg.betclic.base_url:
+        urls = [cfg.betclic.base_url]
+    if not urls:
+        raise RuntimeError("betclic.fixtures.url/urls (or betclic.base_url) is not set in config.yaml")
 
-    html, blobs_captured = session.get_html_and_captured_json(
-        url,
-        wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000,
-        scroll_count=page_cfg.scroll_count,
-        scroll_pause_ms=page_cfg.scroll_pause_ms,
-    )
-    blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
+    seen_match_ids: set = set()
+    all_items: list[dict] = []
+    css_rows: list[dict] = []
+    for url in urls:
+        html, blobs_captured = session.get_html_and_captured_json(
+            url,
+            wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000,
+            scroll_count=page_cfg.scroll_count,
+            scroll_pause_ms=page_cfg.scroll_pause_ms,
+        )
+        blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
 
-    rows = _rows_from_json(page_cfg, blobs)
-    if not rows:
-        rows = _rows_from_css(page_cfg, html)
+        items = _items_from_json(page_cfg, blobs, seen_match_ids)
+        if items:
+            all_items.extend(items)
+        else:
+            css_rows.extend(_rows_from_css(page_cfg, html))
+
+        if len(urls) > 1:
+            with polite_delay(cfg.betclic.request_delay_seconds):
+                pass
+
+    rows = _items_to_rows(page_cfg, all_items) + css_rows
 
     if not rows:
         logger.warning(
             "No matches extracted from %s. config.yaml's betclic.fixtures "
             "section likely needs calibration -- see docs/CALIBRATION.md "
             "and scripts/inspect_site.py.",
-            url,
+            urls,
         )
     return rows
 

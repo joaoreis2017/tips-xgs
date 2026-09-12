@@ -8,6 +8,21 @@ from datetime import datetime, timezone
 from tipsxgs.betclic.odds import _build_match_url, scrape_today_odds
 from tipsxgs.config import load_config
 
+
+def _load_config_single_fixtures_url():
+    """load_config(), but with the repo's real betclic.fixtures.urls (one
+    entry per competition -- 17 as of writing) trimmed down to one dummy
+    URL. Tests below use a FakeSession that ignores the URL it's given
+    and returns the same fixed blob regardless -- without this, every
+    such test would visit all 17 real URLs (each with its own
+    polite_delay sleep), which is both needlessly slow and, for a
+    FakeSession whose behavior depends on call *count*
+    (``TwoStepFakeSession``), outright wrong. Tests that specifically
+    exercise multi-URL merging set their own `.urls` instead."""
+    cfg = load_config()
+    cfg.betclic.page("fixtures").urls = ["https://example.invalid/fixtures"]
+    return cfg
+
 REAL_SHAPE_BLOB = {
     "grpc:1596417301": {
         "response": {
@@ -45,7 +60,7 @@ class FakeSession:
 
 
 def test_scrape_today_odds_against_real_betclic_json_shape():
-    cfg = load_config()  # repo-root config.yaml, calibrated for betclic.fixtures
+    cfg = _load_config_single_fixtures_url()  # repo-root config.yaml, calibrated for betclic.fixtures
     offers = scrape_today_odds(cfg, session=FakeSession())
 
     assert len(offers) == 1
@@ -148,7 +163,7 @@ class MultiKeyFakeSession:
 
 
 def test_scrape_today_odds_merges_live_and_upcoming_matches_from_one_blob():
-    cfg = load_config()
+    cfg = _load_config_single_fixtures_url()
     offers = scrape_today_odds(cfg, session=MultiKeyFakeSession())
 
     # 1 live match (grpc:1596417301) + 2 upcoming Liga Portugal Betclic
@@ -235,10 +250,46 @@ class MultiPageFakeSession:
 
 
 def test_scrape_today_odds_merges_matches_across_scroll_triggered_pages():
-    cfg = load_config()
+    cfg = _load_config_single_fixtures_url()
     offers = scrape_today_odds(cfg, session=MultiPageFakeSession())
 
     assert len(offers) == 2
+    by_teams = {(o.home_team, o.away_team) for o in offers}
+    assert by_teams == {("Aali", "Malkiya"), ("Sevilla", "Valencia")}
+
+
+class MultiUrlFakeSession:
+    """Returns a *different* blob depending on which competition URL was
+    requested -- mirrors betclic.fixtures.urls (one page per league)
+    rather than one page's captured-JSON list."""
+
+    def __init__(self):
+        self.urls_visited: list[str] = []
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        self.urls_visited.append(url)
+        if "premier-league" in url:
+            return "<html></html>", [PAGE_1_BLOB]
+        if "la-liga" in url:
+            return "<html></html>", [PAGE_2_BLOB]
+        return "<html></html>", []
+
+
+def test_scrape_today_odds_visits_every_competition_url_and_merges_results():
+    cfg = load_config()
+    fixtures_page = cfg.betclic.page("fixtures")
+    fixtures_page.urls = [
+        "https://www.betclic.pt/futebol-s1/inglaterra-premier-league-c3",
+        "https://www.betclic.pt/futebol-s1/espanha-la-liga-c7",
+        "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-c5",  # no matches for this one
+    ]
+    cfg.betclic.request_delay_seconds = 0  # skip the real polite_delay sleep in this test
+
+    session = MultiUrlFakeSession()
+    offers = scrape_today_odds(cfg, session=session)
+
+    # Visited every configured URL (not just the first with results).
+    assert len(session.urls_visited) == 3
     by_teams = {(o.home_team, o.away_team) for o in offers}
     assert by_teams == {("Aali", "Malkiya"), ("Sevilla", "Valencia")}
 
@@ -383,7 +434,7 @@ def test_build_match_url_from_betclic_routing_template():
 
 
 def test_scrape_today_odds_reads_btts_and_over_under_from_match_detail_page():
-    cfg = load_config()
+    cfg = _load_config_single_fixtures_url()
     session = TwoStepFakeSession()
     offers = scrape_today_odds(cfg, session=session)
 

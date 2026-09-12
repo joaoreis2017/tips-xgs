@@ -241,22 +241,62 @@ betclic:
     # correct-score odds need a visit to each match's own page -- see
     # betclic.odds below.
     #
-    # KNOWN ISSUE (2026-09-11 live runs): only ever exactly 20 odds
-    # offers came back -- twice, at wait_ms 2000 *and* 8000 (4x longer),
-    # same 20. That rules out "not enough time": this page evidently
-    # renders one fixed initial batch (minor leagues only in both runs --
-    # Poland, Turkey, Serbia, Bahrain, ... -- never the bigger ones like
-    # Bundesliga/La Liga/Ligue 1 that xGScore's fixtures included) and
-    # needs an infinite-scroll trigger to load more, which no amount of
-    # waiting can substitute for. scroll_count below scrolls to the
-    # bottom that many times (pausing scroll_pause_ms after each) to
-    # trigger the SPA's lazy-loading of further leagues/games -- tune the
-    # count up if coverage is still low, or down if it's wastefully slow
-    # once it's covering enough.
-    url: "https://www.betclic.pt/futebol-sfootball"
-    wait_ms: 8000
-    scroll_count: 15
-    scroll_pause_ms: 800
+    # SUPERSEDED APPROACH (2026-09-11): originally one generic "all
+    # football" page (url: "https://www.betclic.pt/futebol-sfootball")
+    # plus scroll_count to trigger its infinite-scroll lazy-loading.
+    # Confirmed unreliable across three separate live runs: coverage
+    # stayed flat at exactly 20 offers regardless of wait_ms (2000 vs
+    # 8000 -- ruling out "not enough time"), then jumped around
+    # unpredictably once scrolling was added (4/9 fixtures matched one
+    # run, then 0/49 the next, both times covering a essentially random
+    # assortment of leagues -- e.g. Korean K-League, Australian NPL, never
+    # the bigger ones xGScore's fixtures actually needed that day). A
+    # single scrolling page's coverage is apparently order-of-loading
+    # dependent and not something a fixed wait/scroll count can pin down.
+    #
+    # CALIBRATED (2026-09-12): `urls` instead -- one visit per specific
+    # competition page (same routing template confirmed for match pages
+    # in betclic.odds/_build_match_url:
+    # "/{sportName}-s{sportId}/{competitionName}-c{competitionId}"), each
+    # merged into one result the same way multiple grpc keys/scroll pages
+    # already were (see _scrape_list in src/tipsxgs/betclic/odds.py). Far
+    # more reliable than hoping a scroll loads the right leagues: every
+    # competition below is *guaranteed* covered every run, independent of
+    # how many others load first. competitionId values are Betclic's own
+    # (confirmed from its competition-nav payload, grpc:2666540474 in an
+    # earlier inspection) -- add more leagues here as needed; a slightly
+    # wrong slug in the URL still works since Betclic 301s to the real
+    # one as long as the "-c<id>" suffix is right (confirmed: our
+    # built match-detail URLs redirect successfully the same way).
+    #
+    # STILL TO DO: this is a fixed list of leagues we've seen xGScore
+    # bring up so far in this project's live runs, not a dynamically
+    # derived one -- if a day's dashboard is missing a league xGScore did
+    # have games in, add its Betclic competitionId here.
+    urls:
+      - "https://www.betclic.pt/futebol-s1/inglaterra-premier-league-c3"
+      - "https://www.betclic.pt/futebol-s1/inglaterra-championship-c28"
+      - "https://www.betclic.pt/futebol-s1/espanha-la-liga-c7"
+      - "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-c5"
+      - "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-2-c29"
+      - "https://www.betclic.pt/futebol-s1/franca-ligue-1-c4"
+      - "https://www.betclic.pt/futebol-s1/franca-ligue-2-c19"
+      - "https://www.betclic.pt/futebol-s1/italia-serie-a-c6"
+      - "https://www.betclic.pt/futebol-s1/italia-serie-b-c30"
+      - "https://www.betclic.pt/futebol-s1/paises-baixos-eredivisie-c21"
+      - "https://www.betclic.pt/futebol-s1/liga-portugal-betclic-c32"
+      - "https://www.betclic.pt/futebol-s1/dinamarca-superliga-c88"
+      - "https://www.betclic.pt/futebol-s1/suecia-allsvenskan-c145"
+      - "https://www.betclic.pt/futebol-s1/argentina-primera-c230"
+      - "https://www.betclic.pt/futebol-s1/brasil-serie-a-c187"
+      - "https://www.betclic.pt/futebol-s1/mexico-liga-mx-c432"
+      - "https://www.betclic.pt/futebol-s1/eua-mls-c504"
+    # Each competition page is much lighter than the old generic page --
+    # no scrolling needed, and less time per visit -- but there are many
+    # of them, so this adds up (~17 pages x (wait_ms + a polite delay
+    # between each)). Raise wait_ms if a specific league's page turns out
+    # to need more, lower it if this step ends up slower than needed.
+    wait_ms: 3000
     json_list_path: "*.response.payload.matches[]"
 
     fields:

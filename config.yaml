@@ -15,6 +15,19 @@ min_match_confidence: 80     # fuzzy-match score (0-100) required to pair a fixt
 max_concurrent_previews: 3
 headless: true
 
+# Filter for the dashboard's per-game "acontecimentos por probabilidade"
+# table -- with every xGScore market extracted (every over/under line,
+# every handicap line, ...), that table would otherwise be dozens of rows
+# long and mostly near-certain/near-impossible ones (e.g. "under 5.5
+# goals: 100%") with no Betclic odd to compare against. Only an event
+# clearing *both* thresholds is shown. A game with no matched Betclic
+# offer shows no events here (there's no odd to judge against) -- its
+# raw probabilities are still saved to games.json regardless. Doesn't
+# affect the value-bet ranking (value_bet_threshold above), only this
+# probability-ranked table.
+report_min_probability: 0.5   # xGScore's own probability must be > this (0..1)
+report_min_odd: 1.2           # the matched Betclic odd must be > this
+
 xgscore:
   base_url: "https://xgscore.io"
 

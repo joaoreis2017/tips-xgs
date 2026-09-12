@@ -56,7 +56,14 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
     logger.info("Saved %s", json_path)
 
     logger.info("Rendering dashboard...")
-    html_path = render_dashboard(today, games, cfg.reports_dir, value_bet_threshold=cfg.value_bet_threshold)
+    html_path = render_dashboard(
+        today,
+        games,
+        cfg.reports_dir,
+        value_bet_threshold=cfg.value_bet_threshold,
+        min_probability=cfg.report_min_probability,
+        min_odd=cfg.report_min_odd,
+    )
     render_index(cfg.reports_dir)
     logger.info("Rendered %s", html_path)
 

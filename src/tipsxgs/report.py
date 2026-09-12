@@ -17,9 +17,29 @@ def _fmt_kickoff(dt: datetime | None) -> str | None:
     return dt.strftime("%H:%M") if dt else None
 
 
-def build_context(day: date, games: list[MatchedGame], demo: bool = False) -> dict:
+def build_context(
+    day: date,
+    games: list[MatchedGame],
+    demo: bool = False,
+    min_probability: float = 0.5,
+    min_odd: float = 1.2,
+) -> dict:
     game_ctx = []
     for g in games:
+        # Every xGScore market is extracted now (every over/under line,
+        # every handicap line, ...), so the full events_by_probability
+        # list is dozens of rows long and mostly near-certain/
+        # near-impossible ones with nothing to compare against. Only show
+        # an event that clears *both* thresholds -- a real edge worth a
+        # look, not just "this team probably won't lose by 5". A game
+        # with no matched Betclic offer (every odd is None) shows no
+        # events here by design, since there's no odd to judge against;
+        # its probabilities are still in games.json regardless.
+        events = [
+            e
+            for e in g.events_by_probability
+            if e.probability > min_probability and e.odd is not None and e.odd > min_odd
+        ]
         game_ctx.append(
             {
                 "slug": g.fixture.slug,
@@ -29,7 +49,7 @@ def build_context(day: date, games: list[MatchedGame], demo: bool = False) -> di
                 "kickoff": _fmt_kickoff(g.fixture.kickoff),
                 "preview_url": g.fixture.preview_url,
                 "match_confidence": g.match_confidence,
-                "events": g.events_by_probability,
+                "events": events,
                 "value_bets": g.value_bets_ranked,
             }
         )
@@ -56,13 +76,23 @@ def build_context(day: date, games: list[MatchedGame], demo: bool = False) -> di
     }
 
 
-def render_dashboard(day: date, games: list[MatchedGame], reports_dir: Path, value_bet_threshold: float = 1.0, demo: bool = False) -> Path:
+def render_dashboard(
+    day: date,
+    games: list[MatchedGame],
+    reports_dir: Path,
+    value_bet_threshold: float = 1.0,
+    demo: bool = False,
+    min_probability: float = 0.5,
+    min_odd: float = 1.2,
+) -> Path:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
         autoescape=select_autoescape(["html"]),
     )
     template = env.get_template("dashboard.html.j2")
-    html = template.render(**build_context(day, games, demo=demo))
+    html = template.render(
+        **build_context(day, games, demo=demo, min_probability=min_probability, min_odd=min_odd)
+    )
 
     day_dir = reports_dir / day.isoformat()
     day_dir.mkdir(parents=True, exist_ok=True)

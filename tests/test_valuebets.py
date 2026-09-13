@@ -3,27 +3,25 @@ from datetime import datetime
 import pytest
 
 from tipsxgs.models import Fixture, MatchedGame, OddsOffer, Prediction
-from tipsxgs.valuebets import compute_value_bets, top_value_bets_today
+from tipsxgs.valuebets import compute_value_bets, top_probability_bets_today, top_value_bets_today
 
 
-def make_game(markets_prob, markets_odds):
+def make_game(markets_prob, markets_odds, slug="union-berlin-schalke", home="Union Berlin", away="Schalke"):
     fixture = Fixture(
-        slug="union-berlin-schalke",
+        slug=slug,
         league="bundesliga",
-        home_team="Union Berlin",
-        away_team="Schalke",
+        home_team=home,
+        away_team=away,
         kickoff=datetime(2026, 9, 11, 18, 0),
-        preview_url="https://xgscore.io/bundesliga/union-berlin-schalke/preview",
+        preview_url=f"https://xgscore.io/bundesliga/{slug}/preview",
     )
     prediction = Prediction(fixture_id=fixture.id, markets=markets_prob)
-    odds = OddsOffer(
-        bookmaker="betclic",
-        home_team="Union Berlin",
-        away_team="Schalke",
-        kickoff=fixture.kickoff,
-        markets=markets_odds,
+    odds = (
+        OddsOffer(bookmaker="betclic", home_team=home, away_team=away, kickoff=fixture.kickoff, markets=markets_odds)
+        if markets_odds is not None
+        else None
     )
-    return MatchedGame(fixture=fixture, prediction=prediction, odds=odds, match_confidence=100.0)
+    return MatchedGame(fixture=fixture, prediction=prediction, odds=odds, match_confidence=100.0 if odds else None)
 
 
 def test_value_ratio_matches_user_example():
@@ -98,3 +96,55 @@ def test_top_value_bets_today_sorts_across_games():
     game, entry = top[0]
     assert game is strong
     assert entry.outcome == "home"
+
+
+def test_top_probability_bets_today_includes_games_with_no_betclic_offer():
+    # Unlike top_value_bets_today, this doesn't require a matched odd at
+    # all -- a game with none (odds=None, e.g. no Betclic pairing) still
+    # shows up here as long as its probability clears the threshold.
+    with_odds = make_game(
+        {"1x2": {"home": 0.55, "draw": 0.25, "away": 0.2}},
+        {"1x2": {"home": 1.8, "draw": 3.5, "away": 4.0}},
+        slug="with-odds",
+        home="Team A",
+        away="Team B",
+    )
+    no_offer = make_game(
+        {"1x2": {"home": 0.9, "draw": 0.07, "away": 0.03}},
+        None,
+        slug="no-offer",
+        home="Team C",
+        away="Team D",
+    )
+    compute_value_bets(with_odds)
+    compute_value_bets(no_offer)
+
+    top = top_probability_bets_today([with_odds, no_offer], min_probability=0.5)
+    by_game = {g.fixture.slug: e for g, e in top}
+
+    assert "no-offer" in by_game
+    assert by_game["no-offer"].odd is None
+    assert by_game["no-offer"].value_ratio is None
+    assert by_game["no-offer"].probability == pytest.approx(0.9)
+
+    assert "with-odds" in by_game
+    assert by_game["with-odds"].odd == pytest.approx(1.8)
+
+    # Highest probability first, regardless of odds availability.
+    assert list(by_game.values())[0].probability == pytest.approx(0.9)
+
+
+def test_top_probability_bets_today_respects_threshold_and_limit():
+    game = make_game(
+        {"1x2": {"home": 0.7, "draw": 0.2, "away": 0.1}},
+        {"1x2": {"home": 2.0, "draw": 4.0, "away": 8.0}},
+    )
+    compute_value_bets(game)
+
+    # draw (0.2) and away (0.1) fall below a 0.5 threshold.
+    top = top_probability_bets_today([game], min_probability=0.5)
+    assert [e.outcome for _, e in top] == ["home"]
+
+    # limit caps the result even when more entries clear the threshold.
+    top_all = top_probability_bets_today([game], min_probability=0.0, limit=2)
+    assert len(top_all) == 2

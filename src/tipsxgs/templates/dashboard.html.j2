@@ -92,6 +92,35 @@
   {% endif %}
 </div>
 
+<div class="panel">
+  <h2>🎯 Melhores probabilidades do xGScore (&gt;{{ "%.0f"|format(min_probability * 100) }}%)</h2>
+  <p class="subtitle" style="margin:-6px 0 12px;">Todos os jogos com previsão, mesmo sem odds Betclic emparelhadas — odd/valor aparecem a "—" quando não há odd para comparar.</p>
+  {% if top_probability_bets %}
+  <table>
+    <thead><tr>
+      <th>Jogo</th><th>Mercado</th><th class="num">Prob.</th><th class="num">Odd</th><th class="num">Valor</th>
+    </tr></thead>
+    <tbody>
+    {% for row in top_probability_bets %}
+      <tr>
+        <td><a href="#game-{{ row.game_slug }}">{{ row.game_label }}</a></td>
+        <td>{{ row.label }}</td>
+        <td class="num">{{ "%.0f"|format(row.probability * 100) }}%</td>
+        <td class="num">{{ "%.2f"|format(row.odd) if row.odd else "—" }}</td>
+        <td class="num">
+          {% if row.value_ratio %}
+            <span class="pill {{ 'value-pill' if row.value_ratio > 1.0 else '' }}">{{ "%.2f"|format(row.value_ratio) }}×</span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">Sem acontecimentos acima deste limite de probabilidade (ver docs/CALIBRATION.md).</p>
+  {% endif %}
+</div>
+
 {% for game in games %}
 <details id="game-{{ game.slug }}" {% if loop.index <= 3 %}open{% endif %}>
   <summary>

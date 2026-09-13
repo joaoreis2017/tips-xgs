@@ -86,7 +86,12 @@ def compute_all(games: list[MatchedGame], value_bet_threshold: float = 1.0) -> l
 
 def top_value_bets_today(games: list[MatchedGame], limit: int = 15) -> list[tuple[MatchedGame, ValueBetEntry]]:
     """Flatten every game's value bets into one list sorted by
-    ``value_ratio`` descending -- the "top opportunities today" view."""
+    ``value_ratio`` descending -- the "top opportunities today" view.
+
+    Requires a matched Betclic odd (``is_value_bet`` implies one), so a
+    game with no paired offer never shows up here -- see
+    ``top_probability_bets_today`` for the odds-optional counterpart.
+    """
     pairs = [
         (game, entry)
         for game in games
@@ -94,4 +99,26 @@ def top_value_bets_today(games: list[MatchedGame], limit: int = 15) -> list[tupl
         if entry.is_value_bet
     ]
     pairs.sort(key=lambda p: p[1].value_ratio, reverse=True)
+    return pairs[:limit]
+
+
+def top_probability_bets_today(
+    games: list[MatchedGame], min_probability: float = 0.5, limit: int = 30
+) -> list[tuple[MatchedGame, ValueBetEntry]]:
+    """Flatten every game's events into one list of model-probability
+    "high confidence" picks, sorted by probability descending.
+
+    Unlike ``top_value_bets_today``, this does *not* require a matched
+    Betclic odd at all -- a game xGScore has predictions for shows up
+    here even with no Betclic offer paired (odd/value just come back
+    ``None`` for those entries), covering every game rather than only
+    the ones with odds to compare against.
+    """
+    pairs = [
+        (game, entry)
+        for game in games
+        for entry in game.value_bets
+        if entry.probability > min_probability
+    ]
+    pairs.sort(key=lambda p: p[1].probability, reverse=True)
     return pairs[:limit]

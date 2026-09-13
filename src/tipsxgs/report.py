@@ -8,7 +8,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .models import MatchedGame
-from .valuebets import top_value_bets_today
+from .valuebets import top_probability_bets_today, top_value_bets_today
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 
@@ -76,11 +76,29 @@ def build_context(
         for g, entry in top
     ]
 
+    # Odds-optional counterpart to top_value_bets_today above: every game
+    # xGScore has predictions for, not only the ones paired with a
+    # Betclic offer -- odd/value_ratio just come back None for a game
+    # with no matched odds, rendered as "—" in the template.
+    top_probability = top_probability_bets_today(games, min_probability=min_probability, limit=30)
+    top_probability_ctx = [
+        {
+            "game_slug": g.fixture.slug,
+            "game_label": g.fixture.label,
+            "label": entry.label,
+            "probability": entry.probability,
+            "odd": entry.odd,
+            "value_ratio": entry.value_ratio,
+        }
+        for g, entry in top_probability
+    ]
+
     return {
         "date_str": day.isoformat(),
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "games": game_ctx,
         "top_value_bets": top_ctx,
+        "top_probability_bets": top_probability_ctx,
         "demo": demo,
         "min_probability": min_probability,
         "min_odd": min_odd,

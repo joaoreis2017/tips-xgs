@@ -10,23 +10,31 @@ and an odd threshold.
 
 from datetime import date
 
+import pytest
+
 from tipsxgs.models import Fixture, MatchedGame, OddsOffer, Prediction
 from tipsxgs.report import build_context
 from tipsxgs.valuebets import compute_value_bets
 
 
-def _game(markets: dict, odds_markets: dict | None) -> MatchedGame:
+def _game(
+    markets: dict,
+    odds_markets: dict | None,
+    slug: str = "home-away",
+    home: str = "Lazio",
+    away: str = "Milan",
+) -> MatchedGame:
     fixture = Fixture(
-        slug="home-away",
+        slug=slug,
         league="serie-a",
-        home_team="Lazio",
-        away_team="Milan",
+        home_team=home,
+        away_team=away,
         kickoff=None,
-        preview_url="https://xgscore.io/serie-a/home-away/preview",
+        preview_url=f"https://xgscore.io/serie-a/{slug}/preview",
     )
     prediction = Prediction(fixture_id=fixture.id, markets=markets)
     odds = (
-        OddsOffer(bookmaker="betclic", home_team="Lazio", away_team="Milan", kickoff=None, markets=odds_markets)
+        OddsOffer(bookmaker="betclic", home_team=home, away_team=away, kickoff=None, markets=odds_markets)
         if odds_markets is not None
         else None
     )
@@ -97,3 +105,31 @@ def test_has_predictions_distinguishes_genuinely_empty_from_filtered_out():
     assert ctx["games"][0]["events"] == []
     assert ctx["games"][1]["has_predictions"] is False
     assert ctx["games"][1]["events"] == []
+
+
+def test_top_probability_bets_covers_games_without_a_betclic_offer():
+    # Requested explicitly: a cross-game "high probability" list that,
+    # unlike top_value_bets, covers *every* game with a prediction --
+    # including one with no matched Betclic offer at all.
+    no_offer = _game(
+        markets={"1x2": {"home": 0.9}}, odds_markets=None, slug="no-offer", home="Team C", away="Team D"
+    )
+    with_offer = _game(
+        markets={"1x2": {"home": 0.55}},
+        odds_markets={"1x2": {"home": 1.8}},
+        slug="with-offer",
+        home="Team A",
+        away="Team B",
+    )
+
+    ctx = build_context(date(2026, 9, 12), [no_offer, with_offer], min_probability=0.5)
+    rows = ctx["top_probability_bets"]
+
+    by_slug = {r["game_slug"]: r for r in rows}
+    assert "no-offer" in by_slug
+    assert by_slug["no-offer"]["odd"] is None
+    assert by_slug["no-offer"]["value_ratio"] is None
+    assert "with-offer" in by_slug
+    assert by_slug["with-offer"]["odd"] == pytest.approx(1.8)
+    # Highest probability first.
+    assert rows[0]["game_slug"] == "no-offer"

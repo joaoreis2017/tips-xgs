@@ -28,23 +28,17 @@ def build_context(
     for g in games:
         # Every xGScore market is extracted now (every over/under line,
         # every handicap line, ...), so the full events_by_probability
-        # list is dozens of rows long -- explicitly requested: show every
-        # one clearing min_probability, odd or no odd (odd/valor render
-        # as "—" in the template when there's none, same as the
-        # cross-game "top probability" list below). `betclic_markets`
-        # still drops an odd-less entry whose market Betclic has *no*
-        # extraction rule for at all (handicap, per-team totals, ...) --
-        # those are near-certain (100%) trivial lines that can never get
-        # a real odd no matter what, so without this filter they'd flood
-        # every game's table; an odd-less entry for a market Betclic
-        # *is* calibrated for (1x2/btts/over_under_2.5, just not matched
-        # for this game) still shows up.
-        events = [
-            e
-            for e in g.events_by_probability
-            if e.probability > min_probability
-            and (e.odd is not None or betclic_markets is None or e.market in betclic_markets)
-        ]
+        # list is dozens of rows long -- explicitly requested (twice: once
+        # to drop the odd requirement, once more to also stop dropping
+        # markets Betclic doesn't cover) to show *every single one*
+        # clearing min_probability, odd or no odd, coverable by Betclic
+        # or not. Unlike the cross-game "top probability" list below,
+        # betclic_markets does NOT apply here -- per-game, this table is
+        # meant to be the complete picture of what xGScore itself thinks
+        # about this one match, not just the actionable-against-Betclic
+        # slice of it. odd/valor simply render as "—" for a market
+        # Betclic doesn't offer at all, or hasn't been matched yet.
+        events = [e for e in g.events_by_probability if e.probability > min_probability]
         # Distinct from "events is empty" below: this says whether
         # scraping actually got *any* xGScore probabilities for this game
         # at all, regardless of the min_probability filter above -- an

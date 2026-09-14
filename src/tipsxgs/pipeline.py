@@ -18,6 +18,20 @@ from .xgscore.preview import scrape_previews
 logger = logging.getLogger(__name__)
 
 
+def _count_with_data(predictions: dict) -> int:
+    """How many of ``scrape_previews``'s results actually got real
+    market data, as opposed to an empty ``Prediction`` returned because
+    that page's extraction found nothing (see
+    ``xgscore.preview.scrape_preview`` -- it returns an empty Prediction
+    rather than raising, so one bad page doesn't abort the whole run).
+    ``len(predictions)`` alone can't tell these apart -- a real run once
+    logged "Scraped 15/15 previews successfully" while 12 of those 15
+    had individually logged "No preview data extracted" warnings just
+    above it, which is what this now feeds into a less misleading count.
+    """
+    return sum(1 for p in predictions.values() if p.markets)
+
+
 def _betclic_coverable_markets(cfg: AppConfig) -> set[str]:
     """The set of canonical markets Betclic's own ``market_aliases``
     (across both the fixtures listing's inline odds and the match-detail
@@ -51,7 +65,21 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
 
     logger.info("Scraping xGScore previews (probabilities) for each fixture...")
     predictions = scrape_previews(cfg, fixtures)
-    logger.info("Scraped %d/%d previews successfully", len(predictions), len(fixtures))
+    # len(predictions) alone doesn't mean "got real data" -- scrape_preview
+    # returns an *empty* Prediction (not an exception) for a page whose
+    # extraction found nothing, so this counts non-empty ones specifically
+    # rather than repeat the same "successfully" claim the per-page "No
+    # preview data extracted" warnings above already contradict.
+    with_data = _count_with_data(predictions)
+    logger.info("Scraped %d/%d previews with real data", with_data, len(fixtures))
+    if with_data < len(fixtures):
+        logger.warning(
+            "%d/%d fixture(s) got no xGScore preview data at all -- see the "
+            "'No preview data extracted' warning(s) above for which ones; "
+            "config.yaml's xgscore.preview.wait_ms may need raising further.",
+            len(fixtures) - with_data,
+            len(fixtures),
+        )
 
     logger.info("Scraping Betclic odds...")
     odds_offers = scrape_today_odds(cfg, day=today)

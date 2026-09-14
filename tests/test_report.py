@@ -1,6 +1,6 @@
 """Regression tests for the dashboard's "events by probability" filter.
 
-Prompted by two real, sequential bug reports:
+Prompted by three real, sequential bug reports:
 
 1. With every xGScore market extracted (every over/under line, every
    handicap line, ...), a game's full event list was dozens of rows of
@@ -9,11 +9,15 @@ Prompted by two real, sequential bug reports:
 2. Explicitly requested afterwards: show *every* event clearing that
    probability threshold, odd or no odd (a previous version additionally
    required a matched Betclic odd above a second threshold, which this
-   request reverses) -- an odd-less entry still only shows up when its
-   market is one Betclic could ever plausibly offer (see
-   ``betclic_markets`` / ``pipeline._betclic_coverable_markets``),
-   otherwise permanently-uncoverable markets (handicap, per-team totals)
-   would flood the table at ~100% probability with nothing to show.
+   request reverses).
+3. Explicitly requested once more, after an intermediate version also
+   dropped odd-less entries for markets Betclic has no extraction rule
+   for at all (handicap, per-team totals): per game, this table is
+   meant to be the *complete* picture of what xGScore thinks about that
+   one match, Betclic-coverable or not -- unlike the cross-game "top
+   probability" list (see ``betclic_markets`` / test_valuebets.py),
+   which *does* still drop those to avoid flooding a list spanning many
+   games with the same permanently-odd-less pattern repeated for each.
 """
 
 from datetime import date
@@ -75,12 +79,15 @@ def test_events_only_require_the_probability_threshold():
     assert btts_event.odd is None
 
 
-def test_events_drop_odd_less_entries_for_uncoverable_markets_only():
-    # A market Betclic has *no* extraction rule for at all (e.g.
-    # handicap) can never carry a real odd -- betclic_markets, when
-    # given, drops those odd-less entries so they don't flood the table
-    # at ~100% probability. An odd-less entry for a market Betclic *is*
-    # calibrated for (btts here) still shows up either way.
+def test_events_ignore_betclic_markets_unlike_the_cross_game_list():
+    # Real screenshot bug report: a per-game table showing only 3 events
+    # when xGScore had "muitas mais" (many more) above 50% probability --
+    # caused by an intermediate version applying the SAME
+    # betclic_markets filter here as the cross-game "top probability"
+    # list uses. Per game, betclic_markets must NOT drop anything --
+    # handicap_home (not in betclic_markets, and odd-less) still shows
+    # up, since this table is meant to be xGScore's complete picture of
+    # this one match, not just the Betclic-actionable slice.
     game = _game(
         markets={
             "1x2": {"home": 0.55},
@@ -91,11 +98,7 @@ def test_events_drop_odd_less_entries_for_uncoverable_markets_only():
     )
 
     ctx = build_context(date(2026, 9, 12), [game], min_probability=0.5, betclic_markets={"1x2", "btts"})
-    assert {e.market for e in ctx["games"][0]["events"]} == {"1x2", "btts"}
-
-    # Without betclic_markets (the default), nothing is dropped.
-    ctx_unfiltered = build_context(date(2026, 9, 12), [game], min_probability=0.5)
-    assert {e.market for e in ctx_unfiltered["games"][0]["events"]} == {"1x2", "btts", "handicap_home"}
+    assert {e.market for e in ctx["games"][0]["events"]} == {"1x2", "btts", "handicap_home"}
 
 
 def test_events_show_even_with_no_betclic_offer_matched():

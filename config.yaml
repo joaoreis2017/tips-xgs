@@ -104,7 +104,17 @@ xgscore:
     # metadata object we actually want, ...) -- given that page needed
     # more than the 2000ms default on at least one real run, give this
     # one some headroom too rather than wait to see it fail the same way.
-    wait_ms: 4000
+    #
+    # RAISED 4000 -> 6000 (2026-09-14): a live run got real data for only
+    # 3/15 preview pages -- the other 12 logged "No preview data
+    # extracted" (misleadingly still counted as "successful" by
+    # pipeline.py's old logging, since it only checked for an exception,
+    # not for actual data -- also fixed). Exactly the same symptom
+    # xgscore.fixtures had at 2000ms, fixed the same way there by raising
+    # wait_ms to 6000 -- speculative until confirmed against a real run,
+    # since this sandbox has no network access to verify it directly.
+    # Raise further still if a run still comes back mostly empty.
+    wait_ms: 6000
 
     # CALIBRATED (2026-09-11), from inspecting the Union Berlin - Schalke
     # preview page: it fires a LOT of captured JSON responses (team form,

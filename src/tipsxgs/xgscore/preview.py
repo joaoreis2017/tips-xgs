@@ -28,6 +28,45 @@ from ..models import Fixture, Prediction
 logger = logging.getLogger(__name__)
 
 
+def _unwrap_transfer_state_metadata(blobs: list[dict]) -> list[dict]:
+    """xGScore's own game-preview page is an Angular (server-rendered)
+    app that caches every XHR response it already made during
+    server-side rendering inside one big "TransferState" object embedded
+    in the page -- keyed by opaque hashes, each value shaped like
+    ``{"b": <the real response body>, "h": ..., "s": 200, "u": "https://
+    api.xgscore.io/forecast-odds/public?gameId=...", ...}`` -- rather
+    than firing that request again once the client hydrates. Confirmed
+    real (2026-09-14): a match (Como - Parma) whose own preview page
+    logged "No preview data extracted" nonetheless had the *exact* real
+    metadata object (r/dc/bts/tm/tl/h1/h2/..., ``metadataId`` included)
+    sitting right there, just wrapped this way -- BrowserSession's
+    network capture only sees a bare, already-unwrapped copy of that
+    same object when the client happens to *also* re-fetch it live
+    (which Angular's hydration is specifically designed to skip when it
+    already has the SSR'd copy), so relying on that alone silently
+    missed most matches.
+
+    Rather than rewriting every one of config.yaml's xgscore.preview
+    ``fields``/``array_markets`` json_path rules (which all assume a
+    bare ``{"r": ..., "metadataId": ...}`` blob -- the shape confirmed
+    when it *does* get captured as its own XHR) to also parse through
+    this wrapper, this unwraps it once up front and appends every inner
+    object it finds (identified by carrying a ``metadataId`` key, same
+    marker the original calibration used) as an *additional* blob --
+    the exact same json_path rules then match it too, whichever shape
+    actually showed up for a given page.
+    """
+    extra = []
+    for blob in blobs:
+        if not isinstance(blob, dict):
+            continue
+        for value in blob.values():
+            inner = value.get("b") if isinstance(value, dict) else None
+            if isinstance(inner, dict) and "metadataId" in inner:
+                extra.append(inner)
+    return blobs + extra
+
+
 def scrape_preview(cfg: AppConfig, fixture: Fixture, session: BrowserSession | None = None) -> Prediction:
     """Fetch and parse ``fixture.preview_url`` into a :class:`Prediction`.
 
@@ -46,6 +85,7 @@ def scrape_preview(cfg: AppConfig, fixture: Fixture, session: BrowserSession | N
             fixture.preview_url, wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000
         )
         blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
+        blobs = _unwrap_transfer_state_metadata(blobs)
 
         raw: dict = {}
         for rule in page_cfg.fields:

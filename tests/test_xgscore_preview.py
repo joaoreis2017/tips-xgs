@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 
 from tipsxgs.config import load_config
 from tipsxgs.models import Fixture
-from tipsxgs.xgscore.preview import scrape_preview
+from tipsxgs.xgscore.preview import _unwrap_transfer_state_metadata, scrape_preview
 
 GEO_BLOB = {"geo": "PT"}
 
@@ -131,4 +131,92 @@ def test_scrape_preview_against_real_xgscore_json_shape():
         "away_total_4": {"over": 0.008, "under": 0.992},
         "handicap_home": {"-2.5": 0.158, "0": 0.715, "1.5": 0.911},
         "handicap_away": {"-1.5": 0.089, "0": 0.285, "2.5": 0.842},
+    }
+
+
+# REAL bug found 2026-09-14 from a live run: Como - Parma's own preview
+# page logged "No preview data extracted" despite xGScore having fully
+# computed real probabilities for it -- because on that page, the
+# metadata object was never re-fetched client-side (only present inside
+# Angular's server-rendered "TransferState" cache, embedded in the page
+# as one big object keyed by opaque hashes). Trimmed real shape
+# confirmed from that page's own embedded JSON.
+REAL_TRANSFER_STATE_BLOB = {
+    "seo:ssr-rendered": True,
+    # A decoy hash key holding some *other* endpoint's response (team
+    # standings) -- same wrapper shape, but its own "b" has no
+    # "metadataId", so _unwrap_transfer_state_metadata must skip it.
+    "42face753f028920a8c4b42cfaa5ac5bdfb743a2bcdd3503aff7079f15f77dab": {
+        "b": [{"id": "0aa35052", "place": 16, "team": {"name": "Parma"}}],
+        "h": {},
+        "s": 200,
+        "st": "OK",
+        "u": "https://api.xgscore.io/team-stats/current",
+        "rt": "json",
+    },
+    # The real thing, wrapped: same "forecast-odds" endpoint URL and
+    # exact metadata shape as METADATA_BLOB above, just nested under
+    # "b" inside this hash-keyed TransferState entry instead of being
+    # its own top-level captured blob.
+    "6c36d2abb881f40c4fe3ca89fc5473e9ffe06740c5fc8d59c49be10d681e1213": {
+        "b": {
+            "id": "bd757a1c-7f96-471f-b086-58bbcc90de91",
+            "r": [["1", 68.8, -11, 2.1], ["x", 22.3, 7, 2.1], ["2", 8.9, 2.5, 1]],
+            "dc": [["1x", 91.1, -6.3, 1], ["12", 77.7, -9.5, 2.1], ["x2", 31.2, 8.4, 2.1]],
+            "bts": [["yes", 38.1, -3.7, 7.3], ["no", 61.9, -3.8, 7.3]],
+            "tm": [["2.5", 43.2, -13.9, 9.2]],
+            "tl": [["2.5", 56.8, 12.4, 9.2]],
+            "cs": None,
+            "gameId": "ab0be1ab-a5f7-4485-be1f-9e4df2a5f64a",
+            "metadataId": "406c7fd8-87a0-4ddc-b78f-64884fc608c4",
+        },
+        "h": {},
+        "s": 200,
+        "st": "OK",
+        "u": "https://api.xgscore.io/forecast-odds/public?gameId=ab0be1ab-a5f7-4485-be1f-9e4df2a5f64a",
+        "rt": "json",
+    },
+    "__nghData__": [{"t": {"7": "t2"}, "c": {"7": []}}],
+}
+
+
+def test_unwrap_transfer_state_metadata_finds_the_wrapped_forecast_odds_object():
+    unwrapped = _unwrap_transfer_state_metadata([REAL_TRANSFER_STATE_BLOB])
+    # Original blob kept, plus exactly one new one -- the decoy
+    # team-stats entry (no metadataId) must not be pulled out too.
+    assert len(unwrapped) == 2
+    assert unwrapped[0] is REAL_TRANSFER_STATE_BLOB
+    assert unwrapped[1]["metadataId"] == "406c7fd8-87a0-4ddc-b78f-64884fc608c4"
+    assert unwrapped[1]["r"][0] == ["1", 68.8, -11, 2.1]
+
+
+class WrappedTransferStateFakeSession:
+    """Como - Parma's real preview page: the ONLY blob is the wrapped
+    TransferState object above -- no separately-captured raw XHR for
+    forecast-odds at all (that's exactly the bug: BrowserSession's own
+    network capture never saw it on this page)."""
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        return "<html></html>", [REAL_TRANSFER_STATE_BLOB]
+
+
+def test_scrape_preview_still_works_when_metadata_only_exists_wrapped_in_transfer_state():
+    cfg = load_config()
+    fixture = Fixture(
+        slug="como-parma",
+        league="serie-a",
+        home_team="Como",
+        away_team="Parma",
+        kickoff=datetime(2026, 9, 14, 18, 45, tzinfo=timezone.utc),
+        preview_url="https://xgscore.io/serie-a/como-parma/preview",
+    )
+
+    prediction = scrape_preview(cfg, fixture, session=WrappedTransferStateFakeSession())
+
+    rounded = {market: {k: round(v, 3) for k, v in outcomes.items()} for market, outcomes in prediction.markets.items()}
+    assert rounded == {
+        "1x2": {"home": 0.688, "draw": 0.223, "away": 0.089},
+        "double_chance": {"1x": 0.911, "12": 0.777, "x2": 0.312},
+        "btts": {"yes": 0.381, "no": 0.619},
+        "over_under_2.5": {"over": 0.432, "under": 0.568},
     }

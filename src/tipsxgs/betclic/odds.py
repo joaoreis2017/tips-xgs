@@ -108,7 +108,14 @@ def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
     seen_match_ids: set = set()
     all_items: list[dict] = []
     css_rows: list[dict] = []
-    for url in urls:
+    for i, url in enumerate(urls, start=1):
+        # One line per competition page -- with 17+ of these visited
+        # sequentially (each with its own wait_ms + polite_delay), a run
+        # can easily take several minutes with *zero* log output between
+        # "Scraping Betclic odds..." and the final count otherwise, which
+        # looks indistinguishable from a genuine hang. This is purely
+        # visibility, no behavior change.
+        logger.info("Visiting Betclic competition page %d/%d: %s", i, len(urls), url)
         html, blobs_captured = session.get_html_and_captured_json(
             url,
             wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000,
@@ -246,13 +253,20 @@ def scrape_today_odds(cfg: AppConfig, session: BrowserSession | None = None) -> 
         session = BrowserSession(headless=cfg.headless, user_agent=cfg.user_agent).__enter__()
     try:
         rows = _scrape_list(cfg, session)
+        logger.info("Betclic listing done -- hopping to each match's detail page for BTTS/over-under...")
         offers = []
-        for row in rows:
+        for i, row in enumerate(rows, start=1):
             parsed = _row_to_offer(cfg, row)
             if not parsed:
                 continue
             offer, match_url = parsed
             if match_url:
+                # Same visibility reasoning as the competition-page loop
+                # above -- one of these per match (up to a few dozen on a
+                # busy day), each with its own wait + polite_delay.
+                logger.info(
+                    "Fetching Betclic match odds %d/%d: %s - %s", i, len(rows), offer.home_team, offer.away_team
+                )
                 with polite_delay(cfg.betclic.request_delay_seconds):
                     try:
                         detail_markets = _scrape_detail_markets(cfg, match_url, session)

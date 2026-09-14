@@ -612,3 +612,101 @@ def test_expand_selection_matrix_markets_skips_names_that_dont_match_the_pattern
     }
     result = _expand_selection_matrix_markets([blob], [_over_under_rule()])
     assert result == {"over_under_2.5": {"over": 1.84}}
+
+
+# CALIBRATED (2026-09-14), from a real match page dump (Inter - Udinese):
+# Betclic offers a *per-team* goals total market too, one for each team,
+# each named "<team> - Total de golos" (the team name is baked into the
+# market's own `name`, unlike the combined "Total de golos -
+# acima/abaixo" market above). This test uses the REAL confirmed
+# config.yaml rules (not a synthetic one like _over_under_rule() above)
+# against a trimmed real shape, to catch a regression in the actual
+# `ends_with(...)` JMESPath expressions themselves.
+INTER_UDINESE_MATCH_DETAIL_BLOB = {
+    "grpc:3757155395": {
+        "response": {
+            "payload": {
+                "match": {
+                    "matchId": "1211848943738880",
+                    "subCategories": [
+                        {
+                            "markets": [
+                                {
+                                    "name": "Total de golos - acima/abaixo",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Acima de 2,5", "odds": 1.35}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Abaixo de 2,5", "odds": 2.52}
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    ],
+                                },
+                                {
+                                    "name": "Inter - Total de golos",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Acima de 1,5", "odds": 1.2}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Abaixo de 1,5", "odds": 3.23}
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    ],
+                                },
+                                {
+                                    "name": "Udinese - Total de golos",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Acima de 0,5", "odds": 1.76}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Abaixo de 0,5", "odds": 1.75}
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    ],
+                                },
+                            ]
+                        }
+                    ],
+                }
+            }
+        }
+    }
+}
+
+
+def test_expand_selection_matrix_markets_covers_home_and_away_team_totals():
+    cfg = load_config()
+    rules = cfg.betclic.page("odds").selection_matrix_markets
+    result = _expand_selection_matrix_markets([INTER_UDINESE_MATCH_DETAIL_BLOB], rules)
+
+    assert result == {
+        "over_under_2.5": {"over": 1.35, "under": 2.52},
+        # Inter (home) listed first among the two per-team markets.
+        "home_total_1.5": {"over": 1.2, "under": 3.23},
+        # Udinese (away) listed second.
+        "away_total_0.5": {"over": 1.76, "under": 1.75},
+    }

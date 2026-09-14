@@ -443,3 +443,37 @@ betclic:
           Acima: over
           Abaixo: under
         market_template: "over_under_{line}"
+
+      # CALIBRATED (2026-09-14), from a real match page dump (Inter -
+      # Udinese): Betclic *does* offer a per-team goals total market,
+      # one for each team -- "Inter - Total de golos" and "Udinese -
+      # Total de golos", each with its own selectionMatrix in the exact
+      # same {name: "Acima de X,Y"/"Abaixo de X,Y", odds} shape as the
+      # combined over/under market above. Since the team name is baked
+      # into the market's own `name` (it isn't a fixed string we can
+      # write into config.yaml -- every match has different teams),
+      # `ends_with(name, ' - Total de golos')` matches *both* of them
+      # generically regardless of which two teams are playing, and
+      # `[0]`/`[1]` picks out which one is which -- home team's market
+      # listed first, matching this same page's `contestants[0]` /
+      # `mainSelections[0]` order (Inter, the home team, always comes
+      # first) everywhere else on the page. Unverified for the (probably
+      # rare) case where a match's board only has one of the two markets
+      # open -- if home/away totals ever come back swapped, this
+      # ordering assumption is the first thing to check.
+      - json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?ends_with(name, ' - Total de golos')] | [0].selectionMatrix
+        name_pattern: '^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$'
+        direction_map:
+          Acima: over
+          Abaixo: under
+        market_template: "home_total_{line}"
+      - json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?ends_with(name, ' - Total de golos')] | [1].selectionMatrix
+        name_pattern: '^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$'
+        direction_map:
+          Acima: over
+          Abaixo: under
+        market_template: "away_total_{line}"

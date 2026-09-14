@@ -16,6 +16,7 @@ will just use whatever the list page gave it.
 from __future__ import annotations
 
 import logging
+import re
 from datetime import date, datetime, timezone
 from urllib.parse import urljoin
 
@@ -23,9 +24,9 @@ import jmespath
 from dateutil import parser as dateparser
 
 from ..browser import BrowserSession, polite_delay
-from ..config import AppConfig, PageConfig
+from ..config import AppConfig, PageConfig, SelectionMatrixRule
 from ..extract import extract_by_selectors, extract_json_path, find_embedded_json, parse_odds, slugify
-from ..markets import normalize_markets
+from ..markets import merge_markets, normalize_markets
 from ..models import OddsOffer
 
 logger = logging.getLogger(__name__)
@@ -146,9 +147,59 @@ def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
     return rows
 
 
+def _selection_name_and_odds(selection: dict) -> tuple[str | None, float | None]:
+    """One entry of a Betclic ``selectionMatrix`` row's ``selections`` --
+    either the flat ``{name, odds}`` shape or the
+    ``{selectionOneof: {selection: {name, odds}}}`` wrapped shape both
+    seen in real data (see config.yaml's ``betclic.odds`` comments)."""
+    if not isinstance(selection, dict):
+        return None, None
+    if "selectionOneof" in selection:
+        selection = selection.get("selectionOneof", {}).get("selection", {}) or {}
+    return selection.get("name"), selection.get("odds")
+
+
+def _expand_selection_matrix_markets(
+    blobs: list[dict], rules: list[SelectionMatrixRule]
+) -> dict[str, dict[str, float]]:
+    """See :class:`SelectionMatrixRule` -- expand every line of a whole
+    Betclic market's ``selectionMatrix`` into canonical
+    ``market.outcome`` odds, e.g. every over/under total-goals line
+    Betclic offers instead of the one line an ``ExtractRule`` happened
+    to be hand-written for.
+    """
+    out: dict[str, dict[str, float]] = {}
+    for rule in rules:
+        rows = extract_json_path(blobs, rule.json_path)
+        if not isinstance(rows, list):
+            continue
+        pattern = re.compile(rule.name_pattern)
+        for row in rows:
+            selections = row.get("selections") if isinstance(row, dict) else None
+            if not isinstance(selections, list):
+                continue
+            for selection in selections:
+                name, odd = _selection_name_and_odds(selection)
+                if not name or odd is None:
+                    continue
+                m = pattern.match(name)
+                if not m:
+                    continue
+                outcome = rule.direction_map.get(m.group("direction"))
+                if not outcome:
+                    continue
+                line = m.group("line").replace(",", ".")
+                market = rule.market_template.format(line=line)
+                try:
+                    out.setdefault(market, {})[outcome] = float(odd)
+                except (TypeError, ValueError):
+                    continue
+    return out
+
+
 def _scrape_detail_markets(cfg: AppConfig, match_url: str, session: BrowserSession) -> dict[str, dict[str, float]]:
     page_cfg = cfg.betclic.page("odds")
-    if not page_cfg.url and not page_cfg.fields:
+    if not page_cfg.url and not page_cfg.fields and not page_cfg.selection_matrix_markets:
         return {}
 
     html, blobs_captured = session.get_html_and_captured_json(
@@ -169,7 +220,12 @@ def _scrape_detail_markets(cfg: AppConfig, match_url: str, session: BrowserSessi
         raw.update({k: v for k, v in css_raw.items() if k not in raw})
 
     odds = parse_odds(raw)
-    return normalize_markets(odds, page_cfg.market_aliases)
+    markets = normalize_markets(odds, page_cfg.market_aliases)
+
+    if page_cfg.selection_matrix_markets:
+        markets = merge_markets(markets, _expand_selection_matrix_markets(blobs, page_cfg.selection_matrix_markets))
+
+    return markets
 
 
 def _build_match_url(cfg: AppConfig, row: dict) -> str | None:

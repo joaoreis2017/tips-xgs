@@ -5,8 +5,8 @@ betclic.fixtures section for where this structure came from.
 
 from datetime import date, datetime, timezone
 
-from tipsxgs.betclic.odds import _build_match_url, scrape_today_odds
-from tipsxgs.config import load_config
+from tipsxgs.betclic.odds import _build_match_url, _expand_selection_matrix_markets, scrape_today_odds
+from tipsxgs.config import SelectionMatrixRule, load_config
 
 
 def _load_config_single_fixtures_url():
@@ -450,6 +450,9 @@ def test_scrape_today_odds_reads_btts_and_over_under_from_match_detail_page():
     assert offer.markets == {
         "1x2": {"home": 2.55, "draw": 3.2, "away": 2.67},
         "btts": {"yes": 1.68, "no": 1.83},
+        # Both lines the fixture's selectionMatrix carries -- confirms
+        # the whole matrix is expanded, not just a hardcoded 2.5 line.
+        "over_under_0.5": {"over": 1.03, "under": 5.75},
         "over_under_2.5": {"over": 1.84, "under": 1.68},
     }
     # scrape_today_odds should have hopped to the built detail-page URL.
@@ -537,6 +540,9 @@ def test_scrape_today_odds_skips_detail_hop_for_matches_not_kicking_off_today():
     assert today_offer.markets == {
         "1x2": {"home": 2.55, "draw": 3.2, "away": 2.67},
         "btts": {"yes": 1.68, "no": 1.83},
+        # Both lines the fixture's selectionMatrix carries -- confirms
+        # the whole matrix is expanded, not just a hardcoded 2.5 line.
+        "over_under_0.5": {"over": 1.03, "under": 5.75},
         "over_under_2.5": {"over": 1.84, "under": 1.68},
     }
 
@@ -547,3 +553,62 @@ def test_scrape_today_odds_skips_detail_hop_for_matches_not_kicking_off_today():
 
     # One call for the listing page + exactly one detail-page hop (not two).
     assert len(session.calls) == 2
+
+
+def _over_under_rule() -> SelectionMatrixRule:
+    return SelectionMatrixRule(
+        json_path="market.selectionMatrix",
+        name_pattern=r"^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$",
+        direction_map={"Acima": "over", "Abaixo": "under"},
+        market_template="over_under_{line}",
+    )
+
+
+def test_expand_selection_matrix_markets_covers_every_line_in_one_market():
+    blob = {
+        "market": {
+            "selectionMatrix": [
+                {"selections": [{"name": "Acima de 0,5", "odds": 1.03}, {"name": "Abaixo de 0,5", "odds": 5.75}]},
+                {"selections": [{"name": "Acima de 1,5", "odds": 1.25}, {"name": "Abaixo de 1,5", "odds": 3.5}]},
+                {"selections": [{"name": "Acima de 2,5", "odds": 1.84}, {"name": "Abaixo de 2,5", "odds": 1.68}]},
+            ]
+        }
+    }
+    result = _expand_selection_matrix_markets([blob], [_over_under_rule()])
+    assert result == {
+        "over_under_0.5": {"over": 1.03, "under": 5.75},
+        "over_under_1.5": {"over": 1.25, "under": 3.5},
+        "over_under_2.5": {"over": 1.84, "under": 1.68},
+    }
+
+
+def test_expand_selection_matrix_markets_handles_wrapped_selection_shape():
+    # The "As duas equipas marcam" (BTTS) market wraps each selection as
+    # {selectionOneof: {selection: {...}}} instead of the flat {name,
+    # odds} shape over/under uses -- this helper must handle either.
+    blob = {
+        "market": {
+            "selectionMatrix": [
+                {
+                    "selections": [
+                        {"selectionOneof": {"selection": {"name": "Acima de 0,5", "odds": 1.1}}},
+                        {"selectionOneof": {"selection": {"name": "Abaixo de 0,5", "odds": 6.0}}},
+                    ]
+                }
+            ]
+        }
+    }
+    result = _expand_selection_matrix_markets([blob], [_over_under_rule()])
+    assert result == {"over_under_0.5": {"over": 1.1, "under": 6.0}}
+
+
+def test_expand_selection_matrix_markets_skips_names_that_dont_match_the_pattern():
+    blob = {
+        "market": {
+            "selectionMatrix": [
+                {"selections": [{"name": "Acima de 2,5", "odds": 1.84}, {"name": "Empate Anula Aposta", "odds": 2.0}]}
+            ]
+        }
+    }
+    result = _expand_selection_matrix_markets([blob], [_over_under_rule()])
+    assert result == {"over_under_2.5": {"over": 1.84}}

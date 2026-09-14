@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import date, datetime
 
 from .betclic.odds import scrape_today_odds
 from .config import AppConfig
+from .markets import market_family
 from .matching import match_fixtures_to_odds
 from .models import MatchedGame
 from .report import render_dashboard, render_index
@@ -33,19 +35,31 @@ def _count_with_data(predictions: dict) -> int:
 
 
 def _betclic_coverable_markets(cfg: AppConfig) -> set[str]:
-    """The set of canonical markets Betclic's own ``market_aliases``
-    (across both the fixtures listing's inline odds and the match-detail
-    page) map to -- i.e. the only markets a Betclic offer could ever
-    carry a real odd for, given the current calibration (as of writing:
-    ``1x2``, ``btts``, ``over_under_2.5``). Passed to the dashboard's
-    odds-optional "top probability" list so it doesn't fill up with
-    markets config.yaml has no extraction rule for at all (handicap,
-    per-team totals, ...), which can never be paired with a real odd no
-    matter how good the fixture<->offer matching is -- see
+    """The set of canonical market *families* Betclic's own calibration
+    could ever carry a real odd for, given config.yaml as it stands (as
+    of writing: ``1x2``, ``btts``, ``over_under``) -- passed to the
+    dashboard's odds-optional "top probability" list so it doesn't fill
+    up with markets config.yaml has no extraction rule for at all
+    (handicap, per-team totals, ...), which can never be paired with a
+    real odd no matter how good the fixture<->offer matching is -- see
     valuebets.top_probability_bets_today's ``coverable_markets`` param.
+
+    Two sources, both reduced to a *family* via ``markets.market_family``
+    rather than an exact market string, since a family can cover many
+    concrete lines without config.yaml needing to spell out every one:
+    - ``market_aliases`` (fixtures' inline odds + the match-detail
+      page's fixed-shape markets, e.g. ``1x2.home`` -> family ``1x2``).
+    - ``selection_matrix_markets`` (a whole market expanded line by
+      line, e.g. ``market_template: "over_under_{line}"`` -> family
+      ``over_under``, covering every line that rule expands into without
+      needing to enumerate them here).
     """
     aliases = {**cfg.betclic.page("fixtures").market_aliases, **cfg.betclic.page("odds").market_aliases}
-    return {canonical.rsplit(".", 1)[0] for canonical in aliases.values()}
+    families = {market_family(canonical.rsplit(".", 1)[0]) for canonical in aliases.values()}
+    for rule in cfg.betclic.page("odds").selection_matrix_markets:
+        template_sample = re.sub(r"\{[^}]+\}", "0", rule.market_template)
+        families.add(market_family(template_sample))
+    return families
 
 
 def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:

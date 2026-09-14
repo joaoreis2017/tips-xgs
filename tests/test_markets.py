@@ -1,5 +1,12 @@
 from tipsxgs.extract import normalize_probabilities, parse_odds
-from tipsxgs.markets import expand_array_market, full_label, market_label, merge_markets, normalize_markets
+from tipsxgs.markets import (
+    expand_array_market,
+    full_label,
+    market_family,
+    market_label,
+    merge_markets,
+    normalize_markets,
+)
 
 
 def test_normalize_markets_maps_raw_keys_via_alias():
@@ -78,3 +85,18 @@ def test_market_label_handles_dynamic_over_under_and_handicap_names():
     assert market_label("away_total_1") == "Total Fora Mais/Menos de 1"
     assert market_label("handicap_home") == "Handicap Casa"
     assert market_label("handicap_away") == "Handicap Fora"
+
+
+def test_market_family_strips_the_trailing_line_only():
+    # Different lines of the same market family collapse to one family --
+    # used to check "does Betclic cover this KIND of market" without
+    # enumerating every concrete line (pipeline._betclic_coverable_markets,
+    # valuebets.top_probability_bets_today's coverable_markets check).
+    assert market_family("over_under_2.5") == "over_under"
+    assert market_family("over_under_0.5") == "over_under"
+    assert market_family("home_total_3.5") == "home_total"
+    assert market_family("away_total_1") == "away_total"
+    # A market with no per-line suffix at all is returned unchanged.
+    assert market_family("1x2") == "1x2"
+    assert market_family("btts") == "btts"
+    assert market_family("handicap_home") == "handicap_home"

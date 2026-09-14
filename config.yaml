@@ -377,7 +377,7 @@ betclic:
     # "Resultado correcto" (correct score) is NOT calibrated yet -- its
     # selectionMatrix is a large, variable-size grid (dozens of
     # scorelines, with null cells for handicap-implied "impossible" rows)
-    # that needs its own extraction pass; the 1X2 + BTTS + O/U 2.5 below
+    # that needs its own extraction pass; the 1X2 + BTTS + O/U below
     # already cover the value-bet markets asked for.
     fields:
       # Every path below starts with `*.response.payload.match.` -- same
@@ -398,19 +398,29 @@ betclic:
           [0].selectionMatrix[0].selections[] |
           [?selectionOneof.selection.name=='Não'] |
           [0].selectionOneof.selection.odds
-      - key: over_2_5
-        json_path: >-
-          *.response.payload.match.subCategories[].markets[] |
-          [?name=='Total de golos - acima/abaixo'] |
-          [0].selectionMatrix[].selections[] | [?name=='Acima de 2,5'] | [0].odds
-      - key: under_2_5
-        json_path: >-
-          *.response.payload.match.subCategories[].markets[] |
-          [?name=='Total de golos - acima/abaixo'] |
-          [0].selectionMatrix[].selections[] | [?name=='Abaixo de 2,5'] | [0].odds
 
     market_aliases:
       btts_yes: "btts.yes"
       btts_no: "btts.no"
-      over_2_5: "over_under_2.5.over"
-      under_2_5: "over_under_2.5.under"
+
+    # FIXED (2026-09-14): over/under total goals used to be two hand-
+    # written `fields` entries above, hardcoded to the 2,5 line only --
+    # real confirmed data (tests/test_betclic_odds.py) shows Betclic's
+    # "Total de golos - acima/abaixo" market ships *several* lines in
+    # one selectionMatrix at once (0,5 and 2,5 both seen in one real
+    # example; most bookmakers offer more still, e.g. 1,5/3,5/4,5) --
+    # silently discarding every line except 2.5 was a big chunk of why
+    # so many xGScore events came back with no Betclic odd at all (every
+    # over_under_<line> other than 2.5 could never match). This rule
+    # expands the *whole* selectionMatrix instead of one line at a time
+    # -- see SelectionMatrixRule / betclic.odds._expand_selection_matrix_markets.
+    selection_matrix_markets:
+      - json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Total de golos - acima/abaixo'] | [0].selectionMatrix
+        # Matches a selection name like "Acima de 2,5" / "Abaixo de 0,5".
+        name_pattern: '^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$'
+        direction_map:
+          Acima: over
+          Abaixo: under
+        market_template: "over_under_{line}"

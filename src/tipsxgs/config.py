@@ -52,6 +52,40 @@ class ArrayMarketRule:
 
 
 @dataclass
+class SelectionMatrixRule:
+    """Expand *every line* of one Betclic market's ``selectionMatrix``
+    (a list of rows, each with a ``selections`` list -- see
+    ``config.yaml``'s ``betclic.odds`` comments for the real shape) into
+    several canonical ``market.outcome`` odds at once, instead of one
+    ``ExtractRule`` per line.
+
+    Real, confirmed case this exists for: Betclic's "Total de golos -
+    acima/abaixo" (over/under total goals) market ships *several* lines
+    in one ``selectionMatrix`` (0.5 and 2.5 both seen in one real
+    example) -- config.yaml originally only picked out the 2.5 line with
+    two hand-written ``ExtractRule``s, silently discarding every other
+    line Betclic actually offers odds for.
+
+    ``json_path`` resolves to the whole ``selectionMatrix`` (a list of
+    rows). Each row's ``selections`` are matched against
+    ``name_pattern`` (a regex with named groups ``direction`` and
+    ``line``, e.g. ``r"^(?P<direction>Acima|Abaixo) de (?P<line>[\\d,]+)$"``
+    against a selection name like ``"Acima de 2,5"``) -- ``line`` has
+    any comma swapped for a dot before use. ``direction_map`` translates
+    the matched ``direction`` text to a canonical outcome (e.g.
+    ``{"Acima": "over", "Abaixo": "under"}``); a direction not in the
+    map is skipped rather than guessed at. ``market_template`` is
+    ``.format(line=...)``'d to build the canonical market key (e.g.
+    ``"over_under_{line}"``).
+    """
+
+    json_path: str
+    name_pattern: str
+    direction_map: dict[str, str]
+    market_template: str
+
+
+@dataclass
 class PageConfig:
     """Extraction rules for one page (fixtures list, a preview page, or
     the odds listing)."""
@@ -70,6 +104,7 @@ class PageConfig:
     json_list_path: str | None = None  # JMESPath: resolves to a list of items
     fields: list[ExtractRule] = field(default_factory=list)
     array_markets: list[ArrayMarketRule] = field(default_factory=list)
+    selection_matrix_markets: list[SelectionMatrixRule] = field(default_factory=list)
     embedded_json_hints: list[str] = field(default_factory=list)
     market_aliases: dict[str, str] = field(default_factory=dict)
     wait_selector: str | None = None
@@ -136,6 +171,9 @@ def _page_config(raw: dict | None) -> PageConfig:
         json_list_path=raw.get("json_list_path"),
         fields=[ExtractRule(**item) for item in (raw.get("fields") or [])],
         array_markets=[ArrayMarketRule(**item) for item in (raw.get("array_markets") or [])],
+        selection_matrix_markets=[
+            SelectionMatrixRule(**item) for item in (raw.get("selection_matrix_markets") or [])
+        ],
         embedded_json_hints=raw.get("embedded_json_hints", []) or [],
         market_aliases=raw.get("market_aliases", {}) or {},
         wait_selector=raw.get("wait_selector"),

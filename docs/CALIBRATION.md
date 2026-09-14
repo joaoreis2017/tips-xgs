@@ -64,6 +64,19 @@ cada linha se transforma no mercado/resultado canónico, ex.:
 `{label}` quando é o próprio valor da linha (ex. "-1.5") que é o
 resultado.
 
+A Betclic tem uma variante do mesmo problema, mas com uma forma de JSON
+diferente: cada linha de um mercado (`selectionMatrix`) é um objeto com
+uma lista `selections`, cada uma com um `name` em português (ex. "Acima
+de 2,5") em vez de um valor numérico isolado — por isso usa-se
+`selection_matrix_markets` (ver `betclic.odds.selection_matrix_markets`
+no `config.yaml`, já calibrado para golos totais, e
+`betclic.odds._expand_selection_matrix_markets` no código) em vez de
+`array_markets`: um `json_path` até ao `selectionMatrix` inteiro, um
+`name_pattern` (regex com grupos nomeados `direction` e `line`) que
+extrai a direção/linha de cada `name`, um `direction_map` que traduz a
+palavra em português para `over`/`under` (ou outro par), e o mesmo tipo
+de `market_template` de antes.
+
 - `xgscore.fixtures` — lista de jogos do dia (equipa casa/fora, liga,
   hora, e o link para a página de preview de cada jogo).
 - `xgscore.preview` — os mercados/probabilidades dentro da página de um

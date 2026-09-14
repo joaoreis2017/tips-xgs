@@ -22,7 +22,7 @@ probabilidade" view requested.
 
 from __future__ import annotations
 
-from .markets import full_label
+from .markets import full_label, market_family
 from .models import MatchedGame, ValueBetEntry
 
 
@@ -118,21 +118,23 @@ def top_probability_bets_today(
     the ones with odds to compare against.
 
     ``coverable_markets``, when given, additionally drops any odd-less
-    entry whose ``market`` isn't in that set -- e.g. a handicap or
-    per-team-total line that config.yaml's betclic section has *no
-    extraction rule for at all* (only 1x2/btts/over_under_2.5 are, as of
-    writing), so it could never be paired with a real odd no matter how
-    good the fixture<->offer matching is -- a permanent, structural gap
-    rather than "not matched yet". Left unfiltered, these near-certain
-    lines (over_under_<line> for lines Betclic isn't calibrated for,
-    handicap_home/away, home_total_<line>/away_total_<line>) tend to sit
-    at 100% probability and flood the top of this list with entries that
-    can never show an odd, crowding out the ones that actually could.
-    Pass the set derived from betclic's own market_aliases (see
-    ``report.build_context``) -- an odd-less entry for a market Betclic
-    *is* calibrated for still shows up (that one's just unmatched for
-    this game), only structurally-uncoverable markets get dropped. An
-    entry that already has an odd is never affected by this.
+    entry whose market *family* (see ``markets.market_family`` -- e.g.
+    ``over_under_2.5`` and ``over_under_1.5`` are both family
+    ``over_under``) isn't in that set -- e.g. handicap or per-team-total
+    lines that config.yaml's betclic section has *no extraction rule for
+    at all* (only 1x2/btts/over_under are, as of writing), so they could
+    never be paired with a real odd no matter how good the
+    fixture<->offer matching is -- a permanent, structural gap rather
+    than "not matched yet". Left unfiltered, these near-certain lines
+    (handicap_home/away, home_total_<line>/away_total_<line>) tend to
+    sit at 100% probability and flood the top of this list with entries
+    that can never show an odd, crowding out the ones that actually
+    could. Pass the set from ``pipeline._betclic_coverable_markets`` --
+    an odd-less entry for a market family Betclic *is* calibrated for
+    still shows up (that one's just unmatched for this game, or a line
+    Betclic doesn't happen to offer this time), only
+    structurally-uncoverable *families* get dropped. An entry that
+    already has an odd is never affected by this.
 
     ``limit`` is ``None`` (no cap) by default -- explicitly requested:
     *every* event clearing ``min_probability`` across *every* game
@@ -146,7 +148,11 @@ def top_probability_bets_today(
         for game in games
         for entry in game.value_bets
         if entry.probability > min_probability
-        and (entry.odd is not None or coverable_markets is None or entry.market in coverable_markets)
+        and (
+            entry.odd is not None
+            or coverable_markets is None
+            or market_family(entry.market) in coverable_markets
+        )
     ]
     pairs.sort(key=lambda p: p[1].probability, reverse=True)
     return pairs if limit is None else pairs[:limit]

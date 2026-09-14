@@ -173,3 +173,24 @@ def merge_markets(*market_maps: dict[str, dict[str, float]]) -> dict[str, dict[s
         for market, outcomes in mm.items():
             merged.setdefault(market, {}).update(outcomes)
     return merged
+
+
+_TRAILING_LINE_RE = re.compile(r"_\d+(?:\.\d+)?$")
+
+
+def market_family(market: str) -> str:
+    """Strip a trailing per-line number (``"_2.5"``, ``"_3"``, ...) from
+    a canonical market key, so ``"over_under_2.5"`` and
+    ``"over_under_1.5"`` are recognized as the same *family* of market
+    (``"over_under"``) -- a market with no such per-line family
+    (``"1x2"``, ``"btts"``, ``"handicap_home"``) is returned unchanged.
+
+    Used to check "does Betclic offer this *kind* of market at all"
+    without needing to enumerate every concrete line a config rule might
+    expand into ahead of time -- see
+    ``pipeline._betclic_coverable_markets`` (built from a templated
+    ``SelectionMatrixRule.market_template`` like ``"over_under_{line}"``)
+    and ``valuebets.top_probability_bets_today``'s ``coverable_markets``
+    check, which compares families rather than exact market strings.
+    """
+    return _TRAILING_LINE_RE.sub("", market)

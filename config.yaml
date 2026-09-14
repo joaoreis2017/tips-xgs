@@ -32,23 +32,25 @@ report_min_probability: 0.5   # xGScore's own probability must be > this (0..1)
 
 xgscore:
   base_url: "https://xgscore.io"
-  # RAISED (2026-09-14): was unset (falls back to SiteSection's 1.5s
-  # default). Two live runs, hours apart, each with a *different* set of
-  # 16 fixtures, both got real preview data for exactly the SAME 3 games
-  # (Inter-Udinese, Villarreal-Betis, Red Star-Metz) and "No preview data
-  # extracted" for every one of the other ~13 -- and raising
-  # xgscore.preview.wait_ms from 4000 to 6000 changed nothing (ruling out
-  # "page needed more render time"). A fixed small number of early
-  # requests succeeding before every later one in the same run fails,
-  # reproducing identically across separate runs, looks much more like
-  # xGScore rate-limiting/throttling this session after a handful of
-  # rapid consecutive requests than like per-page flakiness -- the 1.5s
-  # gap between each of the 16 sequential preview requests may simply be
-  # too fast. This is a hypothesis, not confirmed (no network access from
-  # this sandbox to verify directly) -- if a run with this raised value
-  # still gets real data for only ~3 games, the cause is something else
-  # and this should be reverted.
-  request_delay_seconds: 6.0
+  # REVERTED (2026-09-14): briefly raised to 6.0 (from the SiteSection
+  # default of 1.5) on a rate-limiting hypothesis -- disproven by the
+  # very next run's own data (see games.json's per-fixture scraped_at
+  # timestamps): with the 6.0s delay in place, real preview data still
+  # landed on only 3/16 fixtures, but this time at *positions 1, 4 and
+  # 12* out of 16 (Dynamo K.-Epitsentr, Inter-Udinese, Villarreal-Real
+  # Betis) -- scattered through the run, not clustered at the start
+  # (rate-limit-after-N) or the end. wait_ms 4000->6000 was *also*
+  # disproven the same way one run earlier. Neither "not enough time
+  # per page" nor "too many requests too fast" explains a pattern where
+  # success/failure doesn't correlate with request order at all -- so
+  # both reverted rather than piling on more unconfirmed delay/wait
+  # tweaks. Left at the plain default (no override) until a real
+  # diagnostic (inspect_site.py dump of both a working and a failing
+  # preview page, compared side by side) shows what's actually
+  # different about the ones that fail -- most likely explanation left
+  # standing: xGScore genuinely hasn't finished computing a prediction
+  # for those specific games yet at request time, which no amount of
+  # waiting/pacing from our side can fix.
 
   fixtures:
     # CALIBRATED (2026-09-11): xgscore.io's homepage ships a "top value

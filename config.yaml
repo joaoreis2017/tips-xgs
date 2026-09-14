@@ -32,6 +32,23 @@ report_min_probability: 0.5   # xGScore's own probability must be > this (0..1)
 
 xgscore:
   base_url: "https://xgscore.io"
+  # RAISED (2026-09-14): was unset (falls back to SiteSection's 1.5s
+  # default). Two live runs, hours apart, each with a *different* set of
+  # 16 fixtures, both got real preview data for exactly the SAME 3 games
+  # (Inter-Udinese, Villarreal-Betis, Red Star-Metz) and "No preview data
+  # extracted" for every one of the other ~13 -- and raising
+  # xgscore.preview.wait_ms from 4000 to 6000 changed nothing (ruling out
+  # "page needed more render time"). A fixed small number of early
+  # requests succeeding before every later one in the same run fails,
+  # reproducing identically across separate runs, looks much more like
+  # xGScore rate-limiting/throttling this session after a handful of
+  # rapid consecutive requests than like per-page flakiness -- the 1.5s
+  # gap between each of the 16 sequential preview requests may simply be
+  # too fast. This is a hypothesis, not confirmed (no network access from
+  # this sandbox to verify directly) -- if a run with this raised value
+  # still gets real data for only ~3 games, the cause is something else
+  # and this should be reverted.
+  request_delay_seconds: 6.0
 
   fixtures:
     # CALIBRATED (2026-09-11): xgscore.io's homepage ships a "top value

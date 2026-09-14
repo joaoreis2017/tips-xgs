@@ -103,7 +103,10 @@ def top_value_bets_today(games: list[MatchedGame], limit: int = 15) -> list[tupl
 
 
 def top_probability_bets_today(
-    games: list[MatchedGame], min_probability: float = 0.5, limit: int | None = None
+    games: list[MatchedGame],
+    min_probability: float = 0.5,
+    limit: int | None = None,
+    coverable_markets: set[str] | None = None,
 ) -> list[tuple[MatchedGame, ValueBetEntry]]:
     """Flatten every game's events into one list of model-probability
     "high confidence" picks, sorted by probability descending.
@@ -113,6 +116,23 @@ def top_probability_bets_today(
     here even with no Betclic offer paired (odd/value just come back
     ``None`` for those entries), covering every game rather than only
     the ones with odds to compare against.
+
+    ``coverable_markets``, when given, additionally drops any odd-less
+    entry whose ``market`` isn't in that set -- e.g. a handicap or
+    per-team-total line that config.yaml's betclic section has *no
+    extraction rule for at all* (only 1x2/btts/over_under_2.5 are, as of
+    writing), so it could never be paired with a real odd no matter how
+    good the fixture<->offer matching is -- a permanent, structural gap
+    rather than "not matched yet". Left unfiltered, these near-certain
+    lines (over_under_<line> for lines Betclic isn't calibrated for,
+    handicap_home/away, home_total_<line>/away_total_<line>) tend to sit
+    at 100% probability and flood the top of this list with entries that
+    can never show an odd, crowding out the ones that actually could.
+    Pass the set derived from betclic's own market_aliases (see
+    ``report.build_context``) -- an odd-less entry for a market Betclic
+    *is* calibrated for still shows up (that one's just unmatched for
+    this game), only structurally-uncoverable markets get dropped. An
+    entry that already has an odd is never affected by this.
 
     ``limit`` is ``None`` (no cap) by default -- explicitly requested:
     *every* event clearing ``min_probability`` across *every* game
@@ -126,6 +146,7 @@ def top_probability_bets_today(
         for game in games
         for entry in game.value_bets
         if entry.probability > min_probability
+        and (entry.odd is not None or coverable_markets is None or entry.market in coverable_markets)
     ]
     pairs.sort(key=lambda p: p[1].probability, reverse=True)
     return pairs if limit is None else pairs[:limit]

@@ -134,6 +134,30 @@ def test_top_probability_bets_today_includes_games_with_no_betclic_offer():
     assert list(by_game.values())[0].probability == pytest.approx(0.9)
 
 
+def test_top_probability_bets_today_drops_uncoverable_odd_less_markets():
+    # Real screenshot bug report: handicap/per-team-total lines that
+    # config.yaml's betclic section has no extraction rule for at all
+    # (permanently odd-less, not just "unmatched for this game") flooded
+    # the top of this list at 100% probability. coverable_markets, once
+    # given, drops those but keeps an odd-less entry for a market
+    # Betclic *is* calibrated for (just not matched for this game).
+    game = make_game(
+        {
+            "1x2": {"home": 0.9},  # coverable market, just unmatched here
+            "handicap_home": {"-3": 0.99},  # not coverable at all
+        },
+        None,
+    )
+    compute_value_bets(game)
+
+    top = top_probability_bets_today([game], min_probability=0.5, coverable_markets={"1x2", "btts"})
+    assert [e.market for _, e in top] == ["1x2"]
+
+    # Without coverable_markets (the default), nothing is dropped.
+    top_unfiltered = top_probability_bets_today([game], min_probability=0.5)
+    assert {e.market for _, e in top_unfiltered} == {"1x2", "handicap_home"}
+
+
 def test_top_probability_bets_today_respects_threshold_and_limit():
     game = make_game(
         {"1x2": {"home": 0.7, "draw": 0.2, "away": 0.1}},

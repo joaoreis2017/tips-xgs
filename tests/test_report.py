@@ -107,6 +107,22 @@ def test_has_predictions_distinguishes_genuinely_empty_from_filtered_out():
     assert ctx["games"][1]["events"] == []
 
 
+def test_top_probability_bets_drops_markets_betclic_never_covers():
+    # betclic_markets, when passed, drops odd-less entries for markets
+    # config.yaml's betclic section has no extraction rule for at all
+    # (e.g. handicap lines) -- see valuebets.top_probability_bets_today.
+    game = _game(
+        markets={"1x2": {"home": 0.9}, "handicap_home": {"-3": 0.99}},
+        odds_markets=None,
+    )
+
+    ctx = build_context(date(2026, 9, 12), [game], min_probability=0.5, betclic_markets={"1x2", "btts"})
+    rows = ctx["top_probability_bets"]
+    assert len(rows) == 1
+    assert rows[0]["game_slug"] == "home-away"
+    assert rows[0]["label"] == "Resultado Final - Casa"
+
+
 def test_top_probability_bets_covers_games_without_a_betclic_offer():
     # Requested explicitly: a cross-game "high probability" list that,
     # unlike top_value_bets, covers *every* game with a prediction --

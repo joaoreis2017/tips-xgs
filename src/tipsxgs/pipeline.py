@@ -18,6 +18,22 @@ from .xgscore.preview import scrape_previews
 logger = logging.getLogger(__name__)
 
 
+def _betclic_coverable_markets(cfg: AppConfig) -> set[str]:
+    """The set of canonical markets Betclic's own ``market_aliases``
+    (across both the fixtures listing's inline odds and the match-detail
+    page) map to -- i.e. the only markets a Betclic offer could ever
+    carry a real odd for, given the current calibration (as of writing:
+    ``1x2``, ``btts``, ``over_under_2.5``). Passed to the dashboard's
+    odds-optional "top probability" list so it doesn't fill up with
+    markets config.yaml has no extraction rule for at all (handicap,
+    per-team totals, ...), which can never be paired with a real odd no
+    matter how good the fixture<->offer matching is -- see
+    valuebets.top_probability_bets_today's ``coverable_markets`` param.
+    """
+    aliases = {**cfg.betclic.page("fixtures").market_aliases, **cfg.betclic.page("odds").market_aliases}
+    return {canonical.rsplit(".", 1)[0] for canonical in aliases.values()}
+
+
 def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
     """Run the whole pipeline for ``day`` (default: today) and write both
     the JSON snapshot and the HTML dashboard to ``cfg.data_dir``.
@@ -63,6 +79,7 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
         value_bet_threshold=cfg.value_bet_threshold,
         min_probability=cfg.report_min_probability,
         min_odd=cfg.report_min_odd,
+        betclic_markets=_betclic_coverable_markets(cfg),
     )
     render_index(cfg.reports_dir)
     logger.info("Rendered %s", html_path)

@@ -23,6 +23,7 @@ def build_context(
     demo: bool = False,
     min_probability: float = 0.5,
     min_odd: float = 1.2,
+    betclic_markets: set[str] | None = None,
 ) -> dict:
     game_ctx = []
     for g in games:
@@ -82,8 +83,14 @@ def build_context(
     # with no matched odds, rendered as "—" in the template. No limit --
     # explicitly requested: every event across every game should show,
     # not a top-N slice that squeezes out most games once there are
-    # dozens of them.
-    top_probability = top_probability_bets_today(games, min_probability=min_probability, limit=None)
+    # dozens of them. `betclic_markets` (see pipeline.py) additionally
+    # drops odd-less entries for markets Betclic has no extraction rule
+    # for at all (handicap, per-team totals, ...) -- those can never get
+    # a real odd, so left in they just flood this probability-sorted list
+    # with permanently-unbettable, usually-trivial (near 100%) lines.
+    top_probability = top_probability_bets_today(
+        games, min_probability=min_probability, limit=None, coverable_markets=betclic_markets
+    )
     top_probability_ctx = [
         {
             "game_slug": g.fixture.slug,
@@ -116,6 +123,7 @@ def render_dashboard(
     demo: bool = False,
     min_probability: float = 0.5,
     min_odd: float = 1.2,
+    betclic_markets: set[str] | None = None,
 ) -> Path:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
@@ -123,7 +131,14 @@ def render_dashboard(
     )
     template = env.get_template("dashboard.html.j2")
     html = template.render(
-        **build_context(day, games, demo=demo, min_probability=min_probability, min_odd=min_odd)
+        **build_context(
+            day,
+            games,
+            demo=demo,
+            min_probability=min_probability,
+            min_odd=min_odd,
+            betclic_markets=betclic_markets,
+        )
     )
 
     day_dir = reports_dir / day.isoformat()

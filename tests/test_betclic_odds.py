@@ -3,7 +3,7 @@ shape confirmed on betclic.pt (2026-09-11) -- see config.yaml's
 betclic.fixtures section for where this structure came from.
 """
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from tipsxgs.betclic.odds import _build_match_url, scrape_today_odds
 from tipsxgs.config import load_config
@@ -436,7 +436,11 @@ def test_build_match_url_from_betclic_routing_template():
 def test_scrape_today_odds_reads_btts_and_over_under_from_match_detail_page():
     cfg = _load_config_single_fixtures_url()
     session = TwoStepFakeSession()
-    offers = scrape_today_odds(cfg, session=session)
+    # The detail-page hop is now skipped for matches not kicking off on
+    # `day` (see the "only today's matches" filter in scrape_today_odds)
+    # -- pin it to the fixture's own kickoff date (2026-09-12) so this
+    # test still exercises the hop.
+    offers = scrape_today_odds(cfg, session=session, day=date(2026, 9, 12))
 
     assert len(offers) == 1
     offer = offers[0]
@@ -453,3 +457,93 @@ def test_scrape_today_odds_reads_btts_and_over_under_from_match_detail_page():
     assert session.calls[1].endswith(
         "/futebol-s1/liga-portugal-betclic-c32/cd-nacional-fc-alverca-m1217462611771392"
     )
+
+
+# Regression for a real live-run problem (2026-09-14): a competition page
+# lists *every* upcoming fixture for that league (days or weeks out), not
+# just today's -- 219 matches parsed from 17 competition pages when only
+# ~15 xGScore fixtures were for today, each triggering its own detail-page
+# hop (~5s apiece with the polite delay) for matches that could never be
+# matched to a today-only xGScore fixture anyway.
+TWO_MATCHES_LIST_BLOB = {
+    "grpc:1111111111": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "today-1",
+                        "name": "CD Nacional - FC Alverca",
+                        "matchDateUtc": "2026-09-12T14:30:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [{"name": "CD Nacional"}, {"name": "FC Alverca"}],
+                        "competition": {"id": "32", "name": "Liga Portugal Betclic"},
+                        "market": {
+                            "mainSelections": [
+                                {"name": "CD Nacional", "odds": 2.55},
+                                {"name": "Empate", "odds": 3.2},
+                                {"name": "FC Alverca", "odds": 2.67},
+                            ]
+                        },
+                    },
+                    {
+                        "matchId": "future-1",
+                        "name": "Sporting - Benfica",
+                        "matchDateUtc": "2026-10-30T20:00:00.0000000Z",  # weeks out
+                        "isLive": False,
+                        "contestants": [{"name": "Sporting"}, {"name": "Benfica"}],
+                        "competition": {"id": "32", "name": "Liga Portugal Betclic"},
+                        "market": {
+                            "mainSelections": [
+                                {"name": "Sporting", "odds": 1.9},
+                                {"name": "Empate", "odds": 3.3},
+                                {"name": "Benfica", "odds": 4.1},
+                            ]
+                        },
+                    },
+                ]
+            }
+        }
+    }
+}
+
+
+class TwoMatchesFakeSession:
+    """Like ``TwoStepFakeSession``, but the list page carries two matches
+    -- one kicking off ``day``, one weeks out -- so the detail-page hop's
+    "only today's matches" filter has something to actually filter."""
+
+    def __init__(self):
+        self.calls = []
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        self.calls.append(url)
+        if len(self.calls) == 1:
+            return "<html></html>", [TWO_MATCHES_LIST_BLOB]
+        return "<html></html>", [MATCH_DETAIL_BLOB]
+
+
+def test_scrape_today_odds_skips_detail_hop_for_matches_not_kicking_off_today():
+    cfg = _load_config_single_fixtures_url()
+    session = TwoMatchesFakeSession()
+    offers = scrape_today_odds(cfg, session=session, day=date(2026, 9, 12))
+
+    # Both matches are still returned...
+    assert len(offers) == 2
+    by_teams = {(o.home_team, o.away_team): o for o in offers}
+
+    # ...but only the one kicking off on `day` got the detail-page hop
+    # (btts/over-under on top of its inline 1x2)...
+    today_offer = by_teams[("CD Nacional", "FC Alverca")]
+    assert today_offer.markets == {
+        "1x2": {"home": 2.55, "draw": 3.2, "away": 2.67},
+        "btts": {"yes": 1.68, "no": 1.83},
+        "over_under_2.5": {"over": 1.84, "under": 1.68},
+    }
+
+    # ...while the one weeks out kept only its inline 1x2 -- no detail
+    # page was ever requested for it.
+    future_offer = by_teams[("Sporting", "Benfica")]
+    assert future_offer.markets == {"1x2": {"home": 1.9, "draw": 3.3, "away": 4.1}}
+
+    # One call for the listing page + exactly one detail-page hop (not two).
+    assert len(session.calls) == 2

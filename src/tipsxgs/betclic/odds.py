@@ -16,7 +16,7 @@ will just use whatever the list page gave it.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from urllib.parse import urljoin
 
 import jmespath
@@ -241,7 +241,9 @@ def _row_to_offer(cfg: AppConfig, row: dict) -> tuple[OddsOffer, str | None] | N
     return offer, (str(match_url) if match_url else None)
 
 
-def scrape_today_odds(cfg: AppConfig, session: BrowserSession | None = None) -> list[OddsOffer]:
+def scrape_today_odds(
+    cfg: AppConfig, session: BrowserSession | None = None, day: date | None = None
+) -> list[OddsOffer]:
     """Return every football match + odds Betclic lists for today.
 
     Requires ``config.yaml``'s ``betclic`` section to be calibrated (see
@@ -253,19 +255,52 @@ def scrape_today_odds(cfg: AppConfig, session: BrowserSession | None = None) -> 
         session = BrowserSession(headless=cfg.headless, user_agent=cfg.user_agent).__enter__()
     try:
         rows = _scrape_list(cfg, session)
-        logger.info("Betclic listing done -- hopping to each match's detail page for BTTS/over-under...")
+        parsed_rows = [p for p in (_row_to_offer(cfg, row) for row in rows) if p]
+
+        # Each competition page lists *every* upcoming fixture for that
+        # league (days or weeks out), not just today's -- confirmed live:
+        # 219 matches parsed from 17 competition pages when only ~15
+        # xGScore fixtures (and so at most ~15-20 relevant Betclic ones)
+        # were for today. The listing itself is cheap (already fetched
+        # above), but hopping to each match's own detail page for
+        # BTTS/over-under is not -- so only do that for matches actually
+        # kicking off today; every offer is still kept in the returned
+        # list either way (a non-today one just keeps only its inline 1X2
+        # odds, no BTTS/O-U) -- matching.py's own day-mismatch penalty
+        # already keeps it from being wrongly paired, and the "closest
+        # candidate" diagnostic logging there is more useful with the
+        # full pool than without it. An offer with no parsed kickoff
+        # counts as "today" rather than being skipped, same "false
+        # positive over silent drop" tradeoff as xgscore.fixtures.filter_today.
+        today = day or datetime.now(timezone.utc).date()
+
+        def _is_today(offer: OddsOffer) -> bool:
+            return offer.kickoff is None or offer.kickoff.date() == today
+
+        todays_hops = sum(1 for offer, match_url in parsed_rows if match_url and _is_today(offer))
+        skipped = sum(1 for offer, match_url in parsed_rows if match_url and not _is_today(offer))
+        if skipped:
+            logger.info(
+                "Skipping the detail-page hop for %d Betclic match(es) not kicking off today (%s)",
+                skipped,
+                today.isoformat(),
+            )
+
+        logger.info("Betclic listing done -- hopping to each today's match's detail page for BTTS/over-under...")
         offers = []
-        for i, row in enumerate(rows, start=1):
-            parsed = _row_to_offer(cfg, row)
-            if not parsed:
-                continue
-            offer, match_url = parsed
-            if match_url:
+        hop_i = 0
+        for offer, match_url in parsed_rows:
+            if match_url and _is_today(offer):
+                hop_i += 1
                 # Same visibility reasoning as the competition-page loop
-                # above -- one of these per match (up to a few dozen on a
-                # busy day), each with its own wait + polite_delay.
+                # above -- one of these per match kicking off today, each
+                # with its own wait + polite_delay.
                 logger.info(
-                    "Fetching Betclic match odds %d/%d: %s - %s", i, len(rows), offer.home_team, offer.away_team
+                    "Fetching Betclic match odds %d/%d: %s - %s",
+                    hop_i,
+                    todays_hops,
+                    offer.home_team,
+                    offer.away_team,
                 )
                 with polite_delay(cfg.betclic.request_delay_seconds):
                     try:

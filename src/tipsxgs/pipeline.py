@@ -38,7 +38,7 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
     logger.info("Scraped %d/%d previews successfully", len(predictions), len(fixtures))
 
     logger.info("Scraping Betclic odds...")
-    odds_offers = scrape_today_odds(cfg)
+    odds_offers = scrape_today_odds(cfg, day=today)
     logger.info("Found %d Betclic odds offers", len(odds_offers))
 
     logger.info("Matching fixtures to odds offers...")

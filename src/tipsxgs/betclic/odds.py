@@ -24,7 +24,7 @@ import jmespath
 from dateutil import parser as dateparser
 
 from ..browser import BrowserSession, polite_delay
-from ..config import AppConfig, PageConfig, SelectionMatrixRule
+from ..config import AppConfig, HandicapMatrixRule, PageConfig, SelectionMatrixRule
 from ..extract import extract_by_selectors, extract_json_path, find_embedded_json, parse_odds, slugify
 from ..markets import merge_markets, normalize_markets
 from ..models import OddsOffer
@@ -197,9 +197,67 @@ def _expand_selection_matrix_markets(
     return out
 
 
+def _asian_line(sign: str, magnitude: float) -> float:
+    """Convert one Betclic 3-way handicap selection's own sign+magnitude
+    (e.g. ``"+", 2.0`` from ``"Udinese (+2)"``) into the equivalent
+    xGScore Asian half-line -- see :class:`HandicapMatrixRule`'s
+    docstring for the derivation and its real-data confirmation."""
+    return magnitude - 0.5 if sign == "+" else -(magnitude + 0.5)
+
+
+def _format_line(value: float) -> str:
+    # Always ends in .5 by construction (see _asian_line), so plain
+    # str() already gives "-2.5"/"1.5"/"0.5" etc., matching xGScore's
+    # own h1/h2 array row labels (config.yaml's array_markets comment).
+    return str(value)
+
+
+def _expand_handicap_matrix_markets(
+    blobs: list[dict], rules: list[HandicapMatrixRule]
+) -> dict[str, dict[str, float]]:
+    """See :class:`HandicapMatrixRule` -- expand every line of Betclic's
+    3-way handicap market into ``handicap_home``/``handicap_away`` odds
+    keyed by the xGScore-equivalent Asian half-line, from the home/away
+    selections' own trailing ``"(<sign><N>)"`` (team names, which vary
+    by match and sit *before* that suffix, are ignored entirely)."""
+    out: dict[str, dict[str, float]] = {}
+    for rule in rules:
+        rows = extract_json_path(blobs, rule.json_path)
+        if not isinstance(rows, list):
+            continue
+        pattern = re.compile(rule.selection_pattern)
+        for row in rows:
+            selections = row.get("selections") if isinstance(row, dict) else None
+            if not isinstance(selections, list) or len(selections) < 3:
+                continue
+            # Confirmed real ordering: home selection first, draw
+            # second (skipped -- no Asian-handicap equivalent), away
+            # selection third.
+            for market_key, selection in (("handicap_home", selections[0]), ("handicap_away", selections[2])):
+                name, odd = _selection_name_and_odds(selection)
+                if not name or odd is None:
+                    continue
+                m = pattern.search(name)
+                if not m:
+                    continue
+                try:
+                    magnitude = float(m.group("line").replace(",", "."))
+                    odd_value = float(odd)
+                except (TypeError, ValueError):
+                    continue
+                line = _asian_line(m.group("sign"), magnitude)
+                out.setdefault(market_key, {})[_format_line(line)] = odd_value
+    return out
+
+
 def _scrape_detail_markets(cfg: AppConfig, match_url: str, session: BrowserSession) -> dict[str, dict[str, float]]:
     page_cfg = cfg.betclic.page("odds")
-    if not page_cfg.url and not page_cfg.fields and not page_cfg.selection_matrix_markets:
+    if (
+        not page_cfg.url
+        and not page_cfg.fields
+        and not page_cfg.selection_matrix_markets
+        and not page_cfg.handicap_matrix_markets
+    ):
         return {}
 
     html, blobs_captured = session.get_html_and_captured_json(
@@ -224,6 +282,8 @@ def _scrape_detail_markets(cfg: AppConfig, match_url: str, session: BrowserSessi
 
     if page_cfg.selection_matrix_markets:
         markets = merge_markets(markets, _expand_selection_matrix_markets(blobs, page_cfg.selection_matrix_markets))
+    if page_cfg.handicap_matrix_markets:
+        markets = merge_markets(markets, _expand_handicap_matrix_markets(blobs, page_cfg.handicap_matrix_markets))
 
     return markets
 

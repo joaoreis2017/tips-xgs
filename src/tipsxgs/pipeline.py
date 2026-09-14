@@ -59,6 +59,12 @@ def _betclic_coverable_markets(cfg: AppConfig) -> set[str]:
     for rule in cfg.betclic.page("odds").selection_matrix_markets:
         template_sample = re.sub(r"\{[^}]+\}", "0", rule.market_template)
         families.add(market_family(template_sample))
+    # HandicapMatrixRule always produces exactly these two fixed market
+    # names (the *line* is the outcome, not part of the market key --
+    # see config.yaml's xgscore.preview.array_markets h1/h2 comment).
+    if cfg.betclic.page("odds").handicap_matrix_markets:
+        families.add("handicap_home")
+        families.add("handicap_away")
     return families
 
 

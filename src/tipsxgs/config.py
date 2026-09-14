@@ -86,6 +86,43 @@ class SelectionMatrixRule:
 
 
 @dataclass
+class HandicapMatrixRule:
+    """Expand every line of a Betclic *3-way* handicap market's
+    ``selectionMatrix`` (rows of ``[home, draw, away]`` selections, e.g.
+    ``"Inter (-4)"`` / ``"Empate (Inter -4)"`` / ``"Udinese (+4)"``) into
+    xGScore-style Asian-handicap "coverage" odds.
+
+    Team names are baked into each selection's own name and vary by
+    match, so this only looks at the trailing ``"(<sign><N>)"`` of the
+    HOME selection (each row's first entry) and the AWAY selection
+    (each row's third entry) -- confirmed real ordering (Inter -
+    Udinese match dump): the home team's own selection is always
+    listed first in each row and the away team's always third
+    (draw always second), regardless of which side that row's line
+    favors -- so no team-name matching is needed at all, unlike the
+    per-team goals-total markets above.
+
+    xGScore's ``handicap_home``/``handicap_away`` markets report a
+    single "team covers this Asian (half-)line" probability with no
+    draw outcome -- structurally different from Betclic's *integer*-
+    line 3-way market (win/draw/lose after the handicap is applied).
+    A real match's own Betclic page (Inter-Udinese) plus explicit user
+    confirmation ("handicap +2 na Betclic = handicap +1.5 no
+    xgscore", "+3 = +2.5") pinned down the exact relationship: a
+    team's Betclic integer line N maps to the Asian half-line
+    ``N - 0.5`` on its "+" (underdog) side, or ``-(N + 0.5)`` on its
+    "-" (favourite) side -- i.e. that selection's *win* outcome at
+    integer line N covers exactly the same result as the Asian
+    handicap at that shifted half-line (the draw outcome has no Asian-
+    handicap equivalent and is simply not used). See
+    ``betclic/odds.py::_expand_handicap_matrix_markets``.
+    """
+
+    json_path: str
+    selection_pattern: str = r"\((?P<sign>[+-])(?P<line>\d+(?:\.\d+)?)\)\s*$"
+
+
+@dataclass
 class PageConfig:
     """Extraction rules for one page (fixtures list, a preview page, or
     the odds listing)."""
@@ -105,6 +142,7 @@ class PageConfig:
     fields: list[ExtractRule] = field(default_factory=list)
     array_markets: list[ArrayMarketRule] = field(default_factory=list)
     selection_matrix_markets: list[SelectionMatrixRule] = field(default_factory=list)
+    handicap_matrix_markets: list[HandicapMatrixRule] = field(default_factory=list)
     embedded_json_hints: list[str] = field(default_factory=list)
     market_aliases: dict[str, str] = field(default_factory=dict)
     wait_selector: str | None = None
@@ -173,6 +211,9 @@ def _page_config(raw: dict | None) -> PageConfig:
         array_markets=[ArrayMarketRule(**item) for item in (raw.get("array_markets") or [])],
         selection_matrix_markets=[
             SelectionMatrixRule(**item) for item in (raw.get("selection_matrix_markets") or [])
+        ],
+        handicap_matrix_markets=[
+            HandicapMatrixRule(**item) for item in (raw.get("handicap_matrix_markets") or [])
         ],
         embedded_json_hints=raw.get("embedded_json_hints", []) or [],
         market_aliases=raw.get("market_aliases", {}) or {},

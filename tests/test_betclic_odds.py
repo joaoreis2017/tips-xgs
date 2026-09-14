@@ -5,7 +5,12 @@ betclic.fixtures section for where this structure came from.
 
 from datetime import date, datetime, timezone
 
-from tipsxgs.betclic.odds import _build_match_url, _expand_selection_matrix_markets, scrape_today_odds
+from tipsxgs.betclic.odds import (
+    _build_match_url,
+    _expand_selection_matrix_markets,
+    _scrape_detail_markets,
+    scrape_today_odds,
+)
 from tipsxgs.config import SelectionMatrixRule, load_config
 
 
@@ -688,6 +693,129 @@ INTER_UDINESE_MATCH_DETAIL_BLOB = {
                                         }
                                     ],
                                 },
+                                {
+                                    "name": "As duas equipas marcam",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Sim", "odds": 1.85}}},
+                                                {"selectionOneof": {"selection": {"name": "Não", "odds": 1.66}}},
+                                            ]
+                                        }
+                                    ],
+                                },
+                                {
+                                    "name": "Resultado duplo",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Inter ou empate", "odds": 1.04}
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Inter ou Udinese", "odds": 1.08}
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate ou Udinese", "odds": 4.35}
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                    ],
+                                },
+                                {
+                                    "name": "Resultado handicap",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (-4)", "odds": 7.25}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter -4)", "odds": 6.6}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (+4)", "odds": 1.2}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (-3)", "odds": 3.93}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter -3)", "odds": 4.8}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (+3)", "odds": 1.52}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (-2)", "odds": 2.28}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter -2)", "odds": 4.05}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (+2)", "odds": 2.3}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (-1)", "odds": 1.52}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter -1)", "odds": 4.3}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (+1)", "odds": 4.35}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (+1)", "odds": 1.04}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter +1)", "odds": 16.25}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (-1)", "odds": 26}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                    ],
+                                },
                             ]
                         }
                     ],
@@ -710,3 +838,43 @@ def test_expand_selection_matrix_markets_covers_home_and_away_team_totals():
         # Udinese (away) listed second.
         "away_total_0.5": {"over": 1.76, "under": 1.75},
     }
+
+
+class _SingleBlobFakeSession:
+    """Mimics BrowserSession.get_html_and_captured_json for a single
+    match-detail-page hop, always returning the same captured JSON blob
+    regardless of URL/wait_ms -- used to exercise the FULL real
+    config.yaml odds pipeline (fields + market_aliases +
+    selection_matrix_markets + handicap_matrix_markets all at once) in
+    one call to _scrape_detail_markets, the same function
+    scrape_today_odds() itself calls for each match's detail-page hop.
+    """
+
+    def __init__(self, blob: dict):
+        self._blob = blob
+
+    def get_html_and_captured_json(self, url, wait_ms=2000, **_kwargs):
+        return "<html></html>", [self._blob]
+
+
+def test_scrape_detail_markets_covers_btts_double_chance_and_handicap_from_real_dump():
+    # CALIBRATED (2026-09-14): btts/double_chance/handicap all added to
+    # config.yaml from the same real Inter - Udinese match page dump as
+    # the per-team goals totals above -- this locks in the full,
+    # combined real-config pipeline (not just one isolated helper) so a
+    # future config.yaml edit that breaks any one of these markets
+    # fails a test immediately.
+    cfg = load_config()
+    session = _SingleBlobFakeSession(INTER_UDINESE_MATCH_DETAIL_BLOB)
+    result = _scrape_detail_markets(cfg, "https://example.invalid/inter-udinese", session)
+
+    assert result["btts"] == {"yes": 1.85, "no": 1.66}
+    assert result["double_chance"] == {"1x": 1.04, "12": 1.08, "x2": 4.35}
+    # Betclic's own 3-way integer handicap lines (-4..+1, from Inter's
+    # side) shifted to their xGScore Asian-half-line equivalent -- see
+    # HandicapMatrixRule's docstring for the derivation. The 2nd-to-last
+    # row ("Udinese (+2)" -> away handicap 1.5) is the exact case the
+    # user confirmed by hand ("handicap +2 na Betclic = handicap +1.5
+    # no xgscore").
+    assert result["handicap_home"] == {"-4.5": 7.25, "-3.5": 3.93, "-2.5": 2.28, "-1.5": 1.52, "0.5": 1.04}
+    assert result["handicap_away"] == {"3.5": 1.2, "2.5": 1.52, "1.5": 2.3, "0.5": 4.35, "-1.5": 26.0}

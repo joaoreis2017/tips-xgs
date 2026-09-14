@@ -418,9 +418,37 @@ betclic:
           [?selectionOneof.selection.name=='Não'] |
           [0].selectionOneof.selection.odds
 
+      # CALIBRATED (2026-09-14), from the same real Inter - Udinese
+      # match page dump as the per-team goals totals above: Betclic's
+      # "Resultado duplo" (double chance) market is a fixed 3-row
+      # selectionMatrix, one selection per row, in the SAME
+      # home/home-away/away-draw order as xGScore's own "dc" array
+      # (confirmed real names: "Inter ou empate" -> 1x, "Inter ou
+      # Udinese" -> 12, "Empate ou Udinese" -> x2) -- team names vary
+      # by match, but the row *order* doesn't, so we can index
+      # positionally instead of matching each selection's name.
+      - key: double_chance_1x
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Resultado duplo'] |
+          [0].selectionMatrix[0].selections[0].selectionOneof.selection.odds
+      - key: double_chance_12
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Resultado duplo'] |
+          [0].selectionMatrix[1].selections[0].selectionOneof.selection.odds
+      - key: double_chance_x2
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Resultado duplo'] |
+          [0].selectionMatrix[2].selections[0].selectionOneof.selection.odds
+
     market_aliases:
       btts_yes: "btts.yes"
       btts_no: "btts.no"
+      double_chance_1x: "double_chance.1x"
+      double_chance_12: "double_chance.12"
+      double_chance_x2: "double_chance.x2"
 
     # FIXED (2026-09-14): over/under total goals used to be two hand-
     # written `fields` entries above, hardcoded to the 2,5 line only --
@@ -477,3 +505,27 @@ betclic:
           Acima: over
           Abaixo: under
         market_template: "away_total_{line}"
+
+    # CALIBRATED (2026-09-14), from the same real Inter - Udinese match
+    # page dump: Betclic's "Resultado handicap" market is a *3-way*
+    # (home win / draw / away win) handicap at several INTEGER lines
+    # (e.g. "Inter (-4)" / "Empate (Inter -4)" / "Udinese (+4)"), not
+    # the 2-way half-line Asian handicap xGScore's own handicap_home/
+    # handicap_away markets report a coverage probability for. The
+    # user confirmed the exact line-shift relationship between the two
+    # conventions from this real page ("handicap +2 na Betclic =
+    # handicap +1.5 no xgscore", "+3 = +2.5") -- see
+    # HandicapMatrixRule's docstring in src/tipsxgs/config.py for the
+    # derivation (a Betclic integer line N maps to Asian half-line
+    # N-0.5 on the "+"/underdog side, or -(N+0.5) on the "-"/favourite
+    # side) and betclic/odds.py::_expand_handicap_matrix_markets for
+    # the implementation. Team names (baked into each selection's own
+    # name, e.g. "Inter"/"Udinese") vary by match and are ignored
+    # entirely -- only each row's home-selection (always first) and
+    # away-selection (always third, draw always second) trailing
+    # "(<sign><N>)" is used, same positional-ordering confirmation as
+    # the per-team goals totals above.
+    handicap_matrix_markets:
+      - json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Resultado handicap'] | [0].selectionMatrix

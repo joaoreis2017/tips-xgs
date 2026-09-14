@@ -4,17 +4,24 @@ from tipsxgs.pipeline import _betclic_coverable_markets, _count_with_data
 
 def test_betclic_coverable_markets_derived_from_real_config():
     # Real config.yaml has extraction rules for 1x2 (inline on the
-    # fixtures listing) + btts/over_under/home_total/away_total (the
-    # match detail page's selection_matrix_markets, each covering every
-    # line Betclic offers for that market, not just one hardcoded line)
-    # -- nothing for handicap (Betclic's handicap market is a real
-    # calibrated 3-way per line, a different shape xGScore's simple
-    # per-team coverage-probability handicap markets don't map onto,
-    # left uncalibrated for now). This is what makes handicap
-    # structurally unable to ever carry a real Betclic odd, driving
-    # valuebets.top_probability_bets_today's coverable_markets filter.
+    # fixtures listing) + btts/double_chance (fixed fields) +
+    # over_under/home_total/away_total (selection_matrix_markets,
+    # each covering every line Betclic offers) + handicap_home/
+    # handicap_away (handicap_matrix_markets, Betclic's 3-way integer
+    # handicap remapped to xGScore's Asian half-lines) -- only
+    # correct_score remains uncalibrated (a large variable-size grid,
+    # and xGScore's own "cs" field is often null pre-kickoff anyway).
     cfg = load_config()
-    assert _betclic_coverable_markets(cfg) == {"1x2", "btts", "over_under", "home_total", "away_total"}
+    assert _betclic_coverable_markets(cfg) == {
+        "1x2",
+        "btts",
+        "double_chance",
+        "over_under",
+        "home_total",
+        "away_total",
+        "handicap_home",
+        "handicap_away",
+    }
 
 
 def test_count_with_data_ignores_empty_previews():

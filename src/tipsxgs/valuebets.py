@@ -103,7 +103,7 @@ def top_value_bets_today(games: list[MatchedGame], limit: int = 15) -> list[tupl
 
 
 def top_probability_bets_today(
-    games: list[MatchedGame], min_probability: float = 0.5, limit: int = 30
+    games: list[MatchedGame], min_probability: float = 0.5, limit: int | None = None
 ) -> list[tuple[MatchedGame, ValueBetEntry]]:
     """Flatten every game's events into one list of model-probability
     "high confidence" picks, sorted by probability descending.
@@ -113,6 +113,13 @@ def top_probability_bets_today(
     here even with no Betclic offer paired (odd/value just come back
     ``None`` for those entries), covering every game rather than only
     the ones with odds to compare against.
+
+    ``limit`` is ``None`` (no cap) by default -- explicitly requested:
+    *every* event clearing ``min_probability`` across *every* game
+    should show up, not just a top-N slice that would otherwise squeeze
+    out most games once there are dozens of them each with several
+    qualifying markets. Pass a number to cap it if the list ever needs
+    trimming for display reasons.
     """
     pairs = [
         (game, entry)
@@ -121,4 +128,4 @@ def top_probability_bets_today(
         if entry.probability > min_probability
     ]
     pairs.sort(key=lambda p: p[1].probability, reverse=True)
-    return pairs[:limit]
+    return pairs if limit is None else pairs[:limit]

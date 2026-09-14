@@ -48,6 +48,19 @@ def test_two_similar_fixtures_do_not_share_one_offer():
     assert matched[0].fixture.home_team == "Real Madrid"
 
 
+def test_abbreviated_team_name_still_matches_via_token_set_ratio():
+    # Real case from a live run: xGScore listed "Vitoria Guimaraes"
+    # abbreviated down to "Victoria G.", which token_sort_ratio alone
+    # scores too low (length/token-count mismatch) to clear a sane
+    # min_confidence. token_set_ratio ignores the extra/missing tokens
+    # instead of penalizing them, so the pair should still match.
+    fixtures = [fx("Academico Viseu", "Victoria G.")]
+    games = match_fixtures_to_odds(
+        fixtures, {}, [offer("Academico Viseu", "Vitoria Guimaraes")], min_confidence=80
+    )
+    assert games[0].odds is not None
+
+
 def test_predictions_are_attached_by_fixture_id():
     fixture = fx("Union Berlin", "Schalke")
     prediction = Prediction(fixture_id=fixture.id, markets={"1x2": {"home": 0.5, "draw": 0.3, "away": 0.2}})

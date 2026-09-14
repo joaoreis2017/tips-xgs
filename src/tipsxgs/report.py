@@ -79,8 +79,11 @@ def build_context(
     # Odds-optional counterpart to top_value_bets_today above: every game
     # xGScore has predictions for, not only the ones paired with a
     # Betclic offer -- odd/value_ratio just come back None for a game
-    # with no matched odds, rendered as "—" in the template.
-    top_probability = top_probability_bets_today(games, min_probability=min_probability, limit=30)
+    # with no matched odds, rendered as "—" in the template. No limit --
+    # explicitly requested: every event across every game should show,
+    # not a top-N slice that squeezes out most games once there are
+    # dozens of them.
+    top_probability = top_probability_bets_today(games, min_probability=min_probability, limit=None)
     top_probability_ctx = [
         {
             "game_slug": g.fixture.slug,

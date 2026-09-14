@@ -31,7 +31,15 @@ def _score(fixture: Fixture, offer: OddsOffer) -> float:
     # (rare, but cheap to guard against).
     swapped_key = _pair_key(offer.away_team, offer.home_team)
     swapped = fuzz.token_sort_ratio(fixture_key, swapped_key)
-    score = max(same_order, swapped)
+    # token_set_ratio ignores extra/missing tokens instead of penalizing
+    # them like token_sort_ratio does -- e.g. "Victoria G." vs "Vitoria
+    # Guimaraes", or one source adding a "FC"/"CF"/city-name token the
+    # other drops. It compares token *sets*, so home/away order doesn't
+    # matter and a single call already covers both orders. Only helps
+    # borderline abbreviation cases (we take the max), never hurts a
+    # pair that already scored well on token_sort_ratio.
+    token_set = fuzz.token_set_ratio(fixture_key, offer_key)
+    score = max(same_order, swapped, token_set)
 
     if fixture.kickoff and offer.kickoff:
         if fixture.kickoff.date() == offer.kickoff.date():

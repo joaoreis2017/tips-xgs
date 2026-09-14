@@ -22,32 +22,36 @@ def build_context(
     games: list[MatchedGame],
     demo: bool = False,
     min_probability: float = 0.5,
-    min_odd: float = 1.2,
     betclic_markets: set[str] | None = None,
 ) -> dict:
     game_ctx = []
     for g in games:
         # Every xGScore market is extracted now (every over/under line,
         # every handicap line, ...), so the full events_by_probability
-        # list is dozens of rows long and mostly near-certain/
-        # near-impossible ones with nothing to compare against. Only show
-        # an event that clears *both* thresholds -- a real edge worth a
-        # look, not just "this team probably won't lose by 5". A game
-        # with no matched Betclic offer (every odd is None) shows no
-        # events here by design, since there's no odd to judge against;
-        # its probabilities are still in games.json regardless.
+        # list is dozens of rows long -- explicitly requested: show every
+        # one clearing min_probability, odd or no odd (odd/valor render
+        # as "—" in the template when there's none, same as the
+        # cross-game "top probability" list below). `betclic_markets`
+        # still drops an odd-less entry whose market Betclic has *no*
+        # extraction rule for at all (handicap, per-team totals, ...) --
+        # those are near-certain (100%) trivial lines that can never get
+        # a real odd no matter what, so without this filter they'd flood
+        # every game's table; an odd-less entry for a market Betclic
+        # *is* calibrated for (1x2/btts/over_under_2.5, just not matched
+        # for this game) still shows up.
         events = [
             e
             for e in g.events_by_probability
-            if e.probability > min_probability and e.odd is not None and e.odd > min_odd
+            if e.probability > min_probability
+            and (e.odd is not None or betclic_markets is None or e.market in betclic_markets)
         ]
         # Distinct from "events is empty" below: this says whether
         # scraping actually got *any* xGScore probabilities for this game
-        # at all, regardless of the min_probability/min_odd filter above
-        # -- an empty `events` table has two very different causes
-        # ("nothing was scraped, go check CALIBRATION.md" vs. "plenty was
-        # scraped, it's just filtered out because no Betclic odd cleared
-        # the thresholds") and the template needs to tell them apart.
+        # at all, regardless of the min_probability filter above -- an
+        # empty `events` table has two very different causes ("nothing
+        # was scraped, go check CALIBRATION.md" vs. "plenty was scraped,
+        # it's just filtered out because nothing cleared the probability
+        # threshold") and the template needs to tell them apart.
         has_predictions = bool(g.prediction and g.prediction.markets)
         game_ctx.append(
             {
@@ -111,7 +115,6 @@ def build_context(
         "top_probability_bets": top_probability_ctx,
         "demo": demo,
         "min_probability": min_probability,
-        "min_odd": min_odd,
     }
 
 
@@ -122,7 +125,6 @@ def render_dashboard(
     value_bet_threshold: float = 1.0,
     demo: bool = False,
     min_probability: float = 0.5,
-    min_odd: float = 1.2,
     betclic_markets: set[str] | None = None,
 ) -> Path:
     env = Environment(
@@ -136,7 +138,6 @@ def render_dashboard(
             games,
             demo=demo,
             min_probability=min_probability,
-            min_odd=min_odd,
             betclic_markets=betclic_markets,
         )
     )

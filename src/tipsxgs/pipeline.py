@@ -78,7 +78,6 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
         cfg.reports_dir,
         value_bet_threshold=cfg.value_bet_threshold,
         min_probability=cfg.report_min_probability,
-        min_odd=cfg.report_min_odd,
         betclic_markets=_betclic_coverable_markets(cfg),
     )
     render_index(cfg.reports_dir)

@@ -61,6 +61,18 @@ def test_abbreviated_team_name_still_matches_via_token_set_ratio():
     assert games[0].odds is not None
 
 
+def test_abbreviated_prefix_still_matches_via_wratio():
+    # Real case from a live run (2026-09-14): xGScore's "Dep. Riestra -
+    # Lanús" scores only 68 against Betclic's "Deportivo Riestra -
+    # Atlético Lanus" on token_sort/token_set_ratio alone (below a sane
+    # min_confidence) -- WRatio scores it 85.5, comfortably above.
+    fixtures = [fx("Dep. Riestra", "Lanús")]
+    games = match_fixtures_to_odds(
+        fixtures, {}, [offer("Deportivo Riestra", "Atlético Lanus")], min_confidence=80
+    )
+    assert games[0].odds is not None
+
+
 def test_predictions_are_attached_by_fixture_id():
     fixture = fx("Union Berlin", "Schalke")
     prediction = Prediction(fixture_id=fixture.id, markets={"1x2": {"home": 0.5, "draw": 0.3, "away": 0.2}})

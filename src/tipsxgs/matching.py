@@ -39,7 +39,18 @@ def _score(fixture: Fixture, offer: OddsOffer) -> float:
     # borderline abbreviation cases (we take the max), never hurts a
     # pair that already scored well on token_sort_ratio.
     token_set = fuzz.token_set_ratio(fixture_key, offer_key)
-    score = max(same_order, swapped, token_set)
+    # WRatio (rapidfuzz's own blend of ratio/partial_ratio/token_sort/
+    # token_set, weighted by how the two strings' lengths compare) --
+    # real case (2026-09-14 live run): "Dep. Riestra vs Lanus" against
+    # "Deportivo Riestra vs Atletico Lanus" scores only 68 on
+    # token_sort/token_set (a whole extra word on each side drags the
+    # ratio down more than it should for what is obviously the same
+    # fixture), but 85.5 on WRatio. Checked against every other case in
+    # tests/test_matching.py first to confirm it never scores an
+    # unrelated pair of games any higher than the existing algorithms
+    # already do.
+    wratio = max(fuzz.WRatio(fixture_key, offer_key), fuzz.WRatio(fixture_key, swapped_key))
+    score = max(same_order, swapped, token_set, wratio)
 
     if fixture.kickoff and offer.kickoff:
         if fixture.kickoff.date() == offer.kickoff.date():

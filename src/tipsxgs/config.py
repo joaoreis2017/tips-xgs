@@ -111,17 +111,16 @@ class AppConfig:
     user_agent: str
     xgscore: SiteSection
     betclic: SiteSection
-    # Dashboard display filter for the per-game "events by probability"
-    # table -- with every xGScore market now extracted (over/under every
-    # line, handicaps, ...), that table would otherwise be dozens of rows
-    # long and mostly near-certain/near-impossible ones. Only an event
-    # meeting *both* thresholds is shown; a game with no matched Betclic
-    # offer (odd always None) shows none, by design -- there's nothing to
-    # compare probability against, so nothing here counts as "worth
-    # showing". Doesn't affect value_bets_ranked/best_value_bet (the
-    # value_ratio-based ranking), only this probability-ranked table.
+    # Dashboard display filter, both for the per-game "events by
+    # probability" table and the cross-game "top probability" list --
+    # with every xGScore market now extracted (over/under every line,
+    # handicaps, ...), those would otherwise be dozens of rows long.
+    # Only an event whose model probability clears this shows up (odd,
+    # when there's a matched Betclic one, renders alongside it; "—" when
+    # there isn't -- explicitly requested to show every high-probability
+    # pick, odds or not). Doesn't affect value_bets_ranked/best_value_bet
+    # (the value_ratio-based ranking), only these probability-ranked views.
     report_min_probability: float = 0.5
-    report_min_odd: float = 1.2
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -186,6 +185,5 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         xgscore=_site_section(raw.get("xgscore", {})),
         betclic=_site_section(raw.get("betclic", {})),
         report_min_probability=float(raw.get("report_min_probability", 0.5)),
-        report_min_odd=float(raw.get("report_min_odd", 1.2)),
         raw=raw,
     )

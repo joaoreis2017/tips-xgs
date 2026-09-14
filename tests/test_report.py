@@ -1,11 +1,19 @@
-"""Regression test for the dashboard's "events by probability" filter.
+"""Regression tests for the dashboard's "events by probability" filter.
 
-Prompted by a real screenshot: with every xGScore market extracted (every
-over/under line, every handicap line, ...), a game's full event list was
-dozens of rows of near-certain/near-impossible outcomes ("under 5 goals:
-100%") with no Betclic odd to compare against -- not useful to look at.
-build_context() now only keeps an event that clears *both* a probability
-and an odd threshold.
+Prompted by two real, sequential bug reports:
+
+1. With every xGScore market extracted (every over/under line, every
+   handicap line, ...), a game's full event list was dozens of rows of
+   near-certain/near-impossible outcomes ("under 5 goals: 100%") -- fixed
+   by requiring a probability threshold (``min_probability``).
+2. Explicitly requested afterwards: show *every* event clearing that
+   probability threshold, odd or no odd (a previous version additionally
+   required a matched Betclic odd above a second threshold, which this
+   request reverses) -- an odd-less entry still only shows up when its
+   market is one Betclic could ever plausibly offer (see
+   ``betclic_markets`` / ``pipeline._betclic_coverable_markets``),
+   otherwise permanently-uncoverable markets (handicap, per-team totals)
+   would flood the table at ~100% probability with nothing to show.
 """
 
 from datetime import date
@@ -43,41 +51,65 @@ def _game(
     return game
 
 
-def test_events_require_both_probability_and_odd_thresholds():
+def test_events_only_require_the_probability_threshold():
     game = _game(
         markets={
-            # Clears both thresholds -- should show up.
+            # Clears the threshold, has a matched odd -- shows up.
             "1x2": {"home": 0.55},
-            # High probability, but no matching Betclic odd at all --
-            # e.g. a handicap line Betclic doesn't offer.
-            "handicap_home": {"0": 0.7},
-            # Has an odd, but probability is too low.
-            "btts": {"yes": 0.3},
+            # Clears the threshold too, but no matching Betclic odd at
+            # all -- still shows up (odd/valor render as "—"), since
+            # nothing here requires an odd anymore.
+            "btts": {"yes": 0.7},
+            # Below the threshold -- excluded regardless of odds.
+            "over_under_2.5": {"under": 0.3},
         },
-        odds_markets={
-            "1x2": {"home": 1.8},
-            "btts": {"yes": 1.9},
-            # "handicap_home" deliberately has no matching odd entry.
-        },
+        odds_markets={"1x2": {"home": 1.8}},
     )
 
-    ctx = build_context(date(2026, 9, 12), [game], min_probability=0.5, min_odd=1.2)
+    ctx = build_context(date(2026, 9, 12), [game], min_probability=0.5)
     events = ctx["games"][0]["events"]
 
-    assert len(events) == 1
-    assert events[0].market == "1x2" and events[0].outcome == "home"
+    by_market = {e.market for e in events}
+    assert by_market == {"1x2", "btts"}
+    btts_event = next(e for e in events if e.market == "btts")
+    assert btts_event.odd is None
 
 
-def test_events_empty_when_no_betclic_offer_matched():
-    # A game with no matched Betclic offer at all (odds is None) has
-    # every odd = None -- by design, nothing clears "odd > min_odd", so
-    # the events table is empty even though probabilities exist.
+def test_events_drop_odd_less_entries_for_uncoverable_markets_only():
+    # A market Betclic has *no* extraction rule for at all (e.g.
+    # handicap) can never carry a real odd -- betclic_markets, when
+    # given, drops those odd-less entries so they don't flood the table
+    # at ~100% probability. An odd-less entry for a market Betclic *is*
+    # calibrated for (btts here) still shows up either way.
+    game = _game(
+        markets={
+            "1x2": {"home": 0.55},
+            "btts": {"yes": 0.7},
+            "handicap_home": {"-3": 0.99},
+        },
+        odds_markets={"1x2": {"home": 1.8}},
+    )
+
+    ctx = build_context(date(2026, 9, 12), [game], min_probability=0.5, betclic_markets={"1x2", "btts"})
+    assert {e.market for e in ctx["games"][0]["events"]} == {"1x2", "btts"}
+
+    # Without betclic_markets (the default), nothing is dropped.
+    ctx_unfiltered = build_context(date(2026, 9, 12), [game], min_probability=0.5)
+    assert {e.market for e in ctx_unfiltered["games"][0]["events"]} == {"1x2", "btts", "handicap_home"}
+
+
+def test_events_show_even_with_no_betclic_offer_matched():
+    # Explicitly requested: a game with no matched Betclic offer at all
+    # (odds is None, so every odd is None) still shows its
+    # high-probability events -- odd/valor just render as "—".
     game = _game(markets={"1x2": {"home": 0.9}}, odds_markets=None)
 
     ctx = build_context(date(2026, 9, 12), [game])
-    assert ctx["games"][0]["events"] == []
+    events = ctx["games"][0]["events"]
+    assert len(events) == 1
+    assert events[0].odd is None
     # The underlying probability data is untouched -- still there for
-    # games.json / other views, just not shown in this filtered table.
+    # games.json / other views either way.
     assert game.prediction.markets == {"1x2": {"home": 0.9}}
 
 
@@ -87,7 +119,7 @@ def test_events_threshold_is_configurable():
     # Below the default 0.5 probability threshold -- excluded.
     assert build_context(date(2026, 9, 12), [game])["games"][0]["events"] == []
     # Lowering the threshold includes it.
-    ctx = build_context(date(2026, 9, 12), [game], min_probability=0.3, min_odd=1.2)
+    ctx = build_context(date(2026, 9, 12), [game], min_probability=0.3)
     assert len(ctx["games"][0]["events"]) == 1
 
 
@@ -96,8 +128,8 @@ def test_has_predictions_distinguishes_genuinely_empty_from_filtered_out():
     # dashboard template needs `has_predictions` to tell them apart
     # rather than showing the same "nothing was scraped" message for
     # both (a real bug report from a user who had plenty of xGScore
-    # predictions, just none clearing the Betclic-odd filter above).
-    scraped_but_filtered = _game(markets={"1x2": {"home": 0.9}}, odds_markets=None)
+    # predictions, just none clearing the probability filter above).
+    scraped_but_filtered = _game(markets={"1x2": {"home": 0.3}}, odds_markets=None)  # below threshold
     genuinely_empty = _game(markets={}, odds_markets=None)
 
     ctx = build_context(date(2026, 9, 12), [scraped_but_filtered, genuinely_empty])

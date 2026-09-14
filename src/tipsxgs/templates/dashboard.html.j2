@@ -164,7 +164,7 @@
     {% elif not game.has_predictions %}
     <p class="empty">Sem previsões extraídas para este jogo (ver docs/CALIBRATION.md).</p>
     {% else %}
-    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; {{ "%.0f"|format(min_probability * 100) }}%).</p>
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; {{ "%.0f"|format(min_probability * 100) }}%) com uma odd Betclic emparelhada.</p>
     {% endif %}
 
     <div class="section-title">Melhores apostas de valor deste jogo</div>

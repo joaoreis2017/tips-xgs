@@ -26,19 +26,19 @@ def build_context(
 ) -> dict:
     game_ctx = []
     for g in games:
-        # Every xGScore market is extracted now (every over/under line,
-        # every handicap line, ...), so the full events_by_probability
-        # list is dozens of rows long -- explicitly requested (twice: once
-        # to drop the odd requirement, once more to also stop dropping
-        # markets Betclic doesn't cover) to show *every single one*
-        # clearing min_probability, odd or no odd, coverable by Betclic
-        # or not. Unlike the cross-game "top probability" list below,
-        # betclic_markets does NOT apply here -- per-game, this table is
-        # meant to be the complete picture of what xGScore itself thinks
-        # about this one match, not just the actionable-against-Betclic
-        # slice of it. odd/valor simply render as "—" for a market
-        # Betclic doesn't offer at all, or hasn't been matched yet.
-        events = [e for e in g.events_by_probability if e.probability > min_probability]
+        # CHANGED (2026-09-14, explicitly requested a third time): earlier
+        # iterations showed every event clearing min_probability regardless
+        # of whether Betclic had a matching odd (odd/valor rendered as
+        # "—") -- now reversed back to odds-required, since a "— " row
+        # (e.g. a "Menos de 5.5" line Betclic simply doesn't offer) isn't
+        # worth showing at all. Unlike the earlier behavior, this is now
+        # the same odds-required filter top_value_bets_today already
+        # applies, just without its value_ratio>threshold requirement --
+        # every event with a real Betclic odd shows, not only the ones
+        # that clear the value-bet bar.
+        events = [
+            e for e in g.events_by_probability if e.probability > min_probability and e.odd is not None
+        ]
         # Distinct from "events is empty" below: this says whether
         # scraping actually got *any* xGScore probabilities for this game
         # at all, regardless of the min_probability filter above -- an

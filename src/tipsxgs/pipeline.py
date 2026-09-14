@@ -111,7 +111,16 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
 
     logger.info("Saving results...")
     json_path = save_day(today, games, cfg.data_dir)
-    logger.info("Saved %s", json_path)
+    # Repeat the match count on this same line (not just the separate
+    # "Matched X/Y" line above) so a pasted log tail always carries both
+    # numbers *and* the file path together -- a real point of confusion
+    # once: a games.json pasted separately from its own run's log looked
+    # like a 100%-unmatched regression, when it was actually just a
+    # leftover file from an earlier run that day (config.data_dir is the
+    # same across runs, so each run's save overwrites the previous one's
+    # games.json -- only the freshest run's file and its own "Saved" line
+    # ever agree).
+    logger.info("Saved %s (%d/%d fixtures matched to a Betclic offer this run)", json_path, matched, len(games))
 
     logger.info("Rendering dashboard...")
     html_path = render_dashboard(

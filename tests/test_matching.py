@@ -61,16 +61,21 @@ def test_abbreviated_team_name_still_matches_via_token_set_ratio():
     assert games[0].odds is not None
 
 
-def test_abbreviated_prefix_still_matches_via_wratio():
-    # Real case from a live run (2026-09-14): xGScore's "Dep. Riestra -
-    # Lanús" scores only 68 against Betclic's "Deportivo Riestra -
-    # Atlético Lanus" on token_sort/token_set_ratio alone (below a sane
-    # min_confidence) -- WRatio scores it 85.5, comfortably above.
-    fixtures = [fx("Dep. Riestra", "Lanús")]
-    games = match_fixtures_to_odds(
-        fixtures, {}, [offer("Deportivo Riestra", "Atlético Lanus")], min_confidence=80
-    )
-    assert games[0].odds is not None
+def test_unrelated_fixtures_never_cross_a_sane_confidence_threshold():
+    # Regression guard for a real false-positive: fuzz.WRatio was briefly
+    # added to _score() to rescue an abbreviated-name case ("Dep. Riestra
+    # - Lanus" vs "Deportivo Riestra - Atletico Lanus", scoring only 68
+    # on token_sort/token_set), and reverted the same day once a live
+    # run's own data showed WRatio scoring "Torino - Roma" 85.5 against
+    # the completely unrelated "Dynamo K. - Epitsentr" -- a wrong match
+    # (feeding a real-looking but bogus odd into the value-bet
+    # calculation) is worse than no match, so this locks in that no
+    # algorithm added to _score() may score totally unrelated team names
+    # anywhere near a sane min_confidence. The abbreviated-name case
+    # above stays correctly unmatched below 80 until a safer fix exists.
+    fixtures = [fx("Dynamo K.", "Epitsentr")]
+    games = match_fixtures_to_odds(fixtures, {}, [offer("Torino", "Roma")], min_confidence=80)
+    assert games[0].odds is None
 
 
 def test_predictions_are_attached_by_fixture_id():

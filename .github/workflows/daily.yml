@@ -1,0 +1,61 @@
+name: Daily xGScore + Betclic run
+
+on:
+  schedule:
+    # 08:00 UTC ~= 09:00 (winter) / 08:00 (summer, DST) in Lisbon.
+    # Adjust to whenever most of the day's fixtures/odds are already
+    # published on both sites.
+    - cron: "0 8 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+          playwright install --with-deps chromium
+
+      - name: Run daily pipeline
+        run: python scripts/run_daily.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name "tipsxgs-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "data: daily xGScore/Betclic snapshot $(date -u +%Y-%m-%d)"
+          git push
+
+      - name: Upload dashboard artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: data
+
+  deploy:
+    needs: scrape
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

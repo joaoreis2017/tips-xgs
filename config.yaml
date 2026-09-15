@@ -1,0 +1,542 @@
+# tipsxgs configuration.
+#
+# IMPORTANT: the `selector` / `json_path` values below are PLACEHOLDERS.
+# This project's dev sandbox has no network access to xgscore.io or
+# betclic.pt, so none of these could be verified against the live sites.
+# Run `python scripts/inspect_site.py <url>` from a machine that *can*
+# reach them, then fill in the real values here -- see docs/CALIBRATION.md
+# for the step by step. Nothing else in the code needs to change.
+
+timezone: "Europe/Lisbon"
+data_dir: "data"        # where daily games.json snapshots are written
+reports_dir: "data"     # where the daily index.html dashboard is written
+value_bet_threshold: 1.0     # value_ratio above this counts as a "value bet"
+min_match_confidence: 80     # fuzzy-match score (0-100) required to pair a fixture with a Betclic offer
+max_concurrent_previews: 3
+headless: true
+
+# Filter for the dashboard's per-game "acontecimentos por probabilidade"
+# table -- with every xGScore market extracted (every over/under line,
+# every handicap line, ...), that table would otherwise be dozens of
+# rows long. An event also needs a matched Betclic odd to show there
+# (explicitly requested -- a "—" row for a line Betclic doesn't offer
+# isn't worth showing). Doesn't affect the value-bet ranking
+# (value_bet_threshold above) or the two cross-game bands below.
+report_min_probability: 0.5   # xGScore's own probability must be > this (0..1)
+
+# The two cross-game bands (explicitly requested as separate lists
+# instead of one combined "top probability" list): every event across
+# every game whose *displayed* probability (whole percent, rounded --
+# see valuebets._rounded_percent) falls in [report_high_probability_min,
+# 100] goes in the high-confidence panel; [report_mid_probability_min,
+# report_mid_probability_max] goes in the mid-confidence one. Both
+# bounds are inclusive. Anything below report_mid_probability_min isn't
+# shown in either. Unlike report_min_probability above, these do NOT
+# require a matched Betclic odd (odd/valor render as "—") -- but an
+# odd-less entry is still dropped when its market is one Betclic has no
+# extraction rule for at all (handicap, per-team totals) -- see
+# pipeline._betclic_coverable_markets -- since those can never get a
+# real odd regardless.
+report_high_probability_min: 0.67   # >= 67% (displayed)
+report_mid_probability_min: 0.34    # 34%..66% (displayed) band
+report_mid_probability_max: 0.66
+
+xgscore:
+  base_url: "https://xgscore.io"
+  # REVERTED (2026-09-14): briefly raised to 6.0 (from the SiteSection
+  # default of 1.5) on a rate-limiting hypothesis -- disproven by the
+  # very next run's own data (see games.json's per-fixture scraped_at
+  # timestamps): with the 6.0s delay in place, real preview data still
+  # landed on only 3/16 fixtures, but this time at *positions 1, 4 and
+  # 12* out of 16 (Dynamo K.-Epitsentr, Inter-Udinese, Villarreal-Real
+  # Betis) -- scattered through the run, not clustered at the start
+  # (rate-limit-after-N) or the end. wait_ms 4000->6000 was *also*
+  # disproven the same way one run earlier. Neither "not enough time
+  # per page" nor "too many requests too fast" explains a pattern where
+  # success/failure doesn't correlate with request order at all -- so
+  # both reverted rather than piling on more unconfirmed delay/wait
+  # tweaks. Left at the plain default (no override) until a real
+  # diagnostic (inspect_site.py dump of both a working and a failing
+  # preview page, compared side by side) shows what's actually
+  # different about the ones that fail -- most likely explanation left
+  # standing: xGScore genuinely hasn't finished computing a prediction
+  # for those specific games yet at request time, which no amount of
+  # waiting/pacing from our side can fix.
+
+  fixtures:
+    # CALIBRATED (2026-09-11): xgscore.io's homepage ships a "top value
+    # bets" JSON feed (captured as a plain XHR array response, no
+    # wrapper key -- see json_list_path below) alongside a couple of
+    # unrelated small blobs ({"geo": "PT"} and a list of ISO datetimes)
+    # that are ignored automatically since they don't match any field.
+    #
+    # Each item is one xGScore-picked bet for one game, e.g.:
+    #   {"oddsCategory": "r", "oddsLabel": "1", "chance": 0.638,
+    #    "text": "Home Win", "valueBet": 0.02,
+    #    "game": {"slug": "hacken-mjallby", "datetime": "...",
+    #      "tournament": {"name": "Sweden Allsvenskan", "slug": "sweden-allsvenskan"},
+    #      "teams": {"h": {"name": "Häcken"}, "a": {"name": "Mjällby"}},
+    #      "forecastScore": {"h": 2.05, "a": 0.92}}}
+    #
+    # `game.slug` + `game.tournament.slug` give us the *exact* preview
+    # URL xGScore itself uses (confirmed: "bundesliga" + "union-berlin-
+    # schalke" reproduces this project's original example URL exactly --
+    # see preview_url below) -- much safer than re-slugifying team names
+    # ourselves, which breaks on apostrophes etc. (e.g. "Newell's OB" is
+    # really slugged "newells-ob", not "newell-s-ob").
+    #
+    # STILL TO DO / CAVEAT: this feed seems to be xGScore's own *picked*
+    # value bets (one row per game, one specific market outcome each --
+    # e.g. only "Home Win" for one game, only "Total Over 3" for
+    # another), not necessarily every game xGScore has data for. If a
+    # day's dashboard looks sparse, check for a more complete "today's
+    # fixtures" endpoint/page (e.g. a full schedule view) and repoint
+    # `url` at that instead -- the field mappings below should carry over
+    # unchanged since they're relative to one `game` object either way.
+    #
+    # KNOWN ISSUE (2026-09-11 live runs): flaky -- one run found 9
+    # fixtures, the very next run found 0 with an identical config, most
+    # likely because the "top value bets" widget's XHR doesn't always
+    # fire within BrowserSession's default 2000ms wait. Bumped below;
+    # raise further if a run still comes back with 0 fixtures.
+    url: "https://xgscore.io/"
+    wait_ms: 6000
+
+    # "[?game]" rather than a bare "@": the page also fires two other,
+    # unrelated small JSON responses ({"geo": "PT"} and a plain array of
+    # ISO datetime strings) -- filtering for elements that have a `game`
+    # key picks out the actual bets array regardless of which blob shows
+    # up first, and safely resolves to an empty list (not a crash) against
+    # the other two.
+    json_list_path: "[?game]"
+
+    fields:
+      - key: league
+        json_path: "game.tournament.name"
+      - key: home_team
+        json_path: "game.teams.h.name"
+      - key: away_team
+        json_path: "game.teams.a.name"
+      - key: kickoff
+        json_path: "game.datetime"
+      - key: slug
+        json_path: "game.slug"   # real slug, used as-is (see _row_to_fixture) instead of re-deriving one from team names
+      - key: preview_url
+        json_path: "join('/', ['', game.tournament.slug, game.slug, 'preview'])"
+
+  preview:
+    # No `url` here -- the preview page URL comes from each Fixture
+    # (either scraped above, or built from base_url/league/home-away).
+    json_list_path: null   # preview pages have one game, not a list
+
+    # This page fires even more separate JSON requests than the fixtures
+    # page above (team form, standings, h2h, per-bookmaker odds, the
+    # metadata object we actually want, ...) -- given that page needed
+    # more than the 2000ms default on at least one real run, give this
+    # one some headroom too rather than wait to see it fail the same way.
+    #
+    # RAISED 4000 -> 6000 (2026-09-14): a live run got real data for only
+    # 3/15 preview pages -- the other 12 logged "No preview data
+    # extracted" (misleadingly still counted as "successful" by
+    # pipeline.py's old logging, since it only checked for an exception,
+    # not for actual data -- also fixed). Exactly the same symptom
+    # xgscore.fixtures had at 2000ms, fixed the same way there by raising
+    # wait_ms to 6000 -- speculative until confirmed against a real run,
+    # since this sandbox has no network access to verify it directly.
+    # Raise further still if a run still comes back mostly empty.
+    wait_ms: 6000
+
+    # CALIBRATED (2026-09-11), from inspecting the Union Berlin - Schalke
+    # preview page: it fires a LOT of captured JSON responses (team form,
+    # league standings, head-to-head, last-5-games history, a
+    # per-bookmaker odds-comparison array with entries for 1xbet/
+    # Pinnacle888/GGBet/etc...) but exactly ONE of them -- a small object
+    # with a `metadataId` field, no wrapping list -- holds xGScore's own
+    # computed market probabilities:
+    #   {"r": "[[\"1\",54.5,12.7,2.4],[\"x\",23.7,-3.6,1.8],[\"2\",21.7,-10.7,0.7]]",
+    #    "dc": "[[\"1x\",78.3,8.1,0.7],...]", "bts": "[[\"yes\",67.1,...
+    #    "tm": "[[\"0.5\",94.8,...],[\"2.5\",63.9,4.9,7],...]",   # Over X
+    #    "tl": "[[\"0.5\",5.2,...],[\"2.5\",36.1,...],...]",      # Under X
+    #    "h1"/"h2": handicap, "cs": correct score (often null),
+    #    "gameId": "...", "metadataId": "..."}
+    #
+    # Each market's value is a JSON *string* (not a real nested array) --
+    # BrowserSession/find_embedded_json now run every captured/embedded
+    # blob through extract.deep_parse_json_strings(), which decodes any
+    # such double-encoded field automatically, so the json_path rules
+    # below can just index into "r"/"tm"/"tl"/"bts" as normal arrays.
+    #
+    # A near-identical-looking but *separate* per-bookmaker odds array
+    # also has "r"/"dc"/"bts"/"tm"/"tl" keys (there: real decimal ODDS,
+    # e.g. 2.5/3.635/2.937, not probabilities) plus a `bookmakerId` field
+    # -- but since it's a *list* of several such objects (one per
+    # bookmaker + MAX/AVG aggregates), not a single dict, a bare `.r`
+    # field access naturally resolves to null against it and only
+    # matches the one probabilities object. No filtering needed for that
+    # disambiguation, only for which row of "r"/"tm"/"tl" we want.
+    #
+    # Each row is `[label, chance_percent, ...more columns we ignore]` --
+    # `[?[0]=='<label>'] | [0][1]` picks out one row's percentage
+    # (normalize_probabilities() below divides by 100 automatically).
+    #
+    # STILL TO DO: "cs" (correct score) is often null for a not-yet-
+    # played game with few tracked bookmaker odds -- left uncalibrated
+    # for now (its rows are scorelines like "2-1", not numeric lines, but
+    # the exact same array_markets mechanism below would cover it too,
+    # e.g. market_template: "correct_score", outcome_template: "{label}",
+    # once a populated real example confirms it's shaped the same way).
+    fields:
+      - key: prob_home_win
+        json_path: "r[?[0]=='1'] | [0][1]"
+      - key: prob_draw
+        json_path: "r[?[0]=='x'] | [0][1]"
+      - key: prob_away_win
+        json_path: "r[?[0]=='2'] | [0][1]"
+      - key: prob_btts_yes
+        json_path: "bts[?[0]=='yes'] | [0][1]"
+      - key: prob_btts_no
+        json_path: "bts[?[0]=='no'] | [0][1]"
+
+    # Maps each raw `key` above to "<canonical_market>.<outcome>" (see
+    # src/tipsxgs/markets.py for the full vocabulary + PT labels used in
+    # the dashboard). Extend this as you add more fields.
+    market_aliases:
+      prob_home_win: "1x2.home"
+      prob_draw: "1x2.draw"
+      prob_away_win: "1x2.away"
+      prob_btts_yes: "btts.yes"
+      prob_btts_no: "btts.no"
+
+    # CALIBRATED (2026-09-12): every *other* market xGScore's metadata
+    # object carries, all confirmed against a real populated example
+    # (Union Berlin - Schalke) -- each is a whole array of
+    # `[line_or_selection, chance_percent, ...]` rows, one row per
+    # outcome, expanded in one go via markets.expand_array_market()
+    # instead of one `fields` entry per line (over/under alone has 11
+    # lines per team per direction -- 44+ entries just for that).
+    #
+    # - tm/tl: total match goals over/under, *every* line (0.5 .. 5.5+)
+    #   -> canonical "over_under_<line>.over"/".under" (same taxonomy the
+    #   2.5-only version used before -- this just covers every line now).
+    # - itm1/itl1: the HOME team's own total goals over/under
+    #   -> "home_total_<line>.over"/".under" (new markets).
+    # - itm2/itl2: the AWAY team's own total goals over/under
+    #   -> "away_total_<line>.over"/".under" (new markets).
+    # - h1/h2: Asian handicap coverage chance, home/away
+    #   -> "handicap_home"/"handicap_away", one outcome per line (e.g.
+    #   "-1.5", "0", "1"): the *probability that team covers that line*.
+    # - dc: double chance (already-known outcome labels "1x"/"12"/"x2"
+    #   match markets.OUTCOME_LABELS directly) -> "double_chance.<label>".
+    array_markets:
+      - json_path: "tm"
+        market_template: "over_under_{label}"
+        outcome_template: "over"
+      - json_path: "tl"
+        market_template: "over_under_{label}"
+        outcome_template: "under"
+      - json_path: "itm1"
+        market_template: "home_total_{label}"
+        outcome_template: "over"
+      - json_path: "itl1"
+        market_template: "home_total_{label}"
+        outcome_template: "under"
+      - json_path: "itm2"
+        market_template: "away_total_{label}"
+        outcome_template: "over"
+      - json_path: "itl2"
+        market_template: "away_total_{label}"
+        outcome_template: "under"
+      - json_path: "h1"
+        market_template: "handicap_home"
+        outcome_template: "{label}"
+      - json_path: "h2"
+        market_template: "handicap_away"
+        outcome_template: "{label}"
+      - json_path: "dc"
+        market_template: "double_chance"
+        outcome_template: "{label}"
+
+betclic:
+  base_url: "https://www.betclic.pt"
+  request_delay_seconds: 2.0   # be polite -- one request every N seconds
+
+  fixtures:
+    # CALIBRATED (2026-09-11): betclic.pt is an Angular app that embeds its
+    # data as JSON in a `<script>` tag (Angular TransferState / hydration
+    # cache -- keys look like "grpc:<hash>"). Several of those keys can
+    # hold {"response": {"payload": {"matches": [...]}}} *at the same
+    # time*, side by side in the very same blob -- e.g. one grpc:<hash>
+    # key for the "Em Direto" (live) matches and a different grpc:<hash>
+    # key for a specific competition's upcoming fixtures (confirmed with a
+    # real "Liga Portugal Betclic" example: isLive: false, real future
+    # matchDateUtc, same market.mainSelections shape).
+    #
+    # The JMESPath below (`*.response.payload.matches[]`) is a wildcard
+    # over *every* top-level key of the blob, so it merges matches from
+    # ALL such grpc keys found in one page load into a single flat list --
+    # confirmed in tests/test_betclic_odds.py
+    # (test_scrape_today_odds_merges_live_and_upcoming_matches_from_one_blob).
+    # In practice this means one visit to this URL already returns both
+    # live and upcoming games without needing a per-competition URL.
+    #
+    # STILL TO DO: this only gives the inline 1X2 market. BTTS/over-under/
+    # correct-score odds need a visit to each match's own page -- see
+    # betclic.odds below.
+    #
+    # SUPERSEDED APPROACH (2026-09-11): originally one generic "all
+    # football" page (url: "https://www.betclic.pt/futebol-sfootball")
+    # plus scroll_count to trigger its infinite-scroll lazy-loading.
+    # Confirmed unreliable across three separate live runs: coverage
+    # stayed flat at exactly 20 offers regardless of wait_ms (2000 vs
+    # 8000 -- ruling out "not enough time"), then jumped around
+    # unpredictably once scrolling was added (4/9 fixtures matched one
+    # run, then 0/49 the next, both times covering a essentially random
+    # assortment of leagues -- e.g. Korean K-League, Australian NPL, never
+    # the bigger ones xGScore's fixtures actually needed that day). A
+    # single scrolling page's coverage is apparently order-of-loading
+    # dependent and not something a fixed wait/scroll count can pin down.
+    #
+    # CALIBRATED (2026-09-12): `urls` instead -- one visit per specific
+    # competition page (same routing template confirmed for match pages
+    # in betclic.odds/_build_match_url:
+    # "/{sportName}-s{sportId}/{competitionName}-c{competitionId}"), each
+    # merged into one result the same way multiple grpc keys/scroll pages
+    # already were (see _scrape_list in src/tipsxgs/betclic/odds.py). Far
+    # more reliable than hoping a scroll loads the right leagues: every
+    # competition below is *guaranteed* covered every run, independent of
+    # how many others load first. competitionId values are Betclic's own
+    # (confirmed from its competition-nav payload, grpc:2666540474 in an
+    # earlier inspection) -- add more leagues here as needed; a slightly
+    # wrong slug in the URL still works since Betclic 301s to the real
+    # one as long as the "-c<id>" suffix is right (confirmed: our
+    # built match-detail URLs redirect successfully the same way).
+    #
+    # STILL TO DO: this is a fixed list of leagues we've seen xGScore
+    # bring up so far in this project's live runs, not a dynamically
+    # derived one -- if a day's dashboard is missing a league xGScore did
+    # have games in, add its Betclic competitionId here.
+    urls:
+      - "https://www.betclic.pt/futebol-s1/inglaterra-premier-league-c3"
+      - "https://www.betclic.pt/futebol-s1/inglaterra-championship-c28"
+      - "https://www.betclic.pt/futebol-s1/espanha-la-liga-c7"
+      - "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-c5"
+      - "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-2-c29"
+      - "https://www.betclic.pt/futebol-s1/franca-ligue-1-c4"
+      - "https://www.betclic.pt/futebol-s1/franca-ligue-2-c19"
+      - "https://www.betclic.pt/futebol-s1/italia-serie-a-c6"
+      - "https://www.betclic.pt/futebol-s1/italia-serie-b-c30"
+      - "https://www.betclic.pt/futebol-s1/paises-baixos-eredivisie-c21"
+      - "https://www.betclic.pt/futebol-s1/liga-portugal-betclic-c32"
+      - "https://www.betclic.pt/futebol-s1/dinamarca-superliga-c88"
+      - "https://www.betclic.pt/futebol-s1/suecia-allsvenskan-c145"
+      - "https://www.betclic.pt/futebol-s1/argentina-primera-c230"
+      - "https://www.betclic.pt/futebol-s1/brasil-serie-a-c187"
+      - "https://www.betclic.pt/futebol-s1/mexico-liga-mx-c432"
+      - "https://www.betclic.pt/futebol-s1/eua-mls-c504"
+    # Each competition page is much lighter than the old generic page --
+    # no scrolling needed, and less time per visit -- but there are many
+    # of them, so this adds up (~17 pages x (wait_ms + a polite delay
+    # between each)). Raise wait_ms if a specific league's page turns out
+    # to need more, lower it if this step ends up slower than needed.
+    wait_ms: 3000
+    json_list_path: "*.response.payload.matches[]"
+
+    fields:
+      - key: league
+        json_path: "competition.name"
+      - key: home_team
+        json_path: "contestants[0].name"
+      - key: away_team
+        json_path: "contestants[1].name"
+      - key: kickoff
+        json_path: "matchDateUtc"
+      # 1X2 ("Resultado (Tempo Regulamentar)") comes inline in the same
+      # match object, as market.mainSelections in [home, draw, away]
+      # order -- confirmed against real data, no detail-page hop needed
+      # for this market.
+      - key: odd_home
+        json_path: "market.mainSelections[0].odds"
+      - key: odd_draw
+        json_path: "market.mainSelections[1].odds"
+      - key: odd_away
+        json_path: "market.mainSelections[2].odds"
+      # match_id + competition_id aren't odds -- they're just IDs used
+      # (in src/tipsxgs/betclic/odds.py::_build_match_url) to build the
+      # detail-page URL below, from Betclic's own routing template.
+      - key: match_id
+        json_path: "matchId"
+      - key: competition_id
+        json_path: "competition.id"
+
+    market_aliases:
+      odd_home: "1x2.home"
+      odd_draw: "1x2.draw"
+      odd_away: "1x2.away"
+
+  odds:
+    # CALIBRATED (2026-09-11), from inspecting one match's own page
+    # (e.g. .../futebol-s1/liga-portugal-betclic-c32/cd-nacional-fc-alverca-m<id>):
+    # same Angular TransferState blob, but this time a *different*
+    # grpc:<hash> key holds {"response": {"payload": {"match": {...}}}}
+    # (singular "match", not a "matches" list) -- one match, with every
+    # market grouped under match.subCategories[].markets[]. Each market
+    # has a `name` (Portuguese) and either:
+    #   - `mainSelections` (flat list, e.g. 1X2 -- already covered by
+    #     betclic.fixtures above, no need to repeat it here), or
+    #   - `selectionMatrix` (a list of *rows*, each with a `selections`
+    #     list) -- used for everything else, but with an inconsistent
+    #     shape between markets: some rows hold plain
+    #     {name, odds, ...} objects (e.g. "Total de golos - acima/abaixo"),
+    #     others wrap each one as
+    #     {"selectionOneof": {"oneofKind": "selection", "selection": {name, odds, ...}}}
+    #     (e.g. "As duas equipas marcam" / BTTS). The json_path below for
+    #     each field matches whichever shape that specific market used --
+    #     verified against real data in
+    #     tests/test_betclic_odds.py::test_scrape_today_odds_reads_btts_and_over_under_from_match_detail_page.
+    #
+    # STILL TO DO: `url` below is left unset -- `match_url` is instead
+    # *built* per-fixture from Betclic's own routing template (see
+    # betclic.fixtures.fields' match_id/competition_id above), which is
+    # confirmed for the URL *shape* but not yet character-for-character
+    # verified against a live rendered link (the exact slugification of
+    # accented team/competition names is a best-effort guess -- see
+    # _build_match_url in src/tipsxgs/betclic/odds.py). If `python -m
+    # tipsxgs run -v` logs 404s / empty detail-page extraction, paste one
+    # real match URL from betclic.pt here as a sanity check.
+    #
+    # "Resultado correcto" (correct score) is NOT calibrated yet -- its
+    # selectionMatrix is a large, variable-size grid (dozens of
+    # scorelines, with null cells for handicap-implied "impossible" rows)
+    # that needs its own extraction pass; the 1X2 + BTTS + O/U below
+    # already cover the value-bet markets asked for.
+    fields:
+      # Every path below starts with `*.response.payload.match.` -- same
+      # wildcard-over-every-grpc-key trick as betclic.fixtures, since the
+      # match detail page embeds its data the same way (one grpc:<hash>
+      # key holds {"response": {"payload": {"match": {...}}}}).
+      - key: btts_yes
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='As duas equipas marcam'] |
+          [0].selectionMatrix[0].selections[] |
+          [?selectionOneof.selection.name=='Sim'] |
+          [0].selectionOneof.selection.odds
+      - key: btts_no
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='As duas equipas marcam'] |
+          [0].selectionMatrix[0].selections[] |
+          [?selectionOneof.selection.name=='Não'] |
+          [0].selectionOneof.selection.odds
+
+      # CALIBRATED (2026-09-14), from the same real Inter - Udinese
+      # match page dump as the per-team goals totals above: Betclic's
+      # "Resultado duplo" (double chance) market is a fixed 3-row
+      # selectionMatrix, one selection per row, in the SAME
+      # home/home-away/away-draw order as xGScore's own "dc" array
+      # (confirmed real names: "Inter ou empate" -> 1x, "Inter ou
+      # Udinese" -> 12, "Empate ou Udinese" -> x2) -- team names vary
+      # by match, but the row *order* doesn't, so we can index
+      # positionally instead of matching each selection's name.
+      - key: double_chance_1x
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Resultado duplo'] |
+          [0].selectionMatrix[0].selections[0].selectionOneof.selection.odds
+      - key: double_chance_12
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Resultado duplo'] |
+          [0].selectionMatrix[1].selections[0].selectionOneof.selection.odds
+      - key: double_chance_x2
+        json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Resultado duplo'] |
+          [0].selectionMatrix[2].selections[0].selectionOneof.selection.odds
+
+    market_aliases:
+      btts_yes: "btts.yes"
+      btts_no: "btts.no"
+      double_chance_1x: "double_chance.1x"
+      double_chance_12: "double_chance.12"
+      double_chance_x2: "double_chance.x2"
+
+    # FIXED (2026-09-14): over/under total goals used to be two hand-
+    # written `fields` entries above, hardcoded to the 2,5 line only --
+    # real confirmed data (tests/test_betclic_odds.py) shows Betclic's
+    # "Total de golos - acima/abaixo" market ships *several* lines in
+    # one selectionMatrix at once (0,5 and 2,5 both seen in one real
+    # example; most bookmakers offer more still, e.g. 1,5/3,5/4,5) --
+    # silently discarding every line except 2.5 was a big chunk of why
+    # so many xGScore events came back with no Betclic odd at all (every
+    # over_under_<line> other than 2.5 could never match). This rule
+    # expands the *whole* selectionMatrix instead of one line at a time
+    # -- see SelectionMatrixRule / betclic.odds._expand_selection_matrix_markets.
+    selection_matrix_markets:
+      - json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Total de golos - acima/abaixo'] | [0].selectionMatrix
+        # Matches a selection name like "Acima de 2,5" / "Abaixo de 0,5".
+        name_pattern: '^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$'
+        direction_map:
+          Acima: over
+          Abaixo: under
+        market_template: "over_under_{line}"
+
+      # CALIBRATED (2026-09-14), from a real match page dump (Inter -
+      # Udinese): Betclic *does* offer a per-team goals total market,
+      # one for each team -- "Inter - Total de golos" and "Udinese -
+      # Total de golos", each with its own selectionMatrix in the exact
+      # same {name: "Acima de X,Y"/"Abaixo de X,Y", odds} shape as the
+      # combined over/under market above. Since the team name is baked
+      # into the market's own `name` (it isn't a fixed string we can
+      # write into config.yaml -- every match has different teams),
+      # `ends_with(name, ' - Total de golos')` matches *both* of them
+      # generically regardless of which two teams are playing, and
+      # `[0]`/`[1]` picks out which one is which -- home team's market
+      # listed first, matching this same page's `contestants[0]` /
+      # `mainSelections[0]` order (Inter, the home team, always comes
+      # first) everywhere else on the page. Unverified for the (probably
+      # rare) case where a match's board only has one of the two markets
+      # open -- if home/away totals ever come back swapped, this
+      # ordering assumption is the first thing to check.
+      - json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?ends_with(name, ' - Total de golos')] | [0].selectionMatrix
+        name_pattern: '^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$'
+        direction_map:
+          Acima: over
+          Abaixo: under
+        market_template: "home_total_{line}"
+      - json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?ends_with(name, ' - Total de golos')] | [1].selectionMatrix
+        name_pattern: '^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$'
+        direction_map:
+          Acima: over
+          Abaixo: under
+        market_template: "away_total_{line}"
+
+    # CALIBRATED (2026-09-14), from the same real Inter - Udinese match
+    # page dump: Betclic's "Resultado handicap" market is a *3-way*
+    # (home win / draw / away win) handicap at several INTEGER lines
+    # (e.g. "Inter (-4)" / "Empate (Inter -4)" / "Udinese (+4)"), not
+    # the 2-way half-line Asian handicap xGScore's own handicap_home/
+    # handicap_away markets report a coverage probability for. The
+    # user confirmed the exact line-shift relationship between the two
+    # conventions from this real page ("handicap +2 na Betclic =
+    # handicap +1.5 no xgscore", "+3 = +2.5") -- see
+    # HandicapMatrixRule's docstring in src/tipsxgs/config.py for the
+    # derivation (a Betclic integer line N maps to Asian half-line
+    # N-0.5 on the "+"/underdog side, or -(N+0.5) on the "-"/favourite
+    # side) and betclic/odds.py::_expand_handicap_matrix_markets for
+    # the implementation. Team names (baked into each selection's own
+    # name, e.g. "Inter"/"Udinese") vary by match and are ignored
+    # entirely -- only each row's home-selection (always first) and
+    # away-selection (always third, draw always second) trailing
+    # "(<sign><N>)" is used, same positional-ordering confirmation as
+    # the per-team goals totals above.
+    handicap_matrix_markets:
+      - json_path: >-
+          *.response.payload.match.subCategories[].markets[] |
+          [?name=='Resultado handicap'] | [0].selectionMatrix

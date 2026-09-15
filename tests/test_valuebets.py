@@ -172,3 +172,41 @@ def test_top_probability_bets_today_respects_threshold_and_limit():
     # limit caps the result even when more entries clear the threshold.
     top_all = top_probability_bets_today([game], min_probability=0.0, limit=2)
     assert len(top_all) == 2
+
+
+def test_top_probability_bets_today_max_probability_bounds_an_inclusive_band():
+    # Explicitly requested: splitting into a high band (>=67%) and a
+    # separate mid band (34%-66%), both bounds inclusive.
+    game = make_game(
+        {"1x2": {"home": 0.9, "draw": 0.55, "away": 0.1}},
+        {"1x2": {"home": 1.5, "draw": 2.0, "away": 9.0}},
+    )
+    compute_value_bets(game)
+
+    high = top_probability_bets_today([game], min_probability=0.67)
+    assert [e.outcome for _, e in high] == ["home"]
+
+    mid = top_probability_bets_today([game], min_probability=0.34, max_probability=0.66)
+    assert [e.outcome for _, e in mid] == ["draw"]
+
+    # Nothing below 0.34 shows up in either band -- "away" (0.1) is
+    # excluded from both.
+    assert not any(e.outcome == "away" for _, e in high + mid)
+
+
+def test_top_probability_bets_today_buckets_by_displayed_rounded_percent():
+    # A probability that *displays* as "67%" (0.669 rounds to 67) must
+    # land in the high band even though its raw float is below 0.67 --
+    # bucketing by the raw float alone would silently drop it from both
+    # bands. See valuebets._rounded_percent.
+    game = make_game(
+        {"1x2": {"home": 0.669}},
+        {"1x2": {"home": 1.5}},
+    )
+    compute_value_bets(game)
+
+    high = top_probability_bets_today([game], min_probability=0.67)
+    assert len(high) == 1
+
+    mid = top_probability_bets_today([game], min_probability=0.34, max_probability=0.66)
+    assert mid == []

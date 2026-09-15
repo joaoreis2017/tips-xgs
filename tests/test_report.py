@@ -140,26 +140,31 @@ def test_has_predictions_distinguishes_genuinely_empty_from_filtered_out():
     assert ctx["games"][1]["events"] == []
 
 
-def test_top_probability_bets_drops_markets_betclic_never_covers():
+def test_probability_bands_drop_markets_betclic_never_covers():
     # betclic_markets, when passed, drops odd-less entries for markets
     # config.yaml's betclic section has no extraction rule for at all
     # (e.g. handicap lines) -- see valuebets.top_probability_bets_today.
+    # Both entries here are 90%+, so both would land in the high band --
+    # handicap_home is dropped regardless of that.
     game = _game(
         markets={"1x2": {"home": 0.9}, "handicap_home": {"-3": 0.99}},
         odds_markets=None,
     )
 
-    ctx = build_context(date(2026, 9, 12), [game], min_probability=0.5, betclic_markets={"1x2", "btts"})
-    rows = ctx["top_probability_bets"]
+    ctx = build_context(date(2026, 9, 12), [game], betclic_markets={"1x2", "btts"})
+    rows = ctx["high_probability_bets"]
     assert len(rows) == 1
     assert rows[0]["game_slug"] == "home-away"
     assert rows[0]["label"] == "Resultado Final - Casa"
+    assert ctx["mid_probability_bets"] == []
 
 
-def test_top_probability_bets_covers_games_without_a_betclic_offer():
-    # Requested explicitly: a cross-game "high probability" list that,
-    # unlike top_value_bets, covers *every* game with a prediction --
-    # including one with no matched Betclic offer at all.
+def test_probability_bands_cover_games_without_a_betclic_offer_and_split_by_band():
+    # Requested explicitly: two cross-game "probability" lists that,
+    # unlike top_value_bets, cover *every* game with a prediction --
+    # including one with no matched Betclic offer at all -- split into a
+    # high-confidence band (>=67%) and a separate mid-confidence one
+    # (34%-66%).
     no_offer = _game(
         markets={"1x2": {"home": 0.9}}, odds_markets=None, slug="no-offer", home="Team C", away="Team D"
     )
@@ -171,14 +176,15 @@ def test_top_probability_bets_covers_games_without_a_betclic_offer():
         away="Team B",
     )
 
-    ctx = build_context(date(2026, 9, 12), [no_offer, with_offer], min_probability=0.5)
-    rows = ctx["top_probability_bets"]
+    ctx = build_context(date(2026, 9, 12), [no_offer, with_offer])
 
-    by_slug = {r["game_slug"]: r for r in rows}
-    assert "no-offer" in by_slug
-    assert by_slug["no-offer"]["odd"] is None
-    assert by_slug["no-offer"]["value_ratio"] is None
-    assert "with-offer" in by_slug
-    assert by_slug["with-offer"]["odd"] == pytest.approx(1.8)
-    # Highest probability first.
-    assert rows[0]["game_slug"] == "no-offer"
+    high_rows = ctx["high_probability_bets"]
+    assert len(high_rows) == 1
+    assert high_rows[0]["game_slug"] == "no-offer"
+    assert high_rows[0]["odd"] is None
+    assert high_rows[0]["value_ratio"] is None
+
+    mid_rows = ctx["mid_probability_bets"]
+    assert len(mid_rows) == 1
+    assert mid_rows[0]["game_slug"] == "with-offer"
+    assert mid_rows[0]["odd"] == pytest.approx(1.8)

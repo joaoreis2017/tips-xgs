@@ -16,19 +16,30 @@ max_concurrent_previews: 3
 headless: true
 
 # Filter for the dashboard's per-game "acontecimentos por probabilidade"
-# table AND the cross-game "top probability" list -- with every xGScore
-# market extracted (every over/under line, every handicap line, ...),
-# those would otherwise be dozens of rows long. Only an event whose model
-# probability clears this is shown; its Betclic odd (when there's a
-# matched one) renders alongside it, "—" when there isn't -- every
-# high-probability pick shows up whether or not it has an odd to compare
-# against. An odd-less entry is still dropped when its market is one
-# Betclic has literally no extraction rule for at all (handicap,
-# per-team totals) -- see pipeline._betclic_coverable_markets -- since
-# those can never get a real odd regardless. Doesn't affect the
-# value-bet ranking (value_bet_threshold above), only these two
-# probability-ranked views.
+# table -- with every xGScore market extracted (every over/under line,
+# every handicap line, ...), that table would otherwise be dozens of
+# rows long. An event also needs a matched Betclic odd to show there
+# (explicitly requested -- a "—" row for a line Betclic doesn't offer
+# isn't worth showing). Doesn't affect the value-bet ranking
+# (value_bet_threshold above) or the two cross-game bands below.
 report_min_probability: 0.5   # xGScore's own probability must be > this (0..1)
+
+# The two cross-game bands (explicitly requested as separate lists
+# instead of one combined "top probability" list): every event across
+# every game whose *displayed* probability (whole percent, rounded --
+# see valuebets._rounded_percent) falls in [report_high_probability_min,
+# 100] goes in the high-confidence panel; [report_mid_probability_min,
+# report_mid_probability_max] goes in the mid-confidence one. Both
+# bounds are inclusive. Anything below report_mid_probability_min isn't
+# shown in either. Unlike report_min_probability above, these do NOT
+# require a matched Betclic odd (odd/valor render as "—") -- but an
+# odd-less entry is still dropped when its market is one Betclic has no
+# extraction rule for at all (handicap, per-team totals) -- see
+# pipeline._betclic_coverable_markets -- since those can never get a
+# real odd regardless.
+report_high_probability_min: 0.67   # >= 67% (displayed)
+report_mid_probability_min: 0.34    # 34%..66% (displayed) band
+report_mid_probability_max: 0.66
 
 xgscore:
   base_url: "https://xgscore.io"

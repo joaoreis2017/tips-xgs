@@ -23,6 +23,9 @@ def build_context(
     demo: bool = False,
     min_probability: float = 0.5,
     betclic_markets: set[str] | None = None,
+    high_probability_min: float = 0.67,
+    mid_probability_min: float = 0.34,
+    mid_probability_max: float = 0.66,
 ) -> dict:
     game_ctx = []
     for g in games:
@@ -75,8 +78,8 @@ def build_context(
         for g, entry in top
     ]
 
-    # Odds-optional counterpart to top_value_bets_today above: every game
-    # xGScore has predictions for, not only the ones paired with a
+    # Odds-optional counterparts to top_value_bets_today above: every
+    # game xGScore has predictions for, not only the ones paired with a
     # Betclic offer -- odd/value_ratio just come back None for a game
     # with no matched odds, rendered as "—" in the template. No limit --
     # explicitly requested: every event across every game should show,
@@ -86,29 +89,47 @@ def build_context(
     # for at all (handicap, per-team totals, ...) -- those can never get
     # a real odd, so left in they just flood this probability-sorted list
     # with permanently-unbettable, usually-trivial (near 100%) lines.
-    top_probability = top_probability_bets_today(
-        games, min_probability=min_probability, limit=None, coverable_markets=betclic_markets
-    )
-    top_probability_ctx = [
-        {
-            "game_slug": g.fixture.slug,
-            "game_label": g.fixture.label,
-            "label": entry.label,
-            "probability": entry.probability,
-            "odd": entry.odd,
-            "value_ratio": entry.value_ratio,
-        }
-        for g, entry in top_probability
-    ]
+    #
+    # Explicitly requested split (previously one combined list): a
+    # high-confidence band (>= high_probability_min) and a separate
+    # mid-confidence band (mid_probability_min..mid_probability_max),
+    # each its own panel -- see valuebets.top_probability_bets_today's
+    # docstring for the inclusive, displayed-whole-percent bucketing.
+    def _band_ctx(min_probability: float, max_probability: float | None) -> list[dict]:
+        pairs = top_probability_bets_today(
+            games,
+            min_probability=min_probability,
+            max_probability=max_probability,
+            limit=None,
+            coverable_markets=betclic_markets,
+        )
+        return [
+            {
+                "game_slug": g.fixture.slug,
+                "game_label": g.fixture.label,
+                "label": entry.label,
+                "probability": entry.probability,
+                "odd": entry.odd,
+                "value_ratio": entry.value_ratio,
+            }
+            for g, entry in pairs
+        ]
+
+    high_probability_bets = _band_ctx(high_probability_min, None)
+    mid_probability_bets = _band_ctx(mid_probability_min, mid_probability_max)
 
     return {
         "date_str": day.isoformat(),
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "games": game_ctx,
         "top_value_bets": top_ctx,
-        "top_probability_bets": top_probability_ctx,
+        "high_probability_bets": high_probability_bets,
+        "mid_probability_bets": mid_probability_bets,
         "demo": demo,
         "min_probability": min_probability,
+        "high_probability_min": high_probability_min,
+        "mid_probability_min": mid_probability_min,
+        "mid_probability_max": mid_probability_max,
     }
 
 
@@ -120,6 +141,9 @@ def render_dashboard(
     demo: bool = False,
     min_probability: float = 0.5,
     betclic_markets: set[str] | None = None,
+    high_probability_min: float = 0.67,
+    mid_probability_min: float = 0.34,
+    mid_probability_max: float = 0.66,
 ) -> Path:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
@@ -133,6 +157,9 @@ def render_dashboard(
             demo=demo,
             min_probability=min_probability,
             betclic_markets=betclic_markets,
+            high_probability_min=high_probability_min,
+            mid_probability_min=mid_probability_min,
+            mid_probability_max=mid_probability_max,
         )
     )
 

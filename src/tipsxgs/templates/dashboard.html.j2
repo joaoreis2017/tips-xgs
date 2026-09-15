@@ -92,16 +92,17 @@
   {% endif %}
 </div>
 
+{% macro probability_band_panel(icon, title, rows, empty_message) %}
 <div class="panel">
-  <h2>🎯 Melhores probabilidades do xGScore (&gt;{{ "%.0f"|format(min_probability * 100) }}%)</h2>
-  <p class="subtitle" style="margin:-6px 0 12px;">Todos os jogos com previsão, mesmo sem odds Betclic emparelhadas — odd/valor aparecem a "—" quando o jogo ainda não tem odd Betclic emparelhada. Só mercados que a Betclic realmente oferece (1X2, ambas marcam, over/under 2.5) entram aqui — handicaps e totais por equipa nunca têm odd Betclic disponível, por isso ficam de fora desta lista.</p>
-  {% if top_probability_bets %}
+  <h2>{{ icon }} {{ title }}</h2>
+  <p class="subtitle" style="margin:-6px 0 12px;">Todos os jogos com previsão, mesmo sem odds Betclic emparelhadas — odd/valor aparecem a "—" quando o jogo ainda não tem odd Betclic emparelhada. Só mercados que a Betclic realmente oferece (1X2, dupla hipótese, ambas marcam, over/under, handicap, totais por equipa) entram aqui.</p>
+  {% if rows %}
   <table>
     <thead><tr>
       <th>Jogo</th><th>Mercado</th><th class="num">Prob.</th><th class="num">Odd</th><th class="num">Valor</th>
     </tr></thead>
     <tbody>
-    {% for row in top_probability_bets %}
+    {% for row in rows %}
       <tr>
         <td><a href="#game-{{ row.game_slug }}">{{ row.game_label }}</a></td>
         <td>{{ row.label }}</td>
@@ -117,9 +118,24 @@
     </tbody>
   </table>
   {% else %}
-  <p class="empty">Sem acontecimentos acima deste limite de probabilidade (ver docs/CALIBRATION.md).</p>
+  <p class="empty">{{ empty_message }}</p>
   {% endif %}
 </div>
+{% endmacro %}
+
+{{ probability_band_panel(
+  "🎯",
+  "Alta probabilidade (≥" ~ "%.0f"|format(high_probability_min * 100) ~ "%)",
+  high_probability_bets,
+  "Sem acontecimentos nesta banda de probabilidade (ver docs/CALIBRATION.md)."
+) }}
+
+{{ probability_band_panel(
+  "📊",
+  "Probabilidade média (" ~ "%.0f"|format(mid_probability_min * 100) ~ "%–" ~ "%.0f"|format(mid_probability_max * 100) ~ "%)",
+  mid_probability_bets,
+  "Sem acontecimentos nesta banda de probabilidade (ver docs/CALIBRATION.md)."
+) }}
 
 {% for game in games %}
 <details id="game-{{ game.slug }}" {% if loop.index <= 3 %}open{% endif %}>

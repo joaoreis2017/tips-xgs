@@ -184,16 +184,26 @@ class AppConfig:
     user_agent: str
     xgscore: SiteSection
     betclic: SiteSection
-    # Dashboard display filter, both for the per-game "events by
-    # probability" table and the cross-game "top probability" list --
-    # with every xGScore market now extracted (over/under every line,
-    # handicaps, ...), those would otherwise be dozens of rows long.
-    # Only an event whose model probability clears this shows up (odd,
-    # when there's a matched Betclic one, renders alongside it; "—" when
-    # there isn't -- explicitly requested to show every high-probability
-    # pick, odds or not). Doesn't affect value_bets_ranked/best_value_bet
-    # (the value_ratio-based ranking), only these probability-ranked views.
+    # Per-game "events by probability" table filter -- with every
+    # xGScore market now extracted (over/under every line, handicaps,
+    # ...), that table would otherwise be dozens of rows long. An event
+    # also needs a matched Betclic odd to show here (see report.py) --
+    # doesn't affect value_bets_ranked/best_value_bet (the
+    # value_ratio-based ranking), only this probability-ranked view.
     report_min_probability: float = 0.5
+    # The cross-game lists (explicitly requested as two separate bands
+    # rather than one combined "top probability" list) -- every event
+    # across every game whose displayed probability (whole percent,
+    # rounded -- see valuebets._rounded_percent) falls in
+    # [report_high_probability_min, 100] goes in the high-confidence
+    # panel, and everything in [report_mid_probability_min,
+    # report_mid_probability_max] goes in the mid-confidence one.
+    # Anything below report_mid_probability_min isn't shown in either.
+    # Both bounds are inclusive, matching how the user specified them
+    # ("67%, inclusive" / "34% a 66%, inclusive").
+    report_high_probability_min: float = 0.67
+    report_mid_probability_min: float = 0.34
+    report_mid_probability_max: float = 0.66
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -264,5 +274,8 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         xgscore=_site_section(raw.get("xgscore", {})),
         betclic=_site_section(raw.get("betclic", {})),
         report_min_probability=float(raw.get("report_min_probability", 0.5)),
+        report_high_probability_min=float(raw.get("report_high_probability_min", 0.67)),
+        report_mid_probability_min=float(raw.get("report_mid_probability_min", 0.34)),
+        report_mid_probability_max=float(raw.get("report_mid_probability_max", 0.66)),
         raw=raw,
     )

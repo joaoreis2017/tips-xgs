@@ -102,9 +102,20 @@ def top_value_bets_today(games: list[MatchedGame], limit: int = 15) -> list[tupl
     return pairs[:limit]
 
 
+def _rounded_percent(probability: float) -> int:
+    """The whole-percent value the dashboard actually displays for a
+    probability (``"%.0f"|format(probability * 100)`` in the template).
+    Bucketing by this, rather than by the raw float, means a probability
+    like 0.669 -- which *displays* as "67%" -- lands in whichever band
+    that displayed figure belongs to, instead of silently falling
+    through a gap between a "> 0.66" and a ">= 0.67" raw-float check."""
+    return round(probability * 100)
+
+
 def top_probability_bets_today(
     games: list[MatchedGame],
     min_probability: float = 0.5,
+    max_probability: float | None = None,
     limit: int | None = None,
     coverable_markets: set[str] | None = None,
 ) -> list[tuple[MatchedGame, ValueBetEntry]]:
@@ -116,6 +127,16 @@ def top_probability_bets_today(
     here even with no Betclic offer paired (odd/value just come back
     ``None`` for those entries), covering every game rather than only
     the ones with odds to compare against.
+
+    ``min_probability``/``max_probability`` bound an inclusive band (by
+    displayed whole-percent, see ``_rounded_percent``) -- e.g.
+    ``min_probability=0.67`` keeps everything showing "67%" or higher;
+    ``min_probability=0.34, max_probability=0.66`` keeps only "34%"
+    through "66%". ``max_probability=None`` (the default) leaves the
+    band open-ended at the top. Explicitly requested: splitting the
+    single cross-game list into separate high-confidence (>=67%) and
+    mid-confidence (34-66%) bands -- call this twice, once per band, and
+    render each as its own panel (see ``report.build_context``).
 
     ``coverable_markets``, when given, additionally drops any odd-less
     entry whose market *family* (see ``markets.market_family`` -- e.g.
@@ -137,17 +158,20 @@ def top_probability_bets_today(
     already has an odd is never affected by this.
 
     ``limit`` is ``None`` (no cap) by default -- explicitly requested:
-    *every* event clearing ``min_probability`` across *every* game
-    should show up, not just a top-N slice that would otherwise squeeze
-    out most games once there are dozens of them each with several
-    qualifying markets. Pass a number to cap it if the list ever needs
-    trimming for display reasons.
+    *every* event clearing the band across *every* game should show up,
+    not just a top-N slice that would otherwise squeeze out most games
+    once there are dozens of them each with several qualifying markets.
+    Pass a number to cap it if the list ever needs trimming for display
+    reasons.
     """
+    min_pct = _rounded_percent(min_probability)
+    max_pct = _rounded_percent(max_probability) if max_probability is not None else None
     pairs = [
         (game, entry)
         for game in games
         for entry in game.value_bets
-        if entry.probability > min_probability
+        if _rounded_percent(entry.probability) >= min_pct
+        and (max_pct is None or _rounded_percent(entry.probability) <= max_pct)
         and (
             entry.odd is not None
             or coverable_markets is None

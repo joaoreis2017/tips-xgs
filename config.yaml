@@ -315,6 +315,20 @@ betclic:
     # bring up so far in this project's live runs, not a dynamically
     # derived one -- if a day's dashboard is missing a league xGScore did
     # have games in, add its Betclic competitionId here.
+    #
+    # ADDED (2026-09-16), real bug report: xGScore had 10 European-cup
+    # fixtures for the day (Anderlecht-Lyon, Milan-Benfica, Olympiacos-
+    # Jagiellonia, Bayer-Celje, Ararat A.-Sparta, Omonia-Celta, Hapoel-
+    # Dynamo Z., Sunderland-AZ Alkmaar, Storm-Rennes, ...) and NONE of
+    # them matched any Betclic offer (best candidate scores all 46-65,
+    # nowhere near min_confidence 80) -- not a fuzzy-matching problem,
+    # Betclic's own listing simply never carried these teams at all,
+    # because none of the three UEFA competition pages were in this
+    # list. competitionId values for these three (8/3453/28946) are the
+    # user's own real, previously-confirmed Betclic competition-nav
+    # payload (grpc:2666540474, the same source as every other id
+    # above) -- covers Champions League + Europa League + Conference
+    # League at once, all of which had unmatched fixtures that day.
     urls:
       - "https://www.betclic.pt/futebol-s1/inglaterra-premier-league-c3"
       - "https://www.betclic.pt/futebol-s1/inglaterra-championship-c28"
@@ -333,6 +347,9 @@ betclic:
       - "https://www.betclic.pt/futebol-s1/brasil-serie-a-c187"
       - "https://www.betclic.pt/futebol-s1/mexico-liga-mx-c432"
       - "https://www.betclic.pt/futebol-s1/eua-mls-c504"
+      - "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8"
+      - "https://www.betclic.pt/futebol-s1/liga-europa-c3453"
+      - "https://www.betclic.pt/futebol-s1/liga-conferencia-c28946"
     # Each competition page is much lighter than the old generic page --
     # no scrolling needed, and less time per visit -- but there are many
     # of them, so this adds up (~17 pages x (wait_ms + a polite delay

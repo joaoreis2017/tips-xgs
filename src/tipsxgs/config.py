@@ -216,6 +216,23 @@ class AppConfig:
     # 2" -- both inclusive, unlike the high band above.
     report_mid_odd_min: float = 1.5
     report_mid_odd_max: float = 2.2
+
+    # Daily bet plan (explicitly requested 2026-09-18): three
+    # deterministic picks instead of lists to choose from -- see
+    # valuebets.py's "Daily bet plan" section. The multiple's legs and
+    # the mid-stake single reuse the two bands above as their own
+    # eligibility criteria (same "safe"/"mid-confidence" shape); only
+    # the value-stake single needs its own bar, since it isn't tied to
+    # either band -- it's the single best value_ratio anywhere.
+    report_multiple_max_legs: int = 4
+    report_value_single_min_probability: float = 0.45
+    report_value_single_min_value_ratio: float = 1.10
+    # Stake amounts -- display-only (shown in each section's heading),
+    # not used in any calculation. Change these if the daily budget
+    # split changes.
+    report_multiple_stake: float = 0.50
+    report_value_single_stake: float = 0.50
+    report_mid_single_stake: float = 1.00
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -293,5 +310,11 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         report_high_odd_max=float(raw.get("report_high_odd_max", 1.45)),
         report_mid_odd_min=float(raw.get("report_mid_odd_min", 1.5)),
         report_mid_odd_max=float(raw.get("report_mid_odd_max", 2.2)),
+        report_multiple_max_legs=int(raw.get("report_multiple_max_legs", 4)),
+        report_value_single_min_probability=float(raw.get("report_value_single_min_probability", 0.45)),
+        report_value_single_min_value_ratio=float(raw.get("report_value_single_min_value_ratio", 1.10)),
+        report_multiple_stake=float(raw.get("report_multiple_stake", 0.50)),
+        report_value_single_stake=float(raw.get("report_value_single_stake", 0.50)),
+        report_mid_single_stake=float(raw.get("report_mid_single_stake", 1.00)),
         raw=raw,
     )

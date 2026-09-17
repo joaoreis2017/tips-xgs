@@ -8,13 +8,34 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .models import MatchedGame
-from .valuebets import top_probability_bets_today, top_value_bets_today
+from .valuebets import (
+    BetPick,
+    multiple_combined_odd,
+    multiple_combined_probability,
+    pick_best_band_single,
+    pick_best_single_bet,
+    pick_multiple_legs,
+)
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 
 
 def _fmt_kickoff(dt: datetime | None) -> str | None:
     return dt.strftime("%H:%M") if dt else None
+
+
+def _pick_ctx(pick: BetPick | None) -> dict | None:
+    if pick is None:
+        return None
+    game, entry = pick
+    return {
+        "game_slug": game.fixture.slug,
+        "game_label": game.fixture.label,
+        "label": entry.label,
+        "probability": entry.probability,
+        "odd": entry.odd,
+        "value_ratio": entry.value_ratio,
+    }
 
 
 def build_context(
@@ -24,12 +45,18 @@ def build_context(
     min_probability: float = 0.5,
     betclic_markets: set[str] | None = None,
     high_probability_min: float = 0.70,
-    mid_probability_min: float = 0.60,
-    mid_probability_max: float = 0.69,
     high_odd_min: float = 1.25,
     high_odd_max: float = 1.45,
+    mid_probability_min: float = 0.60,
+    mid_probability_max: float = 0.69,
     mid_odd_min: float = 1.5,
     mid_odd_max: float = 2.2,
+    multiple_max_legs: int = 4,
+    value_single_min_probability: float = 0.45,
+    value_single_min_value_ratio: float = 1.10,
+    multiple_stake: float = 0.50,
+    value_single_stake: float = 0.50,
+    mid_single_stake: float = 1.00,
 ) -> dict:
     game_ctx = []
     for g in games:
@@ -69,89 +96,65 @@ def build_context(
             }
         )
 
-    top = top_value_bets_today(games, limit=20)
-    top_ctx = [
-        {
-            "game_slug": g.fixture.slug,
-            "game_label": g.fixture.label,
-            "label": entry.label,
-            "probability": entry.probability,
-            "odd": entry.odd,
-            "value_ratio": entry.value_ratio,
-        }
-        for g, entry in top
-    ]
-
-    # Odds-optional counterparts to top_value_bets_today above: every
-    # game xGScore has predictions for, not only the ones paired with a
-    # Betclic offer -- odd/value_ratio just come back None for a game
-    # with no matched odds, rendered as "—" in the template. No limit --
-    # explicitly requested: every event across every game should show,
-    # not a top-N slice that squeezes out most games once there are
-    # dozens of them. `betclic_markets` (see pipeline.py) additionally
-    # drops odd-less entries for markets Betclic has no extraction rule
-    # for at all (handicap, per-team totals, ...) -- those can never get
-    # a real odd, so left in they just flood this probability-sorted list
-    # with permanently-unbettable, usually-trivial (near 100%) lines.
-    #
-    # Explicitly requested split (previously one combined list): a
-    # high-confidence band (>= high_probability_min) and a separate
-    # mid-confidence band (mid_probability_min..mid_probability_max),
-    # each its own panel -- see valuebets.top_probability_bets_today's
-    # docstring for the inclusive, displayed-whole-percent bucketing.
-    def _band_ctx(
-        min_probability: float,
-        max_probability: float | None,
-        min_odd: float | None = None,
-        max_odd: float | None = None,
-        odd_bounds_inclusive: bool = False,
-    ) -> list[dict]:
-        pairs = top_probability_bets_today(
-            games,
-            min_probability=min_probability,
-            max_probability=max_probability,
-            min_odd=min_odd,
-            max_odd=max_odd,
-            odd_bounds_inclusive=odd_bounds_inclusive,
-            limit=None,
-            coverable_markets=betclic_markets,
-        )
-        return [
-            {
-                "game_slug": g.fixture.slug,
-                "game_label": g.fixture.label,
-                "label": entry.label,
-                "probability": entry.probability,
-                "odd": entry.odd,
-                "value_ratio": entry.value_ratio,
-            }
-            for g, entry in pairs
-        ]
-
-    # Both bands now also need a matched odd within their own range,
-    # each explicitly requested separately: high is exclusive
-    # (>1.25 and <1.45), mid is inclusive (>=1.5 and <=2.2).
-    high_probability_bets = _band_ctx(
-        high_probability_min, None, high_odd_min, high_odd_max, odd_bounds_inclusive=False
+    # Deterministic daily bet plan -- explicitly requested: no candidate
+    # lists left for the user to choose from, the model picks exactly
+    # what to bet for each of the day's three stakes. Fixtures already
+    # used earlier in the plan are excluded from later picks (multiple
+    # legs first, then the value single, then the mid single) so the
+    # three stakes spread risk across different matches rather than the
+    # plan doubling up on the same outcome.
+    multiple_legs = pick_multiple_legs(
+        games,
+        min_probability=high_probability_min,
+        min_odd=high_odd_min,
+        max_odd=high_odd_max,
+        max_legs=multiple_max_legs,
+        coverable_markets=betclic_markets,
     )
-    mid_probability_bets = _band_ctx(
-        mid_probability_min, mid_probability_max, mid_odd_min, mid_odd_max, odd_bounds_inclusive=True
+    used_fixture_ids = {g.fixture.id for g, _ in multiple_legs}
+
+    value_single = pick_best_single_bet(
+        games,
+        min_probability=value_single_min_probability,
+        min_value_ratio=value_single_min_value_ratio,
+        exclude_fixture_ids=used_fixture_ids,
+    )
+    if value_single is not None:
+        used_fixture_ids = used_fixture_ids | {value_single[0].fixture.id}
+
+    mid_single = pick_best_band_single(
+        games,
+        min_probability=mid_probability_min,
+        max_probability=mid_probability_max,
+        min_odd=mid_odd_min,
+        max_odd=mid_odd_max,
+        odd_bounds_inclusive=True,
+        coverable_markets=betclic_markets,
+        exclude_fixture_ids=used_fixture_ids,
     )
 
     return {
         "date_str": day.isoformat(),
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "games": game_ctx,
-        "top_value_bets": top_ctx,
-        "high_probability_bets": high_probability_bets,
-        "mid_probability_bets": mid_probability_bets,
         "demo": demo,
         "min_probability": min_probability,
+        "multiple_legs": [_pick_ctx(leg) for leg in multiple_legs],
+        "multiple_combined_odd": multiple_combined_odd(multiple_legs),
+        "multiple_combined_probability": multiple_combined_probability(multiple_legs),
+        "multiple_max_legs": multiple_max_legs,
+        "multiple_stake": multiple_stake,
         "high_probability_min": high_probability_min,
-        "mid_probability_min": mid_probability_min,
-        "mid_probability_max": mid_probability_max,
         "high_odd_min": high_odd_min,
         "high_odd_max": high_odd_max,
+        "value_single": _pick_ctx(value_single),
+        "value_single_stake": value_single_stake,
+        "value_single_min_probability": value_single_min_probability,
+        "value_single_min_value_ratio": value_single_min_value_ratio,
+        "mid_single": _pick_ctx(mid_single),
+        "mid_single_stake": mid_single_stake,
+        "mid_probability_min": mid_probability_min,
+        "mid_probability_max": mid_probability_max,
         "mid_odd_min": mid_odd_min,
         "mid_odd_max": mid_odd_max,
     }
@@ -166,12 +169,18 @@ def render_dashboard(
     min_probability: float = 0.5,
     betclic_markets: set[str] | None = None,
     high_probability_min: float = 0.70,
-    mid_probability_min: float = 0.60,
-    mid_probability_max: float = 0.69,
     high_odd_min: float = 1.25,
     high_odd_max: float = 1.45,
+    mid_probability_min: float = 0.60,
+    mid_probability_max: float = 0.69,
     mid_odd_min: float = 1.5,
     mid_odd_max: float = 2.2,
+    multiple_max_legs: int = 4,
+    value_single_min_probability: float = 0.45,
+    value_single_min_value_ratio: float = 1.10,
+    multiple_stake: float = 0.50,
+    value_single_stake: float = 0.50,
+    mid_single_stake: float = 1.00,
 ) -> Path:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
@@ -186,12 +195,18 @@ def render_dashboard(
             min_probability=min_probability,
             betclic_markets=betclic_markets,
             high_probability_min=high_probability_min,
-            mid_probability_min=mid_probability_min,
-            mid_probability_max=mid_probability_max,
             high_odd_min=high_odd_min,
             high_odd_max=high_odd_max,
+            mid_probability_min=mid_probability_min,
+            mid_probability_max=mid_probability_max,
             mid_odd_min=mid_odd_min,
             mid_odd_max=mid_odd_max,
+            multiple_max_legs=multiple_max_legs,
+            value_single_min_probability=value_single_min_probability,
+            value_single_min_value_ratio=value_single_min_value_ratio,
+            multiple_stake=multiple_stake,
+            value_single_stake=value_single_stake,
+            mid_single_stake=mid_single_stake,
         )
     )
 

@@ -3,7 +3,16 @@ from datetime import datetime
 import pytest
 
 from tipsxgs.models import Fixture, MatchedGame, OddsOffer, Prediction
-from tipsxgs.valuebets import compute_value_bets, top_probability_bets_today, top_value_bets_today
+from tipsxgs.valuebets import (
+    compute_value_bets,
+    multiple_combined_odd,
+    multiple_combined_probability,
+    pick_best_band_single,
+    pick_best_single_bet,
+    pick_multiple_legs,
+    top_probability_bets_today,
+    top_value_bets_today,
+)
 
 
 def make_game(markets_prob, markets_odds, slug="union-berlin-schalke", home="Union Berlin", away="Schalke"):
@@ -258,3 +267,152 @@ def test_top_probability_bets_today_odd_bounds_inclusive_flag():
     assert {e.outcome for _, e in inclusive} == {"home", "away"}
     # draw still excluded either way -- no matched odd at all.
     assert not any(e.outcome == "draw" for _, e in inclusive)
+
+
+# --- Daily bet plan -----------------------------------------------------
+
+
+def test_pick_multiple_legs_picks_higher_value_outcome_within_a_shared_fixture():
+    # Two qualifying outcomes of the *same* match -- only the
+    # higher-value_ratio one becomes a leg, never both (they aren't
+    # independent, so combining both would misrepresent the combined
+    # odds/probability below).
+    two_candidates = make_game(
+        {"1x2": {"home": 0.72}, "btts": {"yes": 0.75}},
+        {"1x2": {"home": 1.30}, "btts": {"yes": 1.40}},  # value_ratio: 0.936 vs 1.05
+        slug="one-game",
+        home="Team A",
+        away="Team B",
+    )
+    other = make_game(
+        {"1x2": {"home": 0.9}},
+        {"1x2": {"home": 1.35}},  # value_ratio: 1.215
+        slug="other-game",
+        home="Team C",
+        away="Team D",
+    )
+    compute_value_bets(two_candidates)
+    compute_value_bets(other)
+
+    legs = pick_multiple_legs([two_candidates, other], min_probability=0.7, min_odd=1.25, max_odd=1.45)
+    assert len(legs) == 2
+    assert len({g.fixture.id for g, _ in legs}) == 2
+    one_game_leg = next(e for g, e in legs if g.fixture.slug == "one-game")
+    assert one_game_leg.outcome == "yes"  # btts beats 1x2 home on value_ratio
+
+
+def test_pick_multiple_legs_caps_at_max_legs_keeping_the_best_value_ones():
+    two_candidates = make_game(
+        {"1x2": {"home": 0.72}, "btts": {"yes": 0.75}},
+        {"1x2": {"home": 1.30}, "btts": {"yes": 1.40}},
+        slug="one-game",
+        home="Team A",
+        away="Team B",
+    )
+    other = make_game(
+        {"1x2": {"home": 0.9}},
+        {"1x2": {"home": 1.35}},  # value_ratio 1.215 -- the best of all candidates
+        slug="other-game",
+        home="Team C",
+        away="Team D",
+    )
+    compute_value_bets(two_candidates)
+    compute_value_bets(other)
+
+    capped = pick_multiple_legs(
+        [two_candidates, other], min_probability=0.7, min_odd=1.25, max_odd=1.45, max_legs=1
+    )
+    assert len(capped) == 1
+    assert capped[0][0].fixture.slug == "other-game"
+
+
+def test_pick_multiple_legs_returns_empty_when_nothing_qualifies():
+    game = make_game({"1x2": {"home": 0.5}}, {"1x2": {"home": 1.3}})  # below min_probability
+    compute_value_bets(game)
+    assert pick_multiple_legs([game], min_probability=0.7, min_odd=1.25, max_odd=1.45) == []
+
+
+def test_multiple_combined_odd_and_probability_multiply_across_legs():
+    a = make_game({"1x2": {"home": 0.8}}, {"1x2": {"home": 1.3}}, slug="a", home="A1", away="A2")
+    b = make_game({"1x2": {"home": 0.75}}, {"1x2": {"home": 1.4}}, slug="b", home="B1", away="B2")
+    compute_value_bets(a)
+    compute_value_bets(b)
+    legs = [(a, a.value_bets[0]), (b, b.value_bets[0])]
+
+    assert multiple_combined_odd(legs) == pytest.approx(1.3 * 1.4)
+    assert multiple_combined_probability(legs) == pytest.approx(0.8 * 0.75)
+
+
+def test_multiple_combined_odd_and_probability_are_none_for_empty_legs():
+    assert multiple_combined_odd([]) is None
+    assert multiple_combined_probability([]) is None
+
+
+def test_pick_best_single_bet_returns_highest_value_ratio_across_all_games():
+    weak = make_game({"1x2": {"home": 0.6}}, {"1x2": {"home": 1.5}}, slug="weak")  # value_ratio 0.9
+    strong = make_game({"1x2": {"home": 0.7}}, {"1x2": {"home": 2.0}}, slug="strong")  # value_ratio 1.4
+    compute_value_bets(weak)
+    compute_value_bets(strong)
+
+    pick = pick_best_single_bet([weak, strong])
+    assert pick is not None
+    game, entry = pick
+    assert game.fixture.slug == "strong"
+    assert entry.value_ratio == pytest.approx(1.4)
+
+
+def test_pick_best_single_bet_returns_none_when_nothing_clears_the_bar():
+    # value_ratio 0.36 -- well below the default min_value_ratio of 1.0.
+    game = make_game({"1x2": {"home": 0.3}}, {"1x2": {"home": 1.2}}, slug="low-value")
+    compute_value_bets(game)
+    assert pick_best_single_bet([game]) is None
+
+
+def test_pick_best_single_bet_excludes_given_fixture_ids():
+    strong = make_game({"1x2": {"home": 0.7}}, {"1x2": {"home": 2.0}}, slug="strong")  # value_ratio 1.4
+    other = make_game({"1x2": {"home": 0.55}}, {"1x2": {"home": 2.0}}, slug="other")  # value_ratio 1.1
+    compute_value_bets(strong)
+    compute_value_bets(other)
+
+    pick = pick_best_single_bet([strong, other], exclude_fixture_ids={strong.fixture.id})
+    assert pick is not None
+    assert pick[0].fixture.slug == "other"
+
+
+def test_pick_best_band_single_picks_best_within_band():
+    in_band_weak = make_game({"1x2": {"home": 0.65}}, {"1x2": {"home": 1.6}}, slug="in-band-weak")
+    in_band_strong = make_game({"1x2": {"home": 0.65}}, {"1x2": {"home": 2.0}}, slug="in-band-strong")
+    out_of_band = make_game({"1x2": {"home": 0.9}}, {"1x2": {"home": 1.3}}, slug="out-of-band")
+    compute_value_bets(in_band_weak)
+    compute_value_bets(in_band_strong)
+    compute_value_bets(out_of_band)
+
+    pick = pick_best_band_single(
+        [in_band_weak, in_band_strong, out_of_band],
+        min_probability=0.6,
+        max_probability=0.69,
+        min_odd=1.5,
+        max_odd=2.2,
+    )
+    assert pick is not None
+    assert pick[0].fixture.slug == "in-band-strong"
+
+
+def test_pick_best_band_single_excludes_given_fixture_ids_and_returns_none_when_empty():
+    only_candidate = make_game({"1x2": {"home": 0.65}}, {"1x2": {"home": 1.6}}, slug="only")
+    compute_value_bets(only_candidate)
+
+    pick = pick_best_band_single(
+        [only_candidate], min_probability=0.6, max_probability=0.69, min_odd=1.5, max_odd=2.2
+    )
+    assert pick is not None
+
+    excluded = pick_best_band_single(
+        [only_candidate],
+        min_probability=0.6,
+        max_probability=0.69,
+        min_odd=1.5,
+        max_odd=2.2,
+        exclude_fixture_ids={only_candidate.fixture.id},
+    )
+    assert excluded is None

@@ -24,21 +24,23 @@ headless: true
 # (value_bet_threshold above) or the two cross-game bands below.
 report_min_probability: 0.5   # xGScore's own probability must be > this (0..1)
 
-# The two cross-game bands (explicitly requested as separate lists
-# instead of one combined "top probability" list): every event across
-# every game whose *displayed* probability (whole percent, rounded --
-# see valuebets._rounded_percent) falls in [report_high_probability_min,
-# 100] goes in the high-confidence panel; [report_mid_probability_min,
-# report_mid_probability_max] goes in the mid-confidence one. Both
-# probability bounds are inclusive. Anything below
-# report_mid_probability_min isn't shown in either.
+# CHANGED (2026-09-18): these two "bands" used to each drive their own
+# browsable panel (every entry clearing the band, for the user to pick
+# from). Explicitly requested to remove that choice entirely -- they
+# now only serve as the *eligibility criteria* the daily bet plan below
+# uses to make its own picks deterministically (report_multiple_*/
+# report_value_single_*/report_mid_single_* further down): every event
+# whose *displayed* probability (whole percent, rounded -- see
+# valuebets._rounded_percent) falls in [report_high_probability_min,
+# 100] is eligible as a leg for the daily multiple; everything in
+# [report_mid_probability_min, report_mid_probability_max] is eligible
+# for the "mid" single stake. Both probability bounds are inclusive.
 report_high_probability_min: 0.70   # >= 70% (displayed)
 report_mid_probability_min: 0.60    # 60%..69% (displayed) band
 report_mid_probability_max: 0.69
 
-# Both bands ALSO require a matched Betclic odd within their own range
-# now (explicitly requested for each) -- anything with no odd, or an
-# odd outside the window, is dropped outright rather than kept as "—".
+# Both bands also require a matched Betclic odd within their own range
+# -- an odd-less entry, or one outside the window, is never eligible.
 # An odd-less entry is also still dropped when its market is one
 # Betclic has no extraction rule for at all (handicap, per-team totals)
 # -- see pipeline._betclic_coverable_markets -- since those can never
@@ -49,6 +51,24 @@ report_high_odd_min: 1.25   # high band: exclusive (>1.25 and <1.45)
 report_high_odd_max: 1.45
 report_mid_odd_min: 1.5     # mid band: inclusive (>=1.5 and <=2.2)
 report_mid_odd_max: 2.2
+
+# The daily bet plan itself (explicitly requested): three deterministic
+# picks instead of lists to choose from -- see valuebets.py's "Daily
+# bet plan" section, and report.build_context for how these get
+# assembled. The multiple's legs and the mid-stake single reuse the
+# two bands above as their own eligibility criteria; the value-stake
+# single isn't tied to either band -- it's the single best value_ratio
+# anywhere, subject to its own bar below.
+report_multiple_max_legs: 4               # up to this many legs, one per fixture
+report_value_single_min_probability: 0.45
+report_value_single_min_value_ratio: 1.10
+
+# Stake amounts -- display-only (shown in each section's heading), not
+# used in any calculation. Change these if the daily budget split
+# changes.
+report_multiple_stake: 0.50
+report_value_single_stake: 0.50
+report_mid_single_stake: 1.00
 
 xgscore:
   base_url: "https://xgscore.io"

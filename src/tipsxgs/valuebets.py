@@ -211,3 +211,151 @@ def top_probability_bets_today(
     ]
     pairs.sort(key=lambda p: p[1].probability, reverse=True)
     return pairs if limit is None else pairs[:limit]
+
+
+# --- Daily bet plan -----------------------------------------------------
+#
+# Explicitly requested (2026-09-18): stop showing candidate lists the
+# user has to pick from -- have the model make every choice itself,
+# deterministically, split into the three stakes the user actually
+# places each day: a small multiple (several "safe" legs combined into
+# one bet) and two single bets at two different stake sizes. Same
+# games.json in, same picks out every time -- no randomness anywhere
+# below.
+
+BetPick = tuple[MatchedGame, ValueBetEntry]
+
+
+def pick_multiple_legs(
+    games: list[MatchedGame],
+    min_probability: float,
+    min_odd: float,
+    max_odd: float,
+    max_legs: int = 4,
+    coverable_markets: set[str] | None = None,
+) -> list[BetPick]:
+    """Deterministically pick up to ``max_legs`` legs for a daily
+    multiple/parlay: candidates are every entry clearing
+    ``min_probability`` with a matched odd strictly between
+    ``min_odd``/``max_odd`` (the same "safe, moderate-odd" shape as the
+    dashboard's high-confidence band -- see
+    ``top_probability_bets_today``). At most ONE leg per fixture (two
+    outcomes of the *same* match aren't independent, so combining them
+    into one multiple would misrepresent the combined odds/probability
+    below); ties broken by ``value_ratio`` descending -- among equally
+    "safe" legs, prefer the ones the model also rates as better value.
+    Returns fewer than ``max_legs`` (down to zero) if that many
+    distinct-fixture candidates simply aren't available today -- never
+    pads with a leg that doesn't meet the bar.
+    """
+    candidates = top_probability_bets_today(
+        games,
+        min_probability=min_probability,
+        min_odd=min_odd,
+        max_odd=max_odd,
+        odd_bounds_inclusive=False,
+        coverable_markets=coverable_markets,
+    )
+    candidates = sorted(candidates, key=lambda pair: pair[1].value_ratio or 0.0, reverse=True)
+
+    legs: list[BetPick] = []
+    used_fixture_ids: set[str] = set()
+    for game, entry in candidates:
+        if game.fixture.id in used_fixture_ids:
+            continue
+        legs.append((game, entry))
+        used_fixture_ids.add(game.fixture.id)
+        if len(legs) >= max_legs:
+            break
+    return legs
+
+
+def multiple_combined_odd(legs: list[BetPick]) -> float | None:
+    """Product of every leg's own odd -- the odd the multiple itself
+    pays out at (assuming, as any bookmaker's own multiple bet does,
+    that every leg wins)."""
+    if not legs:
+        return None
+    odd = 1.0
+    for _, entry in legs:
+        odd *= entry.odd
+    return odd
+
+
+def multiple_combined_probability(legs: list[BetPick]) -> float | None:
+    """Product of every leg's own model probability -- the model's own
+    estimate of the whole multiple landing, *assuming the legs are
+    independent* (picking at most one leg per fixture, enforced by
+    ``pick_multiple_legs``, is what makes that assumption reasonable --
+    two outcomes of the same match are never independent)."""
+    if not legs:
+        return None
+    probability = 1.0
+    for _, entry in legs:
+        probability *= entry.probability
+    return probability
+
+
+def pick_best_single_bet(
+    games: list[MatchedGame],
+    min_probability: float = 0.0,
+    min_value_ratio: float = 1.0,
+    exclude_fixture_ids: set[str] | None = None,
+) -> BetPick | None:
+    """Deterministically pick the single BEST value bet across every
+    game and market: the entry with the highest ``value_ratio`` that
+    clears both ``min_probability`` and ``min_value_ratio``. Returns
+    ``None`` when nothing qualifies rather than falling back to a worse
+    pick -- an empty slot in the daily plan is more honest than forcing
+    a bet that doesn't actually meet the bar that day.
+
+    ``exclude_fixture_ids``, when given, skips fixtures already used
+    elsewhere in the same day's plan (e.g. a leg already picked for the
+    multiple) -- so the day's three stakes spread risk across different
+    matches instead of the plan doubling up on the very same outcome.
+    """
+    candidates = [
+        (game, entry)
+        for game in games
+        for entry in game.value_bets
+        if entry.odd is not None
+        and entry.value_ratio is not None
+        and entry.probability >= min_probability
+        and entry.value_ratio >= min_value_ratio
+        and (exclude_fixture_ids is None or game.fixture.id not in exclude_fixture_ids)
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda pair: pair[1].value_ratio)
+
+
+def pick_best_band_single(
+    games: list[MatchedGame],
+    min_probability: float,
+    max_probability: float | None,
+    min_odd: float,
+    max_odd: float,
+    odd_bounds_inclusive: bool = True,
+    coverable_markets: set[str] | None = None,
+    exclude_fixture_ids: set[str] | None = None,
+) -> BetPick | None:
+    """Deterministically pick the single best-value entry within one
+    probability/odd band (see ``top_probability_bets_today``) -- the
+    band-restricted counterpart to ``pick_best_single_bet`` above, used
+    for a stake that should come from a specific confidence band (e.g.
+    "60%-69%, odd 1.5-2.2") rather than the single best bet anywhere.
+    """
+    candidates = top_probability_bets_today(
+        games,
+        min_probability=min_probability,
+        max_probability=max_probability,
+        min_odd=min_odd,
+        max_odd=max_odd,
+        odd_bounds_inclusive=odd_bounds_inclusive,
+        coverable_markets=coverable_markets,
+    )
+    if exclude_fixture_ids:
+        candidates = [(g, e) for g, e in candidates if g.fixture.id not in exclude_fixture_ids]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda pair: pair[1].value_ratio or 0.0)

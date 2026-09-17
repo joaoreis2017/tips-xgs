@@ -161,49 +161,62 @@ def test_high_band_requires_probability_and_odd_in_range():
     assert ctx["mid_probability_bets"] == []
 
 
-def test_mid_band_stays_odds_optional_and_drops_uncoverable_markets():
-    # The mid band (60%-69%) has no odd-range requirement -- unlike the
-    # high band above, an odd-less entry still shows (odd/valor as "—"),
-    # except for markets betclic_markets says Betclic never covers at
-    # all (same coverable_markets behavior as before).
+def test_mid_band_requires_probability_and_odd_in_inclusive_range():
+    # CHANGED (2026-09-17, explicitly requested): the mid band (60%-69%)
+    # now ALSO needs a matched odd, between 1.5 and 2.2 -- unlike the
+    # high band, both bounds here are inclusive ("inclusive para os
+    # 2"). An odd-less entry, or one outside the window, is dropped
+    # outright, same as the high band's own (exclusive) range.
     game = _game(
-        markets={"1x2": {"home": 0.65}, "handicap_home": {"-3": 0.65}},
-        odds_markets=None,
+        markets={
+            "1x2": {"home": 0.65},  # 65%, odd in range (inclusive edge) -> shows
+            "btts": {"yes": 0.65},  # 65%, odd outside range -> dropped
+            "double_chance": {"1x": 0.65},  # 65%, no odd at all -> dropped
+        },
+        odds_markets={"1x2": {"home": 1.5}, "btts": {"yes": 2.5}},
     )
 
-    ctx = build_context(date(2026, 9, 12), [game], betclic_markets={"1x2", "btts"})
+    ctx = build_context(date(2026, 9, 12), [game])
     rows = ctx["mid_probability_bets"]
-    assert len(rows) == 1
-    assert rows[0]["label"] == "Resultado Final - Casa"
-    assert rows[0]["odd"] is None
+    assert [r["label"] for r in rows] == ["Resultado Final - Casa"]
+    assert rows[0]["odd"] == pytest.approx(1.5)
     assert ctx["high_probability_bets"] == []
 
 
-def test_probability_bands_cover_games_without_a_betclic_offer_and_split_by_band():
-    # Requested explicitly: two cross-game "probability" lists that,
-    # unlike top_value_bets, cover *every* game with a prediction --
-    # including one with no matched Betclic offer at all. A no-offer
-    # game can now only ever land in the mid band, since the high band
-    # requires a matched odd in a specific range.
+def test_probability_bands_split_by_probability_and_now_exclude_offerless_games_from_both():
+    # CHANGED (2026-09-17): now that BOTH bands require a matched odd in
+    # their own range, a game with no Betclic offer at all can no longer
+    # land in either -- a real behavior change from before this request
+    # (when the mid band was still odds-optional).
     no_offer = _game(
         markets={"1x2": {"home": 0.65}}, odds_markets=None, slug="no-offer", home="Team C", away="Team D"
     )
-    with_offer = _game(
+    high_offer = _game(
         markets={"1x2": {"home": 0.9}},
         odds_markets={"1x2": {"home": 1.35}},
-        slug="with-offer",
+        slug="high-offer",
         home="Team A",
         away="Team B",
     )
+    mid_offer = _game(
+        markets={"1x2": {"home": 0.65}},
+        odds_markets={"1x2": {"home": 1.8}},
+        slug="mid-offer",
+        home="Team E",
+        away="Team F",
+    )
 
-    ctx = build_context(date(2026, 9, 12), [no_offer, with_offer])
+    ctx = build_context(date(2026, 9, 12), [no_offer, high_offer, mid_offer])
 
     high_rows = ctx["high_probability_bets"]
-    assert len(high_rows) == 1
-    assert high_rows[0]["game_slug"] == "with-offer"
+    assert [r["game_slug"] for r in high_rows] == ["high-offer"]
     assert high_rows[0]["odd"] == pytest.approx(1.35)
 
     mid_rows = ctx["mid_probability_bets"]
-    assert len(mid_rows) == 1
-    assert mid_rows[0]["game_slug"] == "no-offer"
-    assert mid_rows[0]["odd"] is None
+    assert [r["game_slug"] for r in mid_rows] == ["mid-offer"]
+    assert mid_rows[0]["odd"] == pytest.approx(1.8)
+
+    # no-offer never shows -- it clears the mid band's probability
+    # range (65%) but has no odd at all.
+    all_slugs = {r["game_slug"] for r in high_rows + mid_rows}
+    assert "no-offer" not in all_slugs

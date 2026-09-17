@@ -234,3 +234,27 @@ def test_top_probability_bets_today_min_max_odd_bound_an_exclusive_range_and_req
     # three outcomes clear the (permissive) probability threshold.
     unfiltered = top_probability_bets_today([game], min_probability=0.0)
     assert {e.outcome for _, e in unfiltered} == {"home", "draw", "away"}
+
+
+def test_top_probability_bets_today_odd_bounds_inclusive_flag():
+    # Explicitly requested for the dashboard's mid-confidence band:
+    # "odd superior a 1.5 e inferior a 2.2, inclusive para os 2" -- both
+    # bounds inclusive this time, unlike the high band's exclusive ones
+    # above. odd_bounds_inclusive=True switches > / < to >= / <=.
+    game = make_game(
+        {"1x2": {"home": 0.9, "draw": 0.9, "away": 0.9}},
+        {"1x2": {"home": 1.5, "away": 2.2}},  # draw has no matched odd at all
+    )
+    compute_value_bets(game)
+
+    exclusive = top_probability_bets_today(
+        [game], min_probability=0.0, min_odd=1.5, max_odd=2.2, odd_bounds_inclusive=False
+    )
+    assert exclusive == []  # both boundary odds excluded
+
+    inclusive = top_probability_bets_today(
+        [game], min_probability=0.0, min_odd=1.5, max_odd=2.2, odd_bounds_inclusive=True
+    )
+    assert {e.outcome for _, e in inclusive} == {"home", "away"}
+    # draw still excluded either way -- no matched odd at all.
+    assert not any(e.outcome == "draw" for _, e in inclusive)

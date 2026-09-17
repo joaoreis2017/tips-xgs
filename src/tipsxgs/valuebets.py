@@ -118,6 +118,7 @@ def top_probability_bets_today(
     max_probability: float | None = None,
     min_odd: float | None = None,
     max_odd: float | None = None,
+    odd_bounds_inclusive: bool = False,
     limit: int | None = None,
     coverable_markets: set[str] | None = None,
 ) -> list[tuple[MatchedGame, ValueBetEntry]]:
@@ -143,14 +144,18 @@ def top_probability_bets_today(
     each as its own panel (see ``report.build_context``).
 
     ``min_odd``/``max_odd`` (both ``None`` by default) additionally
-    bound an *exclusive* odd range -- explicitly requested for the
-    high-confidence band only ("odd acima de 1.25 e abaixo de 1.45"):
-    an entry needs odd > min_odd (when given) AND odd < max_odd (when
-    given) to survive, and -- unlike every other filter here -- this
-    now *requires* a matched odd at all: an odd-less entry is dropped
-    outright rather than kept with odd/value_ratio as "—", since the
-    whole point of this filter is to only show entries whose odd falls
-    in that specific window.
+    bound an odd range -- explicitly requested for both bands, each
+    with its own bounds and its own inclusivity: the high-confidence
+    band's is *exclusive* ("odd acima de 1.25 e abaixo de 1.45" --
+    ``odd_bounds_inclusive=False``, the default), the mid-confidence
+    band's is *inclusive* ("odd superior a 1.5 e inferior a 2.2,
+    inclusive para os 2" -- ``odd_bounds_inclusive=True``). An entry
+    needs odd > min_odd (or >= when inclusive) AND odd < max_odd (or <=
+    when inclusive) to survive, and -- unlike every other filter here
+    -- this now *requires* a matched odd at all once either bound is
+    given: an odd-less entry is dropped outright rather than kept with
+    odd/value_ratio as "—", since the whole point of this filter is to
+    only show entries whose odd falls in that specific window.
 
     ``coverable_markets``, when given, additionally drops any odd-less
     entry whose market *family* (see ``markets.market_family`` -- e.g.
@@ -185,11 +190,11 @@ def top_probability_bets_today(
     def _odd_in_range(entry: ValueBetEntry) -> bool:
         if min_odd is None and max_odd is None:
             return True
-        return (
-            entry.odd is not None
-            and (min_odd is None or entry.odd > min_odd)
-            and (max_odd is None or entry.odd < max_odd)
-        )
+        if entry.odd is None:
+            return False
+        if odd_bounds_inclusive:
+            return (min_odd is None or entry.odd >= min_odd) and (max_odd is None or entry.odd <= max_odd)
+        return (min_odd is None or entry.odd > min_odd) and (max_odd is None or entry.odd < max_odd)
 
     pairs = [
         (game, entry)

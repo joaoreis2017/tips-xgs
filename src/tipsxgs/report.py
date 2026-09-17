@@ -28,6 +28,8 @@ def build_context(
     mid_probability_max: float = 0.69,
     high_odd_min: float = 1.25,
     high_odd_max: float = 1.45,
+    mid_odd_min: float = 1.5,
+    mid_odd_max: float = 2.2,
 ) -> dict:
     game_ctx = []
     for g in games:
@@ -102,6 +104,7 @@ def build_context(
         max_probability: float | None,
         min_odd: float | None = None,
         max_odd: float | None = None,
+        odd_bounds_inclusive: bool = False,
     ) -> list[dict]:
         pairs = top_probability_bets_today(
             games,
@@ -109,6 +112,7 @@ def build_context(
             max_probability=max_probability,
             min_odd=min_odd,
             max_odd=max_odd,
+            odd_bounds_inclusive=odd_bounds_inclusive,
             limit=None,
             coverable_markets=betclic_markets,
         )
@@ -124,11 +128,15 @@ def build_context(
             for g, entry in pairs
         ]
 
-    # High band ONLY, explicitly requested: also needs a matched odd
-    # strictly between high_odd_min/high_odd_max -- the mid band has no
-    # odd-range equivalent, it stays odds-optional.
-    high_probability_bets = _band_ctx(high_probability_min, None, high_odd_min, high_odd_max)
-    mid_probability_bets = _band_ctx(mid_probability_min, mid_probability_max)
+    # Both bands now also need a matched odd within their own range,
+    # each explicitly requested separately: high is exclusive
+    # (>1.25 and <1.45), mid is inclusive (>=1.5 and <=2.2).
+    high_probability_bets = _band_ctx(
+        high_probability_min, None, high_odd_min, high_odd_max, odd_bounds_inclusive=False
+    )
+    mid_probability_bets = _band_ctx(
+        mid_probability_min, mid_probability_max, mid_odd_min, mid_odd_max, odd_bounds_inclusive=True
+    )
 
     return {
         "date_str": day.isoformat(),
@@ -144,6 +152,8 @@ def build_context(
         "mid_probability_max": mid_probability_max,
         "high_odd_min": high_odd_min,
         "high_odd_max": high_odd_max,
+        "mid_odd_min": mid_odd_min,
+        "mid_odd_max": mid_odd_max,
     }
 
 
@@ -160,6 +170,8 @@ def render_dashboard(
     mid_probability_max: float = 0.69,
     high_odd_min: float = 1.25,
     high_odd_max: float = 1.45,
+    mid_odd_min: float = 1.5,
+    mid_odd_max: float = 2.2,
 ) -> Path:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
@@ -178,6 +190,8 @@ def render_dashboard(
             mid_probability_max=mid_probability_max,
             high_odd_min=high_odd_min,
             high_odd_max=high_odd_max,
+            mid_odd_min=mid_odd_min,
+            mid_odd_max=mid_odd_max,
         )
     )
 

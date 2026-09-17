@@ -141,6 +141,8 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
         mid_probability_max=cfg.report_mid_probability_max,
         high_odd_min=cfg.report_high_odd_min,
         high_odd_max=cfg.report_high_odd_max,
+        mid_odd_min=cfg.report_mid_odd_min,
+        mid_odd_max=cfg.report_mid_odd_max,
     )
     render_index(cfg.reports_dir)
     logger.info("Rendered %s", html_path)

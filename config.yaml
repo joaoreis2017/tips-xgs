@@ -31,25 +31,24 @@ report_min_probability: 0.5   # xGScore's own probability must be > this (0..1)
 # 100] goes in the high-confidence panel; [report_mid_probability_min,
 # report_mid_probability_max] goes in the mid-confidence one. Both
 # probability bounds are inclusive. Anything below
-# report_mid_probability_min isn't shown in either. Unlike
-# report_min_probability above, the mid band does NOT require a matched
-# Betclic odd (odd/valor render as "—") -- but an odd-less entry is
-# still dropped when its market is one Betclic has no extraction rule
-# for at all (handicap, per-team totals) -- see
-# pipeline._betclic_coverable_markets -- since those can never get a
-# real odd regardless.
+# report_mid_probability_min isn't shown in either.
 report_high_probability_min: 0.70   # >= 70% (displayed)
 report_mid_probability_min: 0.60    # 60%..69% (displayed) band
 report_mid_probability_max: 0.69
 
-# High-confidence band ONLY (explicitly requested, no equivalent for
-# the mid band): on top of the probability check above, an entry also
-# needs a matched Betclic odd strictly between these two bounds (both
-# exclusive) -- anything with no odd, or an odd outside this window
-# (e.g. 1.20 or 1.50), is dropped outright rather than kept as "—".
-# See valuebets.top_probability_bets_today's min_odd/max_odd.
-report_high_odd_min: 1.25
+# Both bands ALSO require a matched Betclic odd within their own range
+# now (explicitly requested for each) -- anything with no odd, or an
+# odd outside the window, is dropped outright rather than kept as "—".
+# An odd-less entry is also still dropped when its market is one
+# Betclic has no extraction rule for at all (handicap, per-team totals)
+# -- see pipeline._betclic_coverable_markets -- since those can never
+# get a real odd regardless. See
+# valuebets.top_probability_bets_today's min_odd/max_odd/
+# odd_bounds_inclusive.
+report_high_odd_min: 1.25   # high band: exclusive (>1.25 and <1.45)
 report_high_odd_max: 1.45
+report_mid_odd_min: 1.5     # mid band: inclusive (>=1.5 and <=2.2)
+report_mid_odd_max: 2.2
 
 xgscore:
   base_url: "https://xgscore.io"

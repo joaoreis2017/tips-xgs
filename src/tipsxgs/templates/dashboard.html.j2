@@ -134,9 +134,9 @@
 {{ probability_band_panel(
   "📊",
   "Probabilidade média (" ~ "%.0f"|format(mid_probability_min * 100) ~ "%–" ~ "%.0f"|format(mid_probability_max * 100) ~ "%)",
-  "Todos os jogos com previsão, mesmo sem odds Betclic emparelhadas — odd/valor aparecem a \"—\" quando o jogo ainda não tem odd Betclic emparelhada. Só mercados que a Betclic realmente oferece (1X2, dupla hipótese, ambas marcam, over/under, handicap, totais por equipa) entram aqui.",
+  "Só jogadas com odd Betclic entre " ~ "%.2f"|format(mid_odd_min) ~ " e " ~ "%.2f"|format(mid_odd_max) ~ " (inclusive) — sem odd nesse intervalo, não aparece aqui.",
   mid_probability_bets,
-  "Sem acontecimentos nesta banda de probabilidade (ver docs/CALIBRATION.md)."
+  "Sem acontecimentos nesta banda de probabilidade com odd entre " ~ "%.2f"|format(mid_odd_min) ~ " e " ~ "%.2f"|format(mid_odd_max) ~ " (ver docs/CALIBRATION.md)."
 ) }}
 
 {% for game in games %}

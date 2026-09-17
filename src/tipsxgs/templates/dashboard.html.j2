@@ -92,10 +92,10 @@
   {% endif %}
 </div>
 
-{% macro probability_band_panel(icon, title, rows, empty_message) %}
+{% macro probability_band_panel(icon, title, subtitle, rows, empty_message) %}
 <div class="panel">
   <h2>{{ icon }} {{ title }}</h2>
-  <p class="subtitle" style="margin:-6px 0 12px;">Todos os jogos com previsão, mesmo sem odds Betclic emparelhadas — odd/valor aparecem a "—" quando o jogo ainda não tem odd Betclic emparelhada. Só mercados que a Betclic realmente oferece (1X2, dupla hipótese, ambas marcam, over/under, handicap, totais por equipa) entram aqui.</p>
+  <p class="subtitle" style="margin:-6px 0 12px;">{{ subtitle }}</p>
   {% if rows %}
   <table>
     <thead><tr>
@@ -126,13 +126,15 @@
 {{ probability_band_panel(
   "🎯",
   "Alta probabilidade (≥" ~ "%.0f"|format(high_probability_min * 100) ~ "%)",
+  "Só jogadas com odd Betclic entre " ~ "%.2f"|format(high_odd_min) ~ " e " ~ "%.2f"|format(high_odd_max) ~ " (exclusive) — sem odd nesse intervalo, não aparece aqui.",
   high_probability_bets,
-  "Sem acontecimentos nesta banda de probabilidade (ver docs/CALIBRATION.md)."
+  "Sem acontecimentos nesta banda de probabilidade com odd entre " ~ "%.2f"|format(high_odd_min) ~ " e " ~ "%.2f"|format(high_odd_max) ~ " (ver docs/CALIBRATION.md)."
 ) }}
 
 {{ probability_band_panel(
   "📊",
   "Probabilidade média (" ~ "%.0f"|format(mid_probability_min * 100) ~ "%–" ~ "%.0f"|format(mid_probability_max * 100) ~ "%)",
+  "Todos os jogos com previsão, mesmo sem odds Betclic emparelhadas — odd/valor aparecem a \"—\" quando o jogo ainda não tem odd Betclic emparelhada. Só mercados que a Betclic realmente oferece (1X2, dupla hipótese, ambas marcam, over/under, handicap, totais por equipa) entram aqui.",
   mid_probability_bets,
   "Sem acontecimentos nesta banda de probabilidade (ver docs/CALIBRATION.md)."
 ) }}

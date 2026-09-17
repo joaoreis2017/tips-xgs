@@ -140,37 +140,57 @@ def test_has_predictions_distinguishes_genuinely_empty_from_filtered_out():
     assert ctx["games"][1]["events"] == []
 
 
-def test_probability_bands_drop_markets_betclic_never_covers():
-    # betclic_markets, when passed, drops odd-less entries for markets
-    # config.yaml's betclic section has no extraction rule for at all
-    # (e.g. handicap lines) -- see valuebets.top_probability_bets_today.
-    # Both entries here are 90%+, so both would land in the high band --
-    # handicap_home is dropped regardless of that.
+def test_high_band_requires_probability_and_odd_in_range():
+    # CHANGED (2026-09-17, explicitly requested): the high band is now
+    # >=70% AND a matched odd strictly between 1.25 and 1.45 -- unlike
+    # every other probability-ranked view, an odd is required here, and
+    # only within that specific window.
     game = _game(
-        markets={"1x2": {"home": 0.9}, "handicap_home": {"-3": 0.99}},
+        markets={
+            "1x2": {"home": 0.9},  # 90%, odd in range -> shows
+            "btts": {"yes": 0.85},  # 85%, odd outside range -> dropped
+            "handicap_home": {"-3": 0.99},  # 99%, no odd at all -> dropped
+        },
+        odds_markets={"1x2": {"home": 1.35}, "btts": {"yes": 1.10}},
+    )
+
+    ctx = build_context(date(2026, 9, 12), [game])
+    rows = ctx["high_probability_bets"]
+    assert [r["label"] for r in rows] == ["Resultado Final - Casa"]
+    assert rows[0]["odd"] == pytest.approx(1.35)
+    assert ctx["mid_probability_bets"] == []
+
+
+def test_mid_band_stays_odds_optional_and_drops_uncoverable_markets():
+    # The mid band (60%-69%) has no odd-range requirement -- unlike the
+    # high band above, an odd-less entry still shows (odd/valor as "—"),
+    # except for markets betclic_markets says Betclic never covers at
+    # all (same coverable_markets behavior as before).
+    game = _game(
+        markets={"1x2": {"home": 0.65}, "handicap_home": {"-3": 0.65}},
         odds_markets=None,
     )
 
     ctx = build_context(date(2026, 9, 12), [game], betclic_markets={"1x2", "btts"})
-    rows = ctx["high_probability_bets"]
+    rows = ctx["mid_probability_bets"]
     assert len(rows) == 1
-    assert rows[0]["game_slug"] == "home-away"
     assert rows[0]["label"] == "Resultado Final - Casa"
-    assert ctx["mid_probability_bets"] == []
+    assert rows[0]["odd"] is None
+    assert ctx["high_probability_bets"] == []
 
 
 def test_probability_bands_cover_games_without_a_betclic_offer_and_split_by_band():
     # Requested explicitly: two cross-game "probability" lists that,
     # unlike top_value_bets, cover *every* game with a prediction --
-    # including one with no matched Betclic offer at all -- split into a
-    # high-confidence band (>=67%) and a separate mid-confidence one
-    # (34%-66%).
+    # including one with no matched Betclic offer at all. A no-offer
+    # game can now only ever land in the mid band, since the high band
+    # requires a matched odd in a specific range.
     no_offer = _game(
-        markets={"1x2": {"home": 0.9}}, odds_markets=None, slug="no-offer", home="Team C", away="Team D"
+        markets={"1x2": {"home": 0.65}}, odds_markets=None, slug="no-offer", home="Team C", away="Team D"
     )
     with_offer = _game(
-        markets={"1x2": {"home": 0.55}},
-        odds_markets={"1x2": {"home": 1.8}},
+        markets={"1x2": {"home": 0.9}},
+        odds_markets={"1x2": {"home": 1.35}},
         slug="with-offer",
         home="Team A",
         away="Team B",
@@ -180,11 +200,10 @@ def test_probability_bands_cover_games_without_a_betclic_offer_and_split_by_band
 
     high_rows = ctx["high_probability_bets"]
     assert len(high_rows) == 1
-    assert high_rows[0]["game_slug"] == "no-offer"
-    assert high_rows[0]["odd"] is None
-    assert high_rows[0]["value_ratio"] is None
+    assert high_rows[0]["game_slug"] == "with-offer"
+    assert high_rows[0]["odd"] == pytest.approx(1.35)
 
     mid_rows = ctx["mid_probability_bets"]
     assert len(mid_rows) == 1
-    assert mid_rows[0]["game_slug"] == "with-offer"
-    assert mid_rows[0]["odd"] == pytest.approx(1.8)
+    assert mid_rows[0]["game_slug"] == "no-offer"
+    assert mid_rows[0]["odd"] is None

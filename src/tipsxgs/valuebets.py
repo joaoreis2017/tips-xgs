@@ -116,6 +116,8 @@ def top_probability_bets_today(
     games: list[MatchedGame],
     min_probability: float = 0.5,
     max_probability: float | None = None,
+    min_odd: float | None = None,
+    max_odd: float | None = None,
     limit: int | None = None,
     coverable_markets: set[str] | None = None,
 ) -> list[tuple[MatchedGame, ValueBetEntry]]:
@@ -126,7 +128,9 @@ def top_probability_bets_today(
     Betclic odd at all -- a game xGScore has predictions for shows up
     here even with no Betclic offer paired (odd/value just come back
     ``None`` for those entries), covering every game rather than only
-    the ones with odds to compare against.
+    the ones with odds to compare against. ``min_odd``/``max_odd``
+    (below) are the one exception to that -- when either is given, an
+    odd becomes required again.
 
     ``min_probability``/``max_probability`` bound an inclusive band (by
     displayed whole-percent, see ``_rounded_percent``) -- e.g.
@@ -134,9 +138,19 @@ def top_probability_bets_today(
     ``min_probability=0.34, max_probability=0.66`` keeps only "34%"
     through "66%". ``max_probability=None`` (the default) leaves the
     band open-ended at the top. Explicitly requested: splitting the
-    single cross-game list into separate high-confidence (>=67%) and
-    mid-confidence (34-66%) bands -- call this twice, once per band, and
-    render each as its own panel (see ``report.build_context``).
+    single cross-game list into separate high-confidence and
+    mid-confidence bands -- call this twice, once per band, and render
+    each as its own panel (see ``report.build_context``).
+
+    ``min_odd``/``max_odd`` (both ``None`` by default) additionally
+    bound an *exclusive* odd range -- explicitly requested for the
+    high-confidence band only ("odd acima de 1.25 e abaixo de 1.45"):
+    an entry needs odd > min_odd (when given) AND odd < max_odd (when
+    given) to survive, and -- unlike every other filter here -- this
+    now *requires* a matched odd at all: an odd-less entry is dropped
+    outright rather than kept with odd/value_ratio as "—", since the
+    whole point of this filter is to only show entries whose odd falls
+    in that specific window.
 
     ``coverable_markets``, when given, additionally drops any odd-less
     entry whose market *family* (see ``markets.market_family`` -- e.g.
@@ -155,7 +169,8 @@ def top_probability_bets_today(
     still shows up (that one's just unmatched for this game, or a line
     Betclic doesn't happen to offer this time), only
     structurally-uncoverable *families* get dropped. An entry that
-    already has an odd is never affected by this.
+    already has an odd is never affected by this (nor, obviously, by
+    min_odd/max_odd once it's already in range).
 
     ``limit`` is ``None`` (no cap) by default -- explicitly requested:
     *every* event clearing the band across *every* game should show up,
@@ -166,12 +181,23 @@ def top_probability_bets_today(
     """
     min_pct = _rounded_percent(min_probability)
     max_pct = _rounded_percent(max_probability) if max_probability is not None else None
+
+    def _odd_in_range(entry: ValueBetEntry) -> bool:
+        if min_odd is None and max_odd is None:
+            return True
+        return (
+            entry.odd is not None
+            and (min_odd is None or entry.odd > min_odd)
+            and (max_odd is None or entry.odd < max_odd)
+        )
+
     pairs = [
         (game, entry)
         for game in games
         for entry in game.value_bets
         if _rounded_percent(entry.probability) >= min_pct
         and (max_pct is None or _rounded_percent(entry.probability) <= max_pct)
+        and _odd_in_range(entry)
         and (
             entry.odd is not None
             or coverable_markets is None

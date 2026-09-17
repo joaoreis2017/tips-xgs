@@ -23,9 +23,11 @@ def build_context(
     demo: bool = False,
     min_probability: float = 0.5,
     betclic_markets: set[str] | None = None,
-    high_probability_min: float = 0.67,
-    mid_probability_min: float = 0.34,
-    mid_probability_max: float = 0.66,
+    high_probability_min: float = 0.70,
+    mid_probability_min: float = 0.60,
+    mid_probability_max: float = 0.69,
+    high_odd_min: float = 1.25,
+    high_odd_max: float = 1.45,
 ) -> dict:
     game_ctx = []
     for g in games:
@@ -95,11 +97,18 @@ def build_context(
     # mid-confidence band (mid_probability_min..mid_probability_max),
     # each its own panel -- see valuebets.top_probability_bets_today's
     # docstring for the inclusive, displayed-whole-percent bucketing.
-    def _band_ctx(min_probability: float, max_probability: float | None) -> list[dict]:
+    def _band_ctx(
+        min_probability: float,
+        max_probability: float | None,
+        min_odd: float | None = None,
+        max_odd: float | None = None,
+    ) -> list[dict]:
         pairs = top_probability_bets_today(
             games,
             min_probability=min_probability,
             max_probability=max_probability,
+            min_odd=min_odd,
+            max_odd=max_odd,
             limit=None,
             coverable_markets=betclic_markets,
         )
@@ -115,7 +124,10 @@ def build_context(
             for g, entry in pairs
         ]
 
-    high_probability_bets = _band_ctx(high_probability_min, None)
+    # High band ONLY, explicitly requested: also needs a matched odd
+    # strictly between high_odd_min/high_odd_max -- the mid band has no
+    # odd-range equivalent, it stays odds-optional.
+    high_probability_bets = _band_ctx(high_probability_min, None, high_odd_min, high_odd_max)
     mid_probability_bets = _band_ctx(mid_probability_min, mid_probability_max)
 
     return {
@@ -130,6 +142,8 @@ def build_context(
         "high_probability_min": high_probability_min,
         "mid_probability_min": mid_probability_min,
         "mid_probability_max": mid_probability_max,
+        "high_odd_min": high_odd_min,
+        "high_odd_max": high_odd_max,
     }
 
 
@@ -141,9 +155,11 @@ def render_dashboard(
     demo: bool = False,
     min_probability: float = 0.5,
     betclic_markets: set[str] | None = None,
-    high_probability_min: float = 0.67,
-    mid_probability_min: float = 0.34,
-    mid_probability_max: float = 0.66,
+    high_probability_min: float = 0.70,
+    mid_probability_min: float = 0.60,
+    mid_probability_max: float = 0.69,
+    high_odd_min: float = 1.25,
+    high_odd_max: float = 1.45,
 ) -> Path:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
@@ -160,6 +176,8 @@ def render_dashboard(
             high_probability_min=high_probability_min,
             mid_probability_min=mid_probability_min,
             mid_probability_max=mid_probability_max,
+            high_odd_min=high_odd_min,
+            high_odd_max=high_odd_max,
         )
     )
 

@@ -199,11 +199,19 @@ class AppConfig:
     # panel, and everything in [report_mid_probability_min,
     # report_mid_probability_max] goes in the mid-confidence one.
     # Anything below report_mid_probability_min isn't shown in either.
-    # Both bounds are inclusive, matching how the user specified them
-    # ("67%, inclusive" / "34% a 66%, inclusive").
-    report_high_probability_min: float = 0.67
-    report_mid_probability_min: float = 0.34
-    report_mid_probability_max: float = 0.66
+    # Both probability bounds are inclusive, matching how the user
+    # specified them ("70%, inclusive" / "60% a 69%, inclusive").
+    report_high_probability_min: float = 0.70
+    report_mid_probability_min: float = 0.60
+    report_mid_probability_max: float = 0.69
+    # High-confidence band ONLY (explicitly requested, no equivalent for
+    # the mid band): an entry also needs a matched odd strictly between
+    # these two bounds ("odd acima de 1.25 e abaixo de 1.45" -- both
+    # exclusive) -- anything with no odd, or an odd outside this window,
+    # is dropped outright rather than kept as "—". See
+    # valuebets.top_probability_bets_today's min_odd/max_odd.
+    report_high_odd_min: float = 1.25
+    report_high_odd_max: float = 1.45
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -274,8 +282,10 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         xgscore=_site_section(raw.get("xgscore", {})),
         betclic=_site_section(raw.get("betclic", {})),
         report_min_probability=float(raw.get("report_min_probability", 0.5)),
-        report_high_probability_min=float(raw.get("report_high_probability_min", 0.67)),
-        report_mid_probability_min=float(raw.get("report_mid_probability_min", 0.34)),
-        report_mid_probability_max=float(raw.get("report_mid_probability_max", 0.66)),
+        report_high_probability_min=float(raw.get("report_high_probability_min", 0.70)),
+        report_mid_probability_min=float(raw.get("report_mid_probability_min", 0.60)),
+        report_mid_probability_max=float(raw.get("report_mid_probability_max", 0.69)),
+        report_high_odd_min=float(raw.get("report_high_odd_min", 1.25)),
+        report_high_odd_max=float(raw.get("report_high_odd_max", 1.45)),
         raw=raw,
     )

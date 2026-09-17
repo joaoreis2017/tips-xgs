@@ -210,3 +210,27 @@ def test_top_probability_bets_today_buckets_by_displayed_rounded_percent():
 
     mid = top_probability_bets_today([game], min_probability=0.34, max_probability=0.66)
     assert mid == []
+
+
+def test_top_probability_bets_today_min_max_odd_bound_an_exclusive_range_and_require_an_odd():
+    # Explicitly requested for the dashboard's high-confidence band:
+    # "odd acima de 1.25 e abaixo de 1.45" -- both exclusive -- and,
+    # unlike every other filter this function has, an odd becomes
+    # REQUIRED once min_odd/max_odd are given: an odd-less entry (draw,
+    # here) is dropped outright rather than kept with odd=None.
+    game = make_game(
+        {"1x2": {"home": 0.9, "draw": 0.9, "away": 0.9}},
+        {"1x2": {"home": 1.35, "away": 1.45}},  # draw has no matched odd at all
+    )
+    compute_value_bets(game)
+
+    in_range = top_probability_bets_today([game], min_probability=0.0, min_odd=1.25, max_odd=1.45)
+    assert [e.outcome for _, e in in_range] == ["home"]
+
+    # Exactly 1.45 (the boundary) is excluded -- max_odd is exclusive.
+    assert not any(e.outcome == "away" for _, e in in_range)
+
+    # Without min_odd/max_odd, nothing requires an odd at all -- all
+    # three outcomes clear the (permissive) probability threshold.
+    unfiltered = top_probability_bets_today([game], min_probability=0.0)
+    assert {e.outcome for _, e in unfiltered} == {"home", "draw", "away"}

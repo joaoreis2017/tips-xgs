@@ -155,7 +155,16 @@ def scrape_previews(
         session = BrowserSession(headless=cfg.headless, user_agent=cfg.user_agent).__enter__()
     try:
         out = {}
-        for fixture in fixtures:
+        total = len(fixtures)
+        # Sequential + a per-page wait + a polite delay between requests
+        # easily adds up to several silent minutes for a full day's worth
+        # of fixtures (e.g. ~9s/page x 48 fixtures =~ 7 minutes) -- with
+        # nothing logged inside this loop, a real run looked "stuck" for
+        # over 5 minutes with no way to tell it was actually progressing.
+        # This one INFO line per fixture is the fix: it shows up
+        # regardless of -v/--verbose.
+        for i, fixture in enumerate(fixtures, start=1):
+            logger.info("Scraping preview %d/%d: %s", i, total, fixture.preview_url)
             with polite_delay(cfg.xgscore.request_delay_seconds):
                 try:
                     out[fixture.id] = scrape_preview(cfg, fixture, session=session)

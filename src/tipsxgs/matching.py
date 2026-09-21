@@ -22,15 +22,66 @@ def _pair_key(home: str, away: str) -> str:
     return f"{home.strip().lower()} vs {away.strip().lower()}"
 
 
+# A period-abbreviated token's letters (minus the dot) must be at least
+# this long before we'll treat it as a stand-in for a longer word on the
+# other side -- see _expand_abbreviated_tokens. Below this length ("c.",
+# "r.", "k.", ...) far too many unrelated words share the same first
+# letter or two, so the check would stop being a reliable abbreviation
+# signal and start being a coincidence generator.
+_MIN_ABBREVIATION_STEM_LEN = 3
+
+
+def _expand_abbreviated_tokens(a: str, b: str) -> tuple[str, str]:
+    """Rewrite any period-abbreviated token in ``a`` or ``b`` (e.g.
+    "indep.", "dep.") into its full counterpart from the *other* string,
+    when that counterpart is a genuine, unique prefix match -- e.g.
+    "indep." + "independiente" -> both become "independiente" before the
+    fuzzy scorers below ever see them.
+
+    Real case (2026-09-21): "Barracas C. vs Indep. R." (xGScore) against
+    "Barracas Central vs Independiente Rivadavia" (Betclic) scored only
+    68 via token_sort/token_set_ratio -- clearly the same match, but
+    below any sane min_confidence, because those scorers compare
+    abbreviated and fully-spelled tokens as if they were just two
+    unrelated words. Expanding "indep." -> "independiente" alone lifts
+    token_set_ratio from ~63 to ~89.
+
+    Deliberately narrow, unlike the briefly-tried (and reverted, see
+    below) ``fuzz.WRatio``: a token only expands when it ends with "."
+    AND its stem is >= ``_MIN_ABBREVIATION_STEM_LEN`` chars AND exactly
+    one token on the other side starts with that stem -- a real
+    abbreviation essentially never collides with an unrelated team's
+    name under those three conditions together, so this can't turn two
+    genuinely different fixtures into a false-positive match the way
+    WRatio did.
+    """
+
+    def _expand(tokens: list[str], other_tokens: list[str]) -> str:
+        expanded = []
+        for tok in tokens:
+            stem = tok[:-1]
+            if tok.endswith(".") and len(stem) >= _MIN_ABBREVIATION_STEM_LEN:
+                matches = [o for o in other_tokens if o != tok and o.startswith(stem)]
+                expanded.append(matches[0] if len(matches) == 1 else tok)
+            else:
+                expanded.append(tok)
+        return " ".join(expanded)
+
+    a_tokens, b_tokens = a.split(), b.split()
+    return _expand(a_tokens, b_tokens), _expand(b_tokens, a_tokens)
+
+
 def _score(fixture: Fixture, offer: OddsOffer) -> float:
     fixture_key = _pair_key(fixture.home_team, fixture.away_team)
     offer_key = _pair_key(offer.home_team, offer.away_team)
+    exp_fixture, exp_offer = _expand_abbreviated_tokens(fixture_key, offer_key)
 
-    same_order = fuzz.token_sort_ratio(fixture_key, offer_key)
+    same_order = fuzz.token_sort_ratio(exp_fixture, exp_offer)
     # Also try home/away swapped, in case one source lists them reversed
     # (rare, but cheap to guard against).
     swapped_key = _pair_key(offer.away_team, offer.home_team)
-    swapped = fuzz.token_sort_ratio(fixture_key, swapped_key)
+    exp_fixture_swap, exp_swapped = _expand_abbreviated_tokens(fixture_key, swapped_key)
+    swapped = fuzz.token_sort_ratio(exp_fixture_swap, exp_swapped)
     # token_set_ratio ignores extra/missing tokens instead of penalizing
     # them like token_sort_ratio does -- e.g. "Victoria G." vs "Vitoria
     # Guimaraes", or one source adding a "FC"/"CF"/city-name token the
@@ -38,7 +89,7 @@ def _score(fixture: Fixture, offer: OddsOffer) -> float:
     # matter and a single call already covers both orders. Only helps
     # borderline abbreviation cases (we take the max), never hurts a
     # pair that already scored well on token_sort_ratio.
-    token_set = fuzz.token_set_ratio(fixture_key, offer_key)
+    token_set = fuzz.token_set_ratio(exp_fixture, exp_offer)
     # REVERTED (2026-09-14): briefly added fuzz.WRatio here too (rapidfuzz's
     # own blend of ratio/partial_ratio/token_sort/token_set) to fix a real
     # case -- "Dep. Riestra vs Lanus" against "Deportivo Riestra vs
@@ -48,10 +99,9 @@ def _score(fixture: Fixture, offer: OddsOffer) -> float:
     # "Dynamo K. vs Epitsentr" (and several other genuinely different
     # fixtures) -- WRatio's partial_ratio-heavy blend for short,
     # length-mismatched strings produces false positives too often to
-    # trust here. A wrong match (feeding a real-looking but bogus odd
-    # into the value-bet calculation) is worse than no match at all, so
-    # this stays reverted until a safer, more targeted fix for the
-    # abbreviation case is found.
+    # trust here. FIXED (2026-09-21) via the narrower
+    # _expand_abbreviated_tokens above instead, which handles this exact
+    # case (and the Barracas one) without WRatio's false-positive risk.
     score = max(same_order, swapped, token_set)
 
     if fixture.kickoff and offer.kickoff:

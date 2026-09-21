@@ -72,9 +72,48 @@ def test_unrelated_fixtures_never_cross_a_sane_confidence_threshold():
     # calculation) is worse than no match, so this locks in that no
     # algorithm added to _score() may score totally unrelated team names
     # anywhere near a sane min_confidence. The abbreviated-name case
-    # above stays correctly unmatched below 80 until a safer fix exists.
+    # above was fixed instead by _expand_abbreviated_tokens (see below),
+    # a narrower fix that this same fixture pair also guards.
     fixtures = [fx("Dynamo K.", "Epitsentr")]
     games = match_fixtures_to_odds(fixtures, {}, [offer("Torino", "Roma")], min_confidence=80)
+    assert games[0].odds is None
+
+
+def test_period_abbreviated_team_name_expands_against_the_full_spelling():
+    # Real case from a live run (2026-09-21): "Barracas C. - Indep. R."
+    # (xGScore) against "Barracas Central - Independiente Rivadavia"
+    # (Betclic) scored only 68 -- token_sort/token_set_ratio compare
+    # "indep." and "independiente" as two unrelated words. Expanding the
+    # abbreviation against the other side's full word (see
+    # _expand_abbreviated_tokens) fixes this without reintroducing
+    # WRatio's false-positive risk (see the test above).
+    fixtures = [fx("Barracas C.", "Indep. R.")]
+    games = match_fixtures_to_odds(
+        fixtures, {}, [offer("Barracas Central", "Independiente Rivadavia")], min_confidence=80
+    )
+    assert games[0].odds is not None
+
+
+def test_this_years_originally_reported_abbreviation_case_now_matches():
+    # The exact case that originally motivated (and then burned) the
+    # WRatio attempt -- see test_unrelated_fixtures_never_cross_a_sane_
+    # confidence_threshold's docstring. Now fixed via
+    # _expand_abbreviated_tokens instead.
+    fixtures = [fx("Dep. Riestra", "Lanus")]
+    games = match_fixtures_to_odds(
+        fixtures, {}, [offer("Deportivo Riestra", "Atletico Lanus")], min_confidence=80
+    )
+    assert games[0].odds is not None
+
+
+def test_short_abbreviated_tokens_do_not_expand_and_cannot_cause_false_positives():
+    # "K." (1 letter) and "R." are far too short to be a reliable
+    # abbreviation signal -- lots of unrelated words start with the same
+    # letter -- so _MIN_ABBREVIATION_STEM_LEN keeps them untouched rather
+    # than letting them latch onto some coincidentally-matching word on
+    # the other side.
+    fixtures = [fx("Dynamo K.", "Real R.")]
+    games = match_fixtures_to_odds(fixtures, {}, [offer("Dynamo Kyiv", "Real Rovers")], min_confidence=90)
     assert games[0].odds is None
 
 

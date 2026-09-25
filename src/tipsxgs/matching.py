@@ -18,8 +18,82 @@ from .models import Fixture, MatchedGame, OddsOffer, Prediction
 logger = logging.getLogger(__name__)
 
 
+# National-team names: xGScore lists these in English, but Betclic.pt
+# lists them in (accented) Portuguese. A small accent-only difference
+# ("Georgia" vs "Geórgia") is close enough for the fuzzy scorers below to
+# bridge unaided, but two genuinely different words ("Sweden" vs
+# "Suécia") aren't -- no amount of edit-distance tolerance closes that
+# gap. Real bug report (2026-09-25): a Nations League day had 4 of 8
+# fixtures unmatched (Sweden-Romania, Italy-Belgium, Turkey-France,
+# Hungary-Ukraine, all scoring 70-72, just under min_confidence=80)
+# while the other 4 (Armenia-Latvia, Georgia-N.Ireland, ...) happened to
+# clear it anyway, purely because their Portuguese spelling was close
+# enough. This maps every Portuguese spelling below to its canonical
+# English name so both sides normalize to the same word before scoring
+# -- covers UEFA's member nations (Nations League, Euro/World Cup
+# qualifiers); extend as new mismatches turn up for other confederations.
+_COUNTRY_NAME_ALIASES: dict[str, str] = {
+    "albânia": "albania",
+    "arménia": "armenia",
+    "áustria": "austria",
+    "azerbaijão": "azerbaijan",
+    "bielorrússia": "belarus",
+    "bélgica": "belgium",
+    "bósnia e herzegovina": "bosnia and herzegovina",
+    "bósnia": "bosnia and herzegovina",
+    "bulgária": "bulgaria",
+    "croácia": "croatia",
+    "chipre": "cyprus",
+    "república checa": "czech republic",
+    "chéquia": "czech republic",
+    "dinamarca": "denmark",
+    "inglaterra": "england",
+    "estónia": "estonia",
+    "ilhas faroé": "faroe islands",
+    "finlândia": "finland",
+    "frança": "france",
+    "geórgia": "georgia",
+    "alemanha": "germany",
+    "grécia": "greece",
+    "hungria": "hungary",
+    "islândia": "iceland",
+    "itália": "italy",
+    "cazaquistão": "kazakhstan",
+    "letónia": "latvia",
+    "lituânia": "lithuania",
+    "luxemburgo": "luxembourg",
+    "moldávia": "moldova",
+    "países baixos": "netherlands",
+    "holanda": "netherlands",
+    "macedónia do norte": "north macedonia",
+    "irlanda do norte": "northern ireland",
+    "noruega": "norway",
+    "polónia": "poland",
+    "irlanda": "republic of ireland",
+    "roménia": "romania",
+    "rússia": "russia",
+    "são marino": "san marino",
+    "escócia": "scotland",
+    "sérvia": "serbia",
+    "eslováquia": "slovakia",
+    "eslovénia": "slovenia",
+    "espanha": "spain",
+    "suécia": "sweden",
+    "suíça": "switzerland",
+    "turquia": "turkey",
+    "ucrânia": "ukraine",
+    "país de gales": "wales",
+    "gales": "wales",
+}
+
+
+def _normalize_team_name(name: str) -> str:
+    normalized = name.strip().lower()
+    return _COUNTRY_NAME_ALIASES.get(normalized, normalized)
+
+
 def _pair_key(home: str, away: str) -> str:
-    return f"{home.strip().lower()} vs {away.strip().lower()}"
+    return f"{_normalize_team_name(home)} vs {_normalize_team_name(away)}"
 
 
 # A period-abbreviated token's letters (minus the dot) must be at least

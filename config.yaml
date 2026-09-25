@@ -358,6 +358,16 @@ betclic:
     # payload (grpc:2666540474, the same source as every other id
     # above) -- covers Champions League + Europa League + Conference
     # League at once, all of which had unmatched fixtures that day.
+    #
+    # ADDED (2026-09-25), real bug report: most of a day's UEFA Nations
+    # League fixtures (Armenia-Latvia, Sweden-Romania, Italy-Belgium,
+    # Turkey-France, Hungary-Ukraine, ...) showed "sem odds Betclic
+    # emparelhadas" -- same root cause as the 2026-09-16 report above,
+    # just a different competition missing from this list. User-supplied
+    # link: https://www.betclic.pt/futebol-sfootball/liga-das-nacoes-c22676
+    # -- written here with the same "futebol-s1/<slug>-c<id>" URL shape as
+    # every other entry (per the note above, only the "-c<id>" suffix
+    # actually has to be right; Betclic 301s the rest).
     urls:
       - "https://www.betclic.pt/futebol-s1/inglaterra-premier-league-c3"
       - "https://www.betclic.pt/futebol-s1/inglaterra-championship-c28"
@@ -379,6 +389,7 @@ betclic:
       - "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8"
       - "https://www.betclic.pt/futebol-s1/liga-europa-c3453"
       - "https://www.betclic.pt/futebol-s1/liga-conferencia-c28946"
+      - "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676"
     # Each competition page is much lighter than the old generic page --
     # no scrolling needed, and less time per visit -- but there are many
     # of them, so this adds up (~17 pages x (wait_ms + a polite delay

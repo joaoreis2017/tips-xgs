@@ -106,6 +106,24 @@ def test_this_years_originally_reported_abbreviation_case_now_matches():
     assert games[0].odds is not None
 
 
+def test_portuguese_country_names_match_their_english_xgscore_spelling():
+    # Real bug report (2026-09-25): a Nations League day had 4/8 fixtures
+    # unmatched -- xGScore lists national teams in English, Betclic.pt in
+    # (accented) Portuguese, and unlike an accent-only difference
+    # ("Georgia"/"Geórgia", close enough for fuzzy matching alone),
+    # completely different words ("Sweden"/"Suécia") need an explicit
+    # translation -- see _COUNTRY_NAME_ALIASES.
+    fixtures = [fx("Sweden", "Romania"), fx("Italy", "Belgium"), fx("Turkey", "France")]
+    offers = [
+        offer("Suécia", "Roménia"),
+        offer("Itália", "Bélgica"),
+        offer("Turquia", "França"),
+    ]
+    games = match_fixtures_to_odds(fixtures, {}, offers, min_confidence=80)
+    assert all(g.odds is not None for g in games)
+    assert all(g.match_confidence == 100.0 for g in games)
+
+
 def test_short_abbreviated_tokens_do_not_expand_and_cannot_cause_false_positives():
     # "K." (1 letter) and "R." are far too short to be a reliable
     # abbreviation signal -- lots of unrelated words start with the same

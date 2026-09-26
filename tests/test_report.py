@@ -31,7 +31,7 @@ from datetime import date
 import pytest
 
 from tipsxgs.models import Fixture, MatchedGame, OddsOffer, Prediction
-from tipsxgs.report import build_context
+from tipsxgs.report import build_context, render_index
 from tipsxgs.valuebets import compute_value_bets
 
 
@@ -229,3 +229,33 @@ def test_daily_plan_excludes_fixtures_already_used_elsewhere_in_the_plan():
     # probability range (65%) but has no odd at all.
     assert "no-offer" not in leg_slugs
     assert mid_pick["game_slug"] != "no-offer"
+
+
+def test_render_index_redirects_to_the_day_directory_not_to_index_html(tmp_path):
+    # Real bug (2026-09-26): the root landing page's meta-refresh pointed
+    # at "index.html/" instead of the newest day's own directory (e.g.
+    # "2026-09-26/") -- GitHub Pages has no such directory, so the site's
+    # own root 404'd. Caused by iterating p.name (always "index.html",
+    # the matched *file*'s own name) instead of p.parent.name (the day
+    # directory) over reports_dir.glob("*/index.html").
+    for day in ("2026-09-24", "2026-09-25", "2026-09-26"):
+        day_dir = tmp_path / day
+        day_dir.mkdir()
+        (day_dir / "index.html").write_text("<html></html>", encoding="utf-8")
+
+    out_path = render_index(tmp_path)
+    html = out_path.read_text(encoding="utf-8")
+
+    assert 'url=2026-09-26/' in html
+    assert "index.html/" not in html
+    assert 'href="2026-09-26/"' in html
+    assert 'href="2026-09-24/"' in html
+
+
+def test_render_index_skips_the_redirect_when_no_day_has_data_yet(tmp_path):
+    # days[0] used to be accessed unconditionally, which would raise
+    # IndexError on a completely fresh reports_dir (no day rendered yet).
+    out_path = render_index(tmp_path)
+    html = out_path.read_text(encoding="utf-8")
+    assert "refresh" not in html
+    assert "Ainda sem dados" in html

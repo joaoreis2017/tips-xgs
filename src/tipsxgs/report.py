@@ -224,16 +224,24 @@ def render_index(reports_dir: Path) -> Path:
     Used so a GitHub Pages deploy of ``reports_dir`` has a sensible root
     page instead of a 404.
     """
+    # p.parent.name, NOT p.name -- p is the matched *file*
+    # (".../<day>/index.html"), so p.name is always the literal string
+    # "index.html" for every match; p.parent.name is the day directory
+    # ("2026-09-26") we actually want. Real bug (2026-09-26): every entry
+    # in `days` came out as "index.html", so the redirect below pointed
+    # at the relative path "index.html/" -- a directory that doesn't
+    # exist on GitHub Pages -- 404ing the site's own root page.
     days = sorted(
-        (p.name for p in reports_dir.glob("*/index.html")),
+        (p.parent.name for p in reports_dir.glob("*/index.html")),
         reverse=True,
     )
     items = "\n".join(f'<li><a href="{d}/">{d}</a></li>' for d in days) or "<li>Ainda sem dados.</li>"
+    redirect = f'<meta http-equiv="refresh" content="0; url={days[0]}/" />' if days else ""
     html = f"""<!doctype html>
 <html lang="pt-PT"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tips xGScore + Betclic</title>
-<meta http-equiv="refresh" content="0; url={days[0]}/" />
+{redirect}
 <style>
   body{{background:#f7f7f8;color:#1b1c1f;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;max-width:480px;margin:60px auto;padding:0 16px;}}
   @media (prefers-color-scheme: dark){{body{{background:#15161a;color:#eef0f3;}}}}

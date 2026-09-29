@@ -12,9 +12,9 @@ from .valuebets import (
     BetPick,
     multiple_combined_odd,
     multiple_combined_probability,
-    pick_best_band_single,
-    pick_best_single_bet,
+    pick_band_bets,
     pick_multiple_legs,
+    pick_value_bets,
 )
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
@@ -51,7 +51,6 @@ def build_context(
     mid_probability_max: float = 0.69,
     mid_odd_min: float = 1.5,
     mid_odd_max: float = 2.2,
-    multiple_max_legs: int = 4,
     value_single_min_probability: float = 0.45,
     value_single_min_value_ratio: float = 1.10,
     multiple_stake: float = 0.50,
@@ -96,33 +95,25 @@ def build_context(
             }
         )
 
-    # Deterministic daily bet plan -- explicitly requested: no candidate
-    # lists left for the user to choose from, the model picks exactly
-    # what to bet for each of the day's three stakes. Fixtures already
-    # used earlier in the plan are excluded from later picks (multiple
-    # legs first, then the value single, then the mid single) so the
-    # three stakes spread risk across different matches rather than the
-    # plan doubling up on the same outcome.
+    # Daily bet plan -- three sections, each a complete, independent list
+    # of every candidate within its own already-configured
+    # probability/odd band, sorted by probability descending. Explicitly
+    # requested (2026-09-29): previously each section narrowed itself
+    # down to one single "best" pick -- that narrowing was removed, not
+    # the bands/parameters themselves.
     multiple_legs = pick_multiple_legs(
         games,
         min_probability=high_probability_min,
         min_odd=high_odd_min,
         max_odd=high_odd_max,
-        max_legs=multiple_max_legs,
         coverable_markets=betclic_markets,
     )
-    used_fixture_ids = {g.fixture.id for g, _ in multiple_legs}
-
-    value_single = pick_best_single_bet(
+    value_bets = pick_value_bets(
         games,
         min_probability=value_single_min_probability,
         min_value_ratio=value_single_min_value_ratio,
-        exclude_fixture_ids=used_fixture_ids,
     )
-    if value_single is not None:
-        used_fixture_ids = used_fixture_ids | {value_single[0].fixture.id}
-
-    mid_single = pick_best_band_single(
+    mid_bets = pick_band_bets(
         games,
         min_probability=mid_probability_min,
         max_probability=mid_probability_max,
@@ -130,7 +121,6 @@ def build_context(
         max_odd=mid_odd_max,
         odd_bounds_inclusive=True,
         coverable_markets=betclic_markets,
-        exclude_fixture_ids=used_fixture_ids,
     )
 
     return {
@@ -142,16 +132,15 @@ def build_context(
         "multiple_legs": [_pick_ctx(leg) for leg in multiple_legs],
         "multiple_combined_odd": multiple_combined_odd(multiple_legs),
         "multiple_combined_probability": multiple_combined_probability(multiple_legs),
-        "multiple_max_legs": multiple_max_legs,
         "multiple_stake": multiple_stake,
         "high_probability_min": high_probability_min,
         "high_odd_min": high_odd_min,
         "high_odd_max": high_odd_max,
-        "value_single": _pick_ctx(value_single),
+        "value_bets": [_pick_ctx(v) for v in value_bets],
         "value_single_stake": value_single_stake,
         "value_single_min_probability": value_single_min_probability,
         "value_single_min_value_ratio": value_single_min_value_ratio,
-        "mid_single": _pick_ctx(mid_single),
+        "mid_bets": [_pick_ctx(m) for m in mid_bets],
         "mid_single_stake": mid_single_stake,
         "mid_probability_min": mid_probability_min,
         "mid_probability_max": mid_probability_max,
@@ -175,7 +164,6 @@ def render_dashboard(
     mid_probability_max: float = 0.69,
     mid_odd_min: float = 1.5,
     mid_odd_max: float = 2.2,
-    multiple_max_legs: int = 4,
     value_single_min_probability: float = 0.45,
     value_single_min_value_ratio: float = 1.10,
     multiple_stake: float = 0.50,
@@ -201,7 +189,6 @@ def render_dashboard(
             mid_probability_max=mid_probability_max,
             mid_odd_min=mid_odd_min,
             mid_odd_max=mid_odd_max,
-            multiple_max_legs=multiple_max_legs,
             value_single_min_probability=value_single_min_probability,
             value_single_min_value_ratio=value_single_min_value_ratio,
             multiple_stake=multiple_stake,

@@ -70,7 +70,7 @@
 
 <div class="panel">
   <h2>🎫 Múltipla do dia · {{ "%.2f"|format(multiple_stake) }}€</h2>
-  <p class="subtitle" style="margin:-6px 0 12px;">Até {{ multiple_max_legs }} pernas (uma por jogo no máximo), probabilidade ≥ {{ "%.0f"|format(high_probability_min * 100) }}% e odd Betclic entre {{ "%.2f"|format(high_odd_min) }} e {{ "%.2f"|format(high_odd_max) }} (exclusive).</p>
+  <p class="subtitle" style="margin:-6px 0 12px;">Todas as pernas possíveis (uma por jogo no máximo), ordenadas por probabilidade — probabilidade ≥ {{ "%.0f"|format(high_probability_min * 100) }}% e odd Betclic entre {{ "%.2f"|format(high_odd_min) }} e {{ "%.2f"|format(high_odd_max) }} (exclusive).</p>
   {% if multiple_legs %}
   <table>
     <thead><tr>
@@ -97,48 +97,50 @@
   {% endif %}
 </div>
 
-{% macro single_pick_panel(icon, title, subtitle, pick, stake, empty_message) %}
+{% macro bets_list_panel(icon, title, subtitle, picks, stake, empty_message) %}
 <div class="panel">
   <h2>{{ icon }} {{ title }} · {{ "%.2f"|format(stake) }}€</h2>
   <p class="subtitle" style="margin:-6px 0 12px;">{{ subtitle }}</p>
-  {% if pick %}
+  {% if picks %}
   <table>
     <thead><tr>
-      <th>Jogo</th><th>Mercado</th><th class="num">Prob.</th><th class="num">Odd</th><th class="num">Valor</th>
+      <th>Jogo</th><th>Mercado</th><th class="num">Prob.</th><th class="num">Odd</th><th class="num">Valor</th><th class="num">Retorno</th>
     </tr></thead>
     <tbody>
+    {% for pick in picks %}
       <tr>
         <td><a href="#game-{{ pick.game_slug }}">{{ pick.game_label }}</a></td>
         <td>{{ pick.label }}</td>
         <td class="num">{{ "%.0f"|format(pick.probability * 100) }}%</td>
         <td class="num">{{ "%.2f"|format(pick.odd) }}</td>
         <td class="num"><span class="pill value-pill">{{ "%.2f"|format(pick.value_ratio) }}×</span></td>
+        <td class="num">{{ "%.2f"|format(stake * pick.odd) }}€</td>
       </tr>
+    {% endfor %}
     </tbody>
   </table>
-  <p class="game-meta" style="margin-top:10px;">Retorno potencial: <strong>{{ "%.2f"|format(stake * pick.odd) }}€</strong></p>
   {% else %}
   <p class="empty">{{ empty_message }}</p>
   {% endif %}
 </div>
 {% endmacro %}
 
-{{ single_pick_panel(
+{{ bets_list_panel(
   "💰",
-  "Aposta de valor",
-  "A melhor jogada de valor do dia em qualquer jogo/mercado — probabilidade ≥ " ~ "%.0f"|format(value_single_min_probability * 100) ~ "% e valor ≥ " ~ "%.2f"|format(value_single_min_value_ratio) ~ "×.",
-  value_single,
+  "Apostas de valor",
+  "Todas as jogadas de valor do dia em qualquer jogo/mercado, ordenadas por probabilidade — probabilidade ≥ " ~ "%.0f"|format(value_single_min_probability * 100) ~ "% e valor ≥ " ~ "%.2f"|format(value_single_min_value_ratio) ~ "×.",
+  value_bets,
   value_single_stake,
-  "Sem jogada a cumprir estes critérios hoje (ver docs/CALIBRATION.md)."
+  "Sem jogadas a cumprir estes critérios hoje (ver docs/CALIBRATION.md)."
 ) }}
 
-{{ single_pick_panel(
+{{ bets_list_panel(
   "📊",
-  "Aposta de probabilidade média",
-  "Probabilidade entre " ~ "%.0f"|format(mid_probability_min * 100) ~ "% e " ~ "%.0f"|format(mid_probability_max * 100) ~ "%, odd Betclic entre " ~ "%.2f"|format(mid_odd_min) ~ " e " ~ "%.2f"|format(mid_odd_max) ~ " (inclusive).",
-  mid_single,
+  "Apostas de probabilidade média",
+  "Todas as jogadas com probabilidade entre " ~ "%.0f"|format(mid_probability_min * 100) ~ "% e " ~ "%.0f"|format(mid_probability_max * 100) ~ "%, odd Betclic entre " ~ "%.2f"|format(mid_odd_min) ~ " e " ~ "%.2f"|format(mid_odd_max) ~ " (inclusive), ordenadas por probabilidade.",
+  mid_bets,
   mid_single_stake,
-  "Sem jogada a cumprir estes critérios hoje (ver docs/CALIBRATION.md)."
+  "Sem jogadas a cumprir estes critérios hoje (ver docs/CALIBRATION.md)."
 ) }}
 
 {% for game in games %}

@@ -143,7 +143,6 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
         high_odd_max=cfg.report_high_odd_max,
         mid_odd_min=cfg.report_mid_odd_min,
         mid_odd_max=cfg.report_mid_odd_max,
-        multiple_max_legs=cfg.report_multiple_max_legs,
         value_single_min_probability=cfg.report_value_single_min_probability,
         value_single_min_value_ratio=cfg.report_value_single_min_value_ratio,
         multiple_stake=cfg.report_multiple_stake,

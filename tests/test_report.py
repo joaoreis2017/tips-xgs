@@ -141,10 +141,8 @@ def test_has_predictions_distinguishes_genuinely_empty_from_filtered_out():
 
 
 def test_multiple_legs_requires_probability_and_odd_in_range():
-    # CHANGED (2026-09-18, explicitly requested): the old high-band
-    # candidate list turned into a single deterministic multiple pick --
-    # still >=70% probability AND a matched odd strictly between 1.25
-    # and 1.45, but now the day's actual legs, not a list to choose from.
+    # The multiple's own band -- >=70% probability AND a matched odd
+    # strictly between 1.25 and 1.45.
     game = _game(
         markets={
             "1x2": {"home": 0.9},  # 90%, odd in range -> picked
@@ -162,37 +160,35 @@ def test_multiple_legs_requires_probability_and_odd_in_range():
     assert ctx["multiple_combined_probability"] == pytest.approx(0.9)
 
 
-def test_mid_single_requires_probability_and_odd_in_inclusive_range():
-    # CHANGED (2026-09-18): the old mid-band candidate list turned into a
-    # single deterministic pick -- still 60%-69% probability AND a
-    # matched odd between 1.5 and 2.2, both bounds inclusive. An odd-less
-    # entry, or one outside the window, is dropped outright.
+def test_mid_bets_lists_every_entry_in_the_inclusive_band():
+    # CHANGED (2026-09-29, explicitly requested): the mid-stake section
+    # is no longer narrowed to one pick -- every entry within 60%-69%
+    # probability AND a matched odd between 1.5 and 2.2 (both bounds
+    # inclusive) shows, sorted by probability descending. An odd-less
+    # entry, or one outside the window, is still dropped outright.
     game = _game(
         markets={
-            "1x2": {"home": 0.65},  # 65%, odd in range (inclusive edge) -> picked
+            "1x2": {"home": 0.65},  # 65%, odd in range (inclusive edge) -> shows
             "btts": {"yes": 0.65},  # 65%, odd outside range (below 1.5) -> dropped
             "double_chance": {"1x": 0.65},  # 65%, no odd at all -> dropped
         },
-        # btts's odd (1.3) is deliberately low enough that its value_ratio
-        # (0.845) also falls short of the value single's own 1.10 bar --
-        # otherwise it would win *that* section instead and, being the
-        # same fixture, exclude 1x2 home from this one too.
         odds_markets={"1x2": {"home": 1.5}, "btts": {"yes": 1.3}},
     )
 
     ctx = build_context(date(2026, 9, 12), [game])
-    pick = ctx["mid_single"]
-    assert pick["label"] == "Resultado Final - Casa"
-    assert pick["odd"] == pytest.approx(1.5)
+    bets = ctx["mid_bets"]
+    assert [b["label"] for b in bets] == ["Resultado Final - Casa"]
+    assert bets[0]["odd"] == pytest.approx(1.5)
     # Nothing here clears the (much higher) multiple bar.
     assert ctx["multiple_legs"] == []
 
 
-def test_daily_plan_excludes_fixtures_already_used_elsewhere_in_the_plan():
-    # CHANGED (2026-09-18): a game with no Betclic offer at all can never
-    # land in any of the three daily-plan sections (no odd anywhere), and
-    # a fixture already used for one stake is excluded from the others
-    # so the day's three stakes spread across different matches.
+def test_daily_plan_sections_are_independent_and_still_require_a_matched_odd():
+    # CHANGED (2026-09-29, explicitly requested): sections no longer
+    # exclude a fixture just because another section also listed it --
+    # each is a complete, independent view of its own band, so the same
+    # fixture can appear in more than one. A game with no Betclic offer
+    # at all still can never land in any of them (no odd anywhere).
     no_offer = _game(
         markets={"1x2": {"home": 0.65}}, odds_markets=None, slug="no-offer", home="Team C", away="Team D"
     )
@@ -216,19 +212,19 @@ def test_daily_plan_excludes_fixtures_already_used_elsewhere_in_the_plan():
     leg_slugs = {leg["game_slug"] for leg in ctx["multiple_legs"]}
     assert leg_slugs == {"high-offer"}
 
-    mid_pick = ctx["mid_single"]
-    assert mid_pick["game_slug"] == "mid-offer"
-    assert mid_pick["odd"] == pytest.approx(1.6)
+    mid_slugs = {b["game_slug"] for b in ctx["mid_bets"]}
+    assert mid_slugs == {"mid-offer"}
 
-    # mid-offer's value_ratio (0.65 * 1.6 = 1.04) falls short of the
-    # value single's own 1.10 bar, so nothing qualifies there this time
-    # -- high-offer, the only other candidate, is already used above.
-    assert ctx["value_single"] is None
+    # high-offer's value_ratio (0.9 * 1.35 = 1.215) also clears the value
+    # section's own bar -- it shows up there too, independently of
+    # already being a multiple leg above.
+    value_slugs = {b["game_slug"] for b in ctx["value_bets"]}
+    assert value_slugs == {"high-offer"}
 
     # no-offer never shows anywhere -- it clears the mid band's
     # probability range (65%) but has no odd at all.
-    assert "no-offer" not in leg_slugs
-    assert mid_pick["game_slug"] != "no-offer"
+    all_slugs = leg_slugs | mid_slugs | value_slugs
+    assert "no-offer" not in all_slugs
 
 
 def test_render_index_redirects_to_the_day_directory_not_to_index_html(tmp_path):

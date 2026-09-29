@@ -7,9 +7,9 @@ from tipsxgs.valuebets import (
     compute_value_bets,
     multiple_combined_odd,
     multiple_combined_probability,
-    pick_best_band_single,
-    pick_best_single_bet,
+    pick_band_bets,
     pick_multiple_legs,
+    pick_value_bets,
     top_probability_bets_today,
     top_value_bets_today,
 )
@@ -301,29 +301,24 @@ def test_pick_multiple_legs_picks_higher_value_outcome_within_a_shared_fixture()
     assert one_game_leg.outcome == "yes"  # btts beats 1x2 home on value_ratio
 
 
-def test_pick_multiple_legs_caps_at_max_legs_keeping_the_best_value_ones():
-    two_candidates = make_game(
-        {"1x2": {"home": 0.72}, "btts": {"yes": 0.75}},
-        {"1x2": {"home": 1.30}, "btts": {"yes": 1.40}},
-        slug="one-game",
-        home="Team A",
-        away="Team B",
+def test_pick_multiple_legs_includes_every_qualifying_fixture_sorted_by_probability():
+    # CHANGED (2026-09-29, explicitly requested): no more capping down to
+    # a handful of legs -- every distinct-fixture candidate within the
+    # band is included, sorted by probability descending (not
+    # value_ratio, which only breaks ties *within* a shared fixture --
+    # see the test above).
+    game_72 = make_game(
+        {"1x2": {"home": 0.72}}, {"1x2": {"home": 1.30}}, slug="game-72", home="Team A", away="Team B"
     )
-    other = make_game(
-        {"1x2": {"home": 0.9}},
-        {"1x2": {"home": 1.35}},  # value_ratio 1.215 -- the best of all candidates
-        slug="other-game",
-        home="Team C",
-        away="Team D",
+    game_90 = make_game(
+        {"1x2": {"home": 0.9}}, {"1x2": {"home": 1.35}}, slug="game-90", home="Team C", away="Team D"
     )
-    compute_value_bets(two_candidates)
-    compute_value_bets(other)
+    compute_value_bets(game_72)
+    compute_value_bets(game_90)
 
-    capped = pick_multiple_legs(
-        [two_candidates, other], min_probability=0.7, min_odd=1.25, max_odd=1.45, max_legs=1
-    )
-    assert len(capped) == 1
-    assert capped[0][0].fixture.slug == "other-game"
+    legs = pick_multiple_legs([game_72, game_90], min_probability=0.7, min_odd=1.25, max_odd=1.45)
+    assert len(legs) == 2
+    assert [g.fixture.slug for g, _ in legs] == ["game-90", "game-72"]
 
 
 def test_pick_multiple_legs_returns_empty_when_nothing_qualifies():
@@ -348,71 +343,61 @@ def test_multiple_combined_odd_and_probability_are_none_for_empty_legs():
     assert multiple_combined_probability([]) is None
 
 
-def test_pick_best_single_bet_returns_highest_value_ratio_across_all_games():
+def test_pick_value_bets_returns_every_qualifying_entry_sorted_by_probability():
+    # CHANGED (2026-09-29, explicitly requested): renamed from
+    # pick_best_single_bet, and returns every entry clearing the bar
+    # instead of narrowing to the single highest value_ratio one --
+    # sorted by probability descending.
     weak = make_game({"1x2": {"home": 0.6}}, {"1x2": {"home": 1.5}}, slug="weak")  # value_ratio 0.9
     strong = make_game({"1x2": {"home": 0.7}}, {"1x2": {"home": 2.0}}, slug="strong")  # value_ratio 1.4
+    below_bar = make_game({"1x2": {"home": 0.3}}, {"1x2": {"home": 1.2}}, slug="below-bar")  # 0.36
     compute_value_bets(weak)
     compute_value_bets(strong)
+    compute_value_bets(below_bar)
 
-    pick = pick_best_single_bet([weak, strong])
-    assert pick is not None
-    game, entry = pick
-    assert game.fixture.slug == "strong"
-    assert entry.value_ratio == pytest.approx(1.4)
+    # weak's value_ratio (0.9) is below the default min_value_ratio of
+    # 1.0, so only strong clears the (default) bar here.
+    picks = pick_value_bets([weak, strong, below_bar])
+    assert [g.fixture.slug for g, _ in picks] == ["strong"]
+
+    # Lowering min_value_ratio brings weak back in, sorted below strong
+    # since strong (0.7) has the higher probability.
+    picks = pick_value_bets([weak, strong, below_bar], min_value_ratio=0.5)
+    assert [g.fixture.slug for g, _ in picks] == ["strong", "weak"]
 
 
-def test_pick_best_single_bet_returns_none_when_nothing_clears_the_bar():
-    # value_ratio 0.36 -- well below the default min_value_ratio of 1.0.
+def test_pick_value_bets_returns_empty_when_nothing_clears_the_bar():
     game = make_game({"1x2": {"home": 0.3}}, {"1x2": {"home": 1.2}}, slug="low-value")
     compute_value_bets(game)
-    assert pick_best_single_bet([game]) is None
+    assert pick_value_bets([game]) == []
 
 
-def test_pick_best_single_bet_excludes_given_fixture_ids():
-    strong = make_game({"1x2": {"home": 0.7}}, {"1x2": {"home": 2.0}}, slug="strong")  # value_ratio 1.4
-    other = make_game({"1x2": {"home": 0.55}}, {"1x2": {"home": 2.0}}, slug="other")  # value_ratio 1.1
-    compute_value_bets(strong)
-    compute_value_bets(other)
-
-    pick = pick_best_single_bet([strong, other], exclude_fixture_ids={strong.fixture.id})
-    assert pick is not None
-    assert pick[0].fixture.slug == "other"
-
-
-def test_pick_best_band_single_picks_best_within_band():
-    in_band_weak = make_game({"1x2": {"home": 0.65}}, {"1x2": {"home": 1.6}}, slug="in-band-weak")
-    in_band_strong = make_game({"1x2": {"home": 0.65}}, {"1x2": {"home": 2.0}}, slug="in-band-strong")
+def test_pick_band_bets_returns_every_entry_within_the_band_sorted_by_probability():
+    # CHANGED (2026-09-29, explicitly requested): renamed from
+    # pick_best_band_single, and returns every entry within the band
+    # instead of narrowing to the single highest value_ratio one.
+    in_band_lower = make_game({"1x2": {"home": 0.62}}, {"1x2": {"home": 1.6}}, slug="in-band-lower")
+    in_band_higher = make_game({"1x2": {"home": 0.65}}, {"1x2": {"home": 2.0}}, slug="in-band-higher")
     out_of_band = make_game({"1x2": {"home": 0.9}}, {"1x2": {"home": 1.3}}, slug="out-of-band")
-    compute_value_bets(in_band_weak)
-    compute_value_bets(in_band_strong)
+    compute_value_bets(in_band_lower)
+    compute_value_bets(in_band_higher)
     compute_value_bets(out_of_band)
 
-    pick = pick_best_band_single(
-        [in_band_weak, in_band_strong, out_of_band],
+    picks = pick_band_bets(
+        [in_band_lower, in_band_higher, out_of_band],
         min_probability=0.6,
         max_probability=0.69,
         min_odd=1.5,
         max_odd=2.2,
     )
-    assert pick is not None
-    assert pick[0].fixture.slug == "in-band-strong"
+    assert [g.fixture.slug for g, _ in picks] == ["in-band-higher", "in-band-lower"]
 
 
-def test_pick_best_band_single_excludes_given_fixture_ids_and_returns_none_when_empty():
-    only_candidate = make_game({"1x2": {"home": 0.65}}, {"1x2": {"home": 1.6}}, slug="only")
+def test_pick_band_bets_returns_empty_when_nothing_is_in_band():
+    only_candidate = make_game({"1x2": {"home": 0.9}}, {"1x2": {"home": 1.6}}, slug="only")
     compute_value_bets(only_candidate)
 
-    pick = pick_best_band_single(
+    picks = pick_band_bets(
         [only_candidate], min_probability=0.6, max_probability=0.69, min_odd=1.5, max_odd=2.2
     )
-    assert pick is not None
-
-    excluded = pick_best_band_single(
-        [only_candidate],
-        min_probability=0.6,
-        max_probability=0.69,
-        min_odd=1.5,
-        max_odd=2.2,
-        exclude_fixture_ids={only_candidate.fixture.id},
-    )
-    assert excluded is None
+    assert picks == []

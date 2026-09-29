@@ -52,14 +52,14 @@ report_high_odd_max: 1.45
 report_mid_odd_min: 1.5     # mid band: inclusive (>=1.5 and <=2.2)
 report_mid_odd_max: 2.2
 
-# The daily bet plan itself (explicitly requested): three deterministic
-# picks instead of lists to choose from -- see valuebets.py's "Daily
-# bet plan" section, and report.build_context for how these get
-# assembled. The multiple's legs and the mid-stake single reuse the
-# two bands above as their own eligibility criteria; the value-stake
-# single isn't tied to either band -- it's the single best value_ratio
-# anywhere, subject to its own bar below.
-report_multiple_max_legs: 4               # up to this many legs, one per fixture
+# The daily bet plan itself (explicitly requested): three sections, each
+# listing EVERY candidate within its own band, sorted by probability
+# descending (changed 2026-09-29 -- previously each narrowed down to one
+# single pick) -- see valuebets.py's "Daily bet plan" section, and
+# report.build_context for how these get assembled. The multiple's legs
+# and the mid-stake bets reuse the two bands above as their own
+# eligibility criteria; the value-stake bets aren't tied to either band
+# -- any market/odd clearing the bar below.
 report_value_single_min_probability: 0.45
 report_value_single_min_value_ratio: 1.10
 

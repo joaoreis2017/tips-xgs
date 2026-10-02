@@ -1,6 +1,6 @@
 {
   "date": "2026-10-02",
-  "generated_at": "2026-10-02T11:38:50.025817",
+  "generated_at": "2026-10-02T11:45:18.125000",
   "games": [
     {
       "fixture": {
@@ -205,7 +205,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:36:29.551527+00:00"
+        "scraped_at": "2026-10-02T10:42:59.162177+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -287,7 +287,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/cazaquistao-moldavia-m1237103867367424",
-        "scraped_at": "2026-10-02T10:37:57.672416+00:00"
+        "scraped_at": "2026-10-02T10:44:25.604737+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -1840,7 +1840,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:36:37.564468+00:00"
+        "scraped_at": "2026-10-02T10:43:07.257972+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -1922,7 +1922,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/letonia-montenegro-m1237103894618112",
-        "scraped_at": "2026-10-02T10:37:57.672507+00:00"
+        "scraped_at": "2026-10-02T10:44:25.604823+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -3475,7 +3475,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:36:45.739987+00:00"
+        "scraped_at": "2026-10-02T10:43:15.211420+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -3557,7 +3557,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/chipre-armenia-m1237931761074176",
-        "scraped_at": "2026-10-02T10:37:57.672580+00:00"
+        "scraped_at": "2026-10-02T10:44:25.604892+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -5110,7 +5110,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:36:53.719019+00:00"
+        "scraped_at": "2026-10-02T10:43:23.167787+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -5192,7 +5192,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/polonia-romenia-m1237919846129664",
-        "scraped_at": "2026-10-02T10:37:57.672646+00:00"
+        "scraped_at": "2026-10-02T10:44:25.604958+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -6745,7 +6745,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:37:01.617726+00:00"
+        "scraped_at": "2026-10-02T10:43:31.047137+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -6827,7 +6827,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/belgica-turquia-m1238338264641536",
-        "scraped_at": "2026-10-02T10:37:57.672778+00:00"
+        "scraped_at": "2026-10-02T10:44:25.605086+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -8380,7 +8380,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:37:09.544143+00:00"
+        "scraped_at": "2026-10-02T10:43:38.972509+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -8462,7 +8462,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/franca-italia-m1237950337662976",
-        "scraped_at": "2026-10-02T10:37:57.672712+00:00"
+        "scraped_at": "2026-10-02T10:44:25.605022+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -10015,7 +10015,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:37:17.625013+00:00"
+        "scraped_at": "2026-10-02T10:43:47.067248+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -10097,7 +10097,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/ucrania-irlanda-do-norte-m1238815059476480",
-        "scraped_at": "2026-10-02T10:37:57.672910+00:00"
+        "scraped_at": "2026-10-02T10:44:25.605216+00:00"
       },
       "match_confidence": 97.3076923076923,
       "value_bets": [
@@ -11650,7 +11650,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:37:25.575404+00:00"
+        "scraped_at": "2026-10-02T10:43:55.097443+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -11732,7 +11732,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/bosnia-e-herzegovina-suecia-m1238811523686400",
-        "scraped_at": "2026-10-02T10:37:57.672845+00:00"
+        "scraped_at": "2026-10-02T10:44:25.605151+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -13285,7 +13285,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:37:33.526094+00:00"
+        "scraped_at": "2026-10-02T10:44:03.057689+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -13367,7 +13367,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/hungria-georgia-m1238817857093632",
-        "scraped_at": "2026-10-02T10:37:57.672983+00:00"
+        "scraped_at": "2026-10-02T10:44:25.605289+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -14920,7 +14920,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:37:41.489695+00:00"
+        "scraped_at": "2026-10-02T10:44:11.045669+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -15002,7 +15002,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676/ilhas-faroe-eslovaquia-m1238951823151104",
-        "scraped_at": "2026-10-02T10:37:57.673049+00:00"
+        "scraped_at": "2026-10-02T10:44:25.605355+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -16555,7 +16555,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-02T10:37:49.982534+00:00"
+        "scraped_at": "2026-10-02T10:44:19.078712+00:00"
       },
       "odds": null,
       "match_confidence": null,

@@ -78,33 +78,49 @@ browser. Os dados brutos ficam em `data/<AAAA-MM-DD>/games.json`.
 
 ## Correr todos os dias
 
-### Opção A — GitHub Actions (recomendada, não precisa do teu computador ligado)
+⚠️ **A Betclic bloqueia pedidos vindos dos servidores do GitHub Actions**
+(devolve um 403 Forbidden — geo-bloqueio, só aceita tráfego de IPs
+portugueses). Isto não afeta o xGScore, só a Betclic. Por isso, a
+menos que configures um proxy com IP português (ver `BETCLIC_PROXY_SERVER`/
+`_USERNAME`/`_PASSWORD` em `config.yaml` e nos secrets do repositório),
+**qualquer run do GitHub Actions nunca vai conseguir odds reais** — as
+opções abaixo partem todas de correr a pipeline a partir de uma máquina
+com IP português (o teu computador, ou um servidor/Raspberry Pi em
+Portugal).
 
-[`.github/workflows/daily.yml`](.github/workflows/daily.yml) já está
-pronto: corre todos os dias às 08:00 UTC, guarda o resultado em `data/`
-(commit automático) e publica o painel no GitHub Pages. Só precisas de:
+### Opção A — correr manualmente + push (mais simples, sem custos)
 
-1. Calibrar o `config.yaml` (ver acima).
-2. Ativar o GitHub Pages no repositório: Settings → Pages → Source →
-   "GitHub Actions".
-3. `git push` — a partir daí corre sozinho. Também podes disparar
-   manualmente em Actions → "Daily xGScore + Betclic run" → Run workflow.
+```bash
+python -m tipsxgs run -v
+git add data/
+git commit -m "run local"
+git push
+```
 
-### Opção B — cron na tua máquina/servidor
+[`.github/workflows/deploy-on-push.yml`](.github/workflows/deploy-on-push.yml)
+deteta o push e publica o painel no GitHub Pages automaticamente (cerca
+de 1 minuto depois), sem tentar fazer scraping nenhum — fica acessível
+em `https://<utilizador>.github.io/<repo>/`, incluindo no telemóvel.
+
+### Opção B — cron/systemd na tua máquina ou servidor (totalmente automático e gratuito)
+
+Só funciona enquanto essa máquina tiver IP português — mas, tendo isso,
+é a forma de automatizar sem pagar proxy nenhum: o próprio cron faz o
+commit + push, e o `deploy-on-push.yml` trata do resto.
 
 ```cron
 # todos os dias às 9h
-0 9 * * * cd /caminho/para/tips-xgs && .venv/bin/python scripts/run_daily.py >> logs/tipsxgs.log 2>&1
+0 9 * * * cd /caminho/para/tips-xgs && .venv/bin/python scripts/run_daily.py && git -C /caminho/para/tips-xgs add data/ && git -C /caminho/para/tips-xgs commit -m "run automatico $(date +\%F)" && git -C /caminho/para/tips-xgs push >> logs/tipsxgs.log 2>&1
 ```
 
-### Opção C — systemd timer
+Ou com systemd:
 
 ```ini
 # /etc/systemd/system/tipsxgs.service
 [Service]
 Type=oneshot
 WorkingDirectory=/caminho/para/tips-xgs
-ExecStart=/caminho/para/tips-xgs/.venv/bin/python scripts/run_daily.py
+ExecStart=/bin/bash -c '.venv/bin/python scripts/run_daily.py && git add data/ && git commit -m "run automatico $(date +%F)" && git push'
 
 # /etc/systemd/system/tipsxgs.timer
 [Timer]
@@ -113,6 +129,17 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 ```
+
+### Opção C — GitHub Actions (só com proxy pago, senão fica sem odds)
+
+[`.github/workflows/daily.yml`](.github/workflows/daily.yml) corre
+sozinho todos os dias às 08:00 UTC e publica no GitHub Pages — mas,
+pelo bloqueio geográfico acima, nunca consegue odds reais da Betclic
+sem um proxy com IP português configurado nos secrets do repositório
+(`BETCLIC_PROXY_SERVER`, `BETCLIC_PROXY_USERNAME`,
+`BETCLIC_PROXY_PASSWORD` em Settings → Secrets and variables →
+Actions). Sem isso, continua a correr e a publicar — só que sempre sem
+odds emparelhadas.
 
 ## Arquitetura
 

@@ -195,3 +195,7 @@ sério depois de calibrados contra as páginas reais).
 - Scraping de sites de terceiros pode quebrar quando eles mudam de
   layout; `docs/CALIBRATION.md` explica como voltar a calibrar sem
   tocar em código.
+
+## Como ver
+
+- https://joaoreis2017.github.io/tips-xgs/

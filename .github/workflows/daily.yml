@@ -1,11 +1,23 @@
 name: Daily xGScore + Betclic run
 
 on:
-  schedule:
-    # 08:00 UTC ~= 09:00 (winter) / 08:00 (summer, DST) in Lisbon.
-    # Adjust to whenever most of the day's fixtures/odds are already
-    # published on both sites.
-    - cron: "0 8 * * *"
+  # DISABLED (2026-10-02): the schedule trigger below used to fire this
+  # every day regardless of whether a proxy is configured -- without
+  # one, Betclic 403s every request (see config.AppConfig.betclic_proxy
+  # and browser.py's diagnostic logging), so this ran anyway, committed
+  # an odds-less snapshot, and PUSHED OVER a same-day local run's real
+  # data (real incident: a local run with 10/11 fixtures matched got
+  # silently overwritten by this workflow's own 0/12 a few hours later).
+  # Re-enable the `schedule:` block below only once BETCLIC_PROXY_SERVER/
+  # _USERNAME/_PASSWORD are set as repository secrets -- until then, use
+  # README.md's "Opção A" (run locally + push -- deploy-on-push.yml
+  # publishes it) or "Opção B" (cron/systemd on a Portuguese-IP machine
+  # that itself commits+pushes) instead. workflow_dispatch is kept so
+  # this can still be triggered manually, e.g. to test a newly-added
+  # proxy.
+  #
+  # schedule:
+  #   - cron: "0 8 * * *"
   workflow_dispatch: {}
 
 permissions:

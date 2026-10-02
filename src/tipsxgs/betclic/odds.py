@@ -109,6 +109,15 @@ def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
     seen_match_ids: set = set()
     all_items: list[dict] = []
     css_rows: list[dict] = []
+    # Per-URL (html length, title, JSON blob count) -- purely diagnostic,
+    # only ever logged when the loop below ends up with zero rows. Real
+    # bug report (2026-10-02): this came back empty in the GitHub Actions
+    # run but not in a local run of the exact same code/config, which
+    # smells like Betclic (a Portugal-licensed operator) geo-blocking the
+    # runner's non-Portuguese datacenter IP rather than a page-structure
+    # change -- a near-empty HTML/title here (vs. the real page title and
+    # a nonzero blob count) would confirm that on the next failure.
+    diagnostics: list[tuple[str, int, str | None, int]] = []
     for i, url in enumerate(urls, start=1):
         # One line per competition page -- with 17+ of these visited
         # sequentially (each with its own wait_ms + polite_delay), a run
@@ -124,6 +133,8 @@ def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
             scroll_pause_ms=page_cfg.scroll_pause_ms,
         )
         blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
+        title_match = re.search(r"<title[^>]*>([^<]*)</title>", html, re.IGNORECASE)
+        diagnostics.append((url, len(html), title_match.group(1).strip() if title_match else None, len(blobs)))
 
         items = _items_from_json(page_cfg, blobs, seen_match_ids)
         if items:
@@ -138,6 +149,17 @@ def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
     rows = _items_to_rows(page_cfg, all_items) + css_rows
 
     if not rows:
+        for url, html_len, title, blob_count in diagnostics:
+            logger.warning(
+                "Diagnostic for %s: html length=%d, <title>=%r, JSON blobs captured=%d "
+                "-- a short html length/generic or blocking-looking title with few/no "
+                "blobs suggests Betclic blocked or redirected this request (e.g. "
+                "geo-blocking a non-Portuguese IP) rather than a page-structure change.",
+                url,
+                html_len,
+                title,
+                blob_count,
+            )
         logger.warning(
             "No matches extracted from %s. config.yaml's betclic.fixtures "
             "section likely needs calibration -- see docs/CALIBRATION.md "

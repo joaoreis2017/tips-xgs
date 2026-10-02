@@ -1,6 +1,6 @@
 {
   "date": "2026-09-30",
-  "generated_at": "2026-09-30T10:02:17.525724",
+  "generated_at": "2026-09-30T14:46:08.067711",
   "games": [
     {
       "fixture": {
@@ -205,7 +205,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-09-30T09:02:10.574500+00:00"
+        "scraped_at": "2026-09-30T14:46:02.970455+00:00"
       },
       "odds": null,
       "match_confidence": null,

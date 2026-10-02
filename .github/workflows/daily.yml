@@ -34,6 +34,19 @@ jobs:
           playwright install --with-deps chromium
 
       - name: Run daily pipeline
+        env:
+          # Betclic geo-blocks this runner's (non-Portuguese) datacenter
+          # IP -- confirmed via browser.py's diagnostic logging (a
+          # literal "Error 403 Forbidden" page). Routing just the
+          # Betclic browser session through a proxy with a Portuguese
+          # exit IP works around it -- see config.AppConfig.betclic_proxy.
+          # Add these as repository secrets (Settings -> Secrets and
+          # variables -> Actions) once you have a proxy; until then
+          # they're empty and this step behaves exactly as before (no
+          # proxy, same as a local run).
+          BETCLIC_PROXY_SERVER: ${{ secrets.BETCLIC_PROXY_SERVER }}
+          BETCLIC_PROXY_USERNAME: ${{ secrets.BETCLIC_PROXY_USERNAME }}
+          BETCLIC_PROXY_PASSWORD: ${{ secrets.BETCLIC_PROXY_PASSWORD }}
         run: python scripts/run_daily.py
 
       - name: Commit updated data

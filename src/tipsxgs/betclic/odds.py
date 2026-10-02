@@ -390,7 +390,13 @@ def scrape_today_odds(
     """
     own_session = session is None
     if own_session:
-        session = BrowserSession(headless=cfg.headless, user_agent=cfg.user_agent).__enter__()
+        # proxy=cfg.betclic_proxy is None unless BETCLIC_PROXY_SERVER is
+        # set -- see AppConfig.betclic_proxy's docstring. xGScore's own
+        # session (xgscore/preview.py, xgscore/fixtures.py) deliberately
+        # never gets this -- only Betclic has ever been geo-blocked.
+        session = BrowserSession(
+            headless=cfg.headless, user_agent=cfg.user_agent, proxy=cfg.betclic_proxy
+        ).__enter__()
     try:
         rows = _scrape_list(cfg, session)
         parsed_rows = [p for p in (_row_to_offer(cfg, row) for row in rows) if p]

@@ -28,10 +28,20 @@ class BrowserSession:
             data = session.get_html_and_json("https://xgscore.io/.../preview")
     """
 
-    def __init__(self, headless: bool = True, user_agent: str | None = None, timeout_ms: int = 30_000):
+    def __init__(
+        self,
+        headless: bool = True,
+        user_agent: str | None = None,
+        timeout_ms: int = 30_000,
+        proxy: dict[str, str] | None = None,
+    ):
         self.headless = headless
         self.user_agent = user_agent
         self.timeout_ms = timeout_ms
+        # Playwright's own launch-option shape: {"server": ..., optionally
+        # "username"/"password"} -- see config.AppConfig.betclic_proxy for
+        # why/when this is set (geo-blocking workaround, Betclic only).
+        self.proxy = proxy
         self._playwright = None
         self._browser = None
         self._context = None
@@ -40,7 +50,7 @@ class BrowserSession:
         from playwright.sync_api import sync_playwright
 
         self._playwright = sync_playwright().start()
-        self._browser = self._playwright.chromium.launch(headless=self.headless)
+        self._browser = self._playwright.chromium.launch(headless=self.headless, proxy=self.proxy)
         self._context = self._browser.new_context(user_agent=self.user_agent)
         self._context.set_default_timeout(self.timeout_ms)
         return self

@@ -15,6 +15,22 @@ min_match_confidence: 80     # fuzzy-match score (0-100) required to pair a fixt
 max_concurrent_previews: 3
 headless: true
 
+# Betclic proxy (geo-blocking workaround) -- NOT configured here.
+# Real bug report (2026-10-02): the GitHub Actions run got 0 Betclic
+# odds every time (while an identical local run from a Portuguese IP
+# worked fine) because Betclic itself returns "Error 403 Forbidden" to
+# the runner's non-Portuguese datacenter IP. Fixed by routing only the
+# Betclic browser session through a proxy with a Portuguese exit IP --
+# deliberately read from BETCLIC_PROXY_SERVER/_USERNAME/_PASSWORD
+# environment variables (see config.AppConfig.betclic_proxy), never
+# from this file, since a proxy's credentials are secrets and this file
+# is version-controlled. Set them as GitHub Actions repository secrets
+# (Settings -> Secrets and variables -> Actions) -- already wired into
+# .github/workflows/daily.yml's "Run daily pipeline" step -- or export
+# them in your own shell for a local run that also needs the proxy.
+# Unset (the default everywhere so far), nothing changes: no proxy, same
+# as before this existed.
+
 # Filter for the dashboard's per-game "acontecimentos por probabilidade"
 # table -- with every xGScore market extracted (every over/under line,
 # every handicap line, ...), that table would otherwise be dozens of

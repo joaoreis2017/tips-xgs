@@ -7,6 +7,7 @@ scraping code itself is generic and driven entirely by this file.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -232,7 +233,41 @@ class AppConfig:
     report_multiple_stake: float = 0.50
     report_value_single_stake: float = 0.50
     report_mid_single_stake: float = 1.00
+    # Real bug report (2026-10-02): the GitHub Actions run got 0 Betclic
+    # odds every time, while an identical local run (from a Portuguese
+    # IP) worked fine -- confirmed via browser.py's diagnostic logging to
+    # be Betclic itself returning "Error 403 Forbidden" (html length
+    # 3530, 0 JSON blobs) to the runner's non-Portuguese datacenter IP,
+    # i.e. geo-blocking, not a page-structure/calibration problem. Fixed
+    # by routing just the Betclic browser session through a residential/
+    # datacenter proxy with a Portuguese exit IP -- deliberately read
+    # from environment variables, NEVER from config.yaml, since this
+    # repo is version-controlled and a proxy's credentials are secrets.
+    # Set these as GitHub Actions repository secrets (Settings -> Secrets
+    # and variables -> Actions) and reference them as env vars in
+    # .github/workflows/daily.yml's "Run daily pipeline" step; for a
+    # local run, export them in your own shell instead. xGScore's own
+    # browser session is untouched -- it was never blocked, so there's no
+    # reason to route it (and its extra cost) through the proxy too.
+    betclic_proxy_server: str | None = None
+    betclic_proxy_username: str | None = None
+    betclic_proxy_password: str | None = None
     raw: dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def betclic_proxy(self) -> dict[str, str] | None:
+        """Playwright's own ``proxy`` launch-option shape, or ``None``
+        when ``BETCLIC_PROXY_SERVER`` isn't set (the default -- every
+        existing local/CI setup keeps working unchanged until that
+        secret/env var is actually configured)."""
+        if not self.betclic_proxy_server:
+            return None
+        proxy = {"server": self.betclic_proxy_server}
+        if self.betclic_proxy_username:
+            proxy["username"] = self.betclic_proxy_username
+        if self.betclic_proxy_password:
+            proxy["password"] = self.betclic_proxy_password
+        return proxy
 
 
 _KNOWN_SITE_KEYS = {"base_url", "request_delay_seconds", "fixtures", "preview", "odds"}
@@ -314,5 +349,8 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         report_multiple_stake=float(raw.get("report_multiple_stake", 0.50)),
         report_value_single_stake=float(raw.get("report_value_single_stake", 0.50)),
         report_mid_single_stake=float(raw.get("report_mid_single_stake", 1.00)),
+        betclic_proxy_server=os.environ.get("BETCLIC_PROXY_SERVER") or None,
+        betclic_proxy_username=os.environ.get("BETCLIC_PROXY_USERNAME") or None,
+        betclic_proxy_password=os.environ.get("BETCLIC_PROXY_PASSWORD") or None,
         raw=raw,
     )

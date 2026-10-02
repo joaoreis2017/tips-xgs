@@ -1,0 +1,47 @@
+name: Deploy dashboard (on push)
+
+# Explicitly requested (2026-10-02): Betclic geo-blocks this repo's
+# scheduled GitHub Actions run (see daily.yml's own comment + config.
+# AppConfig.betclic_proxy), and a paid proxy to work around that isn't
+# worth it -- so the plan is "run `python -m tipsxgs run` locally (a
+# Portuguese IP never gets blocked), then push the resulting data/" and
+# have the live site update from that, without needing Actions to
+# scrape anything itself. This workflow does ONLY the deploy half of
+# daily.yml -- no scraping, no git push back -- triggered by the data/
+# push a local run produces, so the dashboard is viewable (e.g. on a
+# phone) within about a minute of pushing.
+on:
+  push:
+    branches:
+      - claude/xgscore-betclic-scraper-yj4i4b
+    paths:
+      - "data/**"
+  workflow_dispatch: {}
+
+permissions:
+  pages: write
+  id-token: write
+
+concurrency:
+  # Same group as daily.yml's -- Pages deployments can't run two at
+  # once, and both workflows publish the same site.
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload dashboard artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: data
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

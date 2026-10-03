@@ -1,0 +1,880 @@
+"""Regression test for the Betclic odds scraper against the real gRPC/JSON
+shape confirmed on betclic.pt (2026-09-11) -- see config.yaml's
+betclic.fixtures section for where this structure came from.
+"""
+
+from datetime import date, datetime, timezone
+
+from tipsxgs.betclic.odds import (
+    _build_match_url,
+    _expand_selection_matrix_markets,
+    _scrape_detail_markets,
+    scrape_today_odds,
+)
+from tipsxgs.config import SelectionMatrixRule, load_config
+
+
+def _load_config_single_fixtures_url():
+    """load_config(), but with the repo's real betclic.fixtures.urls (one
+    entry per competition -- 17 as of writing) trimmed down to one dummy
+    URL. Tests below use a FakeSession that ignores the URL it's given
+    and returns the same fixed blob regardless -- without this, every
+    such test would visit all 17 real URLs (each with its own
+    polite_delay sleep), which is both needlessly slow and, for a
+    FakeSession whose behavior depends on call *count*
+    (``TwoStepFakeSession``), outright wrong. Tests that specifically
+    exercise multi-URL merging set their own `.urls` instead."""
+    cfg = load_config()
+    cfg.betclic.page("fixtures").urls = ["https://example.invalid/fixtures"]
+    return cfg
+
+REAL_SHAPE_BLOB = {
+    "grpc:1596417301": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "1216417087131648",
+                        "name": "Rakow Czestochowa - Motor Lublin",
+                        "matchDateUtc": "2026-09-11T16:00:00.0000000Z",
+                        "isLive": True,
+                        "contestants": [
+                            {"contestantId": "a", "name": "Rakow Czestochowa"},
+                            {"contestantId": "b", "name": "Motor Lublin"},
+                        ],
+                        "competition": {"id": "221", "name": "Polónia - Ekstraklasa"},
+                        "market": {
+                            "name": "Resultado (Tempo Regulamentar)",
+                            "mainSelections": [
+                                {"name": "Rakow Czestochowa", "odds": 2.18},
+                                {"name": "Empate", "odds": 2.42},
+                                {"name": "Motor Lublin", "odds": 3.07},
+                            ],
+                        },
+                    }
+                ]
+            }
+        }
+    }
+}
+
+
+class FakeSession:
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        return "<html></html>", [REAL_SHAPE_BLOB]
+
+
+def test_scrape_today_odds_against_real_betclic_json_shape():
+    cfg = _load_config_single_fixtures_url()  # repo-root config.yaml, calibrated for betclic.fixtures
+    offers = scrape_today_odds(cfg, session=FakeSession())
+
+    assert len(offers) == 1
+    offer = offers[0]
+    assert offer.home_team == "Rakow Czestochowa"
+    assert offer.away_team == "Motor Lublin"
+    assert offer.kickoff == datetime(2026, 9, 11, 16, 0, tzinfo=timezone.utc)
+    assert offer.markets == {"1x2": {"home": 2.18, "draw": 2.42, "away": 3.07}}
+
+
+# Second confirmed shape (2026-09-11): the same Angular TransferState blob
+# that carries the "Em Direto" (live) matches under one grpc:<hash> key also
+# carries *upcoming* (not-yet-kicked-off) fixtures for a specific
+# competition -- e.g. "Liga Portugal Betclic" -- under a *different*
+# grpc:<hash> key in that very same <script> blob, with isLive: false and a
+# real future matchDateUtc. Both keys sit side by side in one JSON object,
+# so `json_list_path: "*.response.payload.matches[]"` (a wildcard over
+# every top-level key) already merges live + upcoming matches from a single
+# page load with no config change -- this test locks that merging in.
+MULTI_KEY_BLOB = {
+    "grpc:1596417301": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "1216417087131648",
+                        "name": "Rakow Czestochowa - Motor Lublin",
+                        "matchDateUtc": "2026-09-11T16:00:00.0000000Z",
+                        "isLive": True,
+                        "contestants": [
+                            {"contestantId": "a", "name": "Rakow Czestochowa"},
+                            {"contestantId": "b", "name": "Motor Lublin"},
+                        ],
+                        "competition": {"id": "221", "name": "Polónia - Ekstraklasa"},
+                        "market": {
+                            "name": "Resultado (Tempo Regulamentar)",
+                            "mainSelections": [
+                                {"name": "Rakow Czestochowa", "odds": 2.18},
+                                {"name": "Empate", "odds": 2.42},
+                                {"name": "Motor Lublin", "odds": 3.07},
+                            ],
+                        },
+                    }
+                ]
+            }
+        }
+    },
+    "grpc:3335296709": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "1216417087131649",
+                        "name": "Sporting CP - Benfica",
+                        "matchDateUtc": "2026-09-14T19:30:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [
+                            {"contestantId": "c", "name": "Sporting CP"},
+                            {"contestantId": "d", "name": "Benfica"},
+                        ],
+                        "competition": {"id": "32", "name": "Liga Portugal Betclic"},
+                        "market": {
+                            "name": "Resultado (Tempo Regulamentar)",
+                            "mainSelections": [
+                                {"name": "Sporting CP", "odds": 1.95},
+                                {"name": "Empate", "odds": 3.4},
+                                {"name": "Benfica", "odds": 3.9},
+                            ],
+                        },
+                    },
+                    {
+                        "matchId": "1216417087131650",
+                        "name": "FC Porto - Braga",
+                        "matchDateUtc": "2026-09-15T20:00:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [
+                            {"contestantId": "e", "name": "FC Porto"},
+                            {"contestantId": "f", "name": "Braga"},
+                        ],
+                        "competition": {"id": "32", "name": "Liga Portugal Betclic"},
+                        "market": {
+                            "name": "Resultado (Tempo Regulamentar)",
+                            "mainSelections": [
+                                {"name": "FC Porto", "odds": 1.75},
+                                {"name": "Empate", "odds": 3.6},
+                                {"name": "Braga", "odds": 4.6},
+                            ],
+                        },
+                    },
+                ]
+            }
+        }
+    },
+}
+
+
+class MultiKeyFakeSession:
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        return "<html></html>", [MULTI_KEY_BLOB]
+
+
+def test_scrape_today_odds_merges_live_and_upcoming_matches_from_one_blob():
+    cfg = _load_config_single_fixtures_url()
+    offers = scrape_today_odds(cfg, session=MultiKeyFakeSession())
+
+    # 1 live match (grpc:1596417301) + 2 upcoming Liga Portugal Betclic
+    # matches (grpc:3335296709), all from the same JSON blob.
+    assert len(offers) == 3
+    by_teams = {(o.home_team, o.away_team): o for o in offers}
+
+    live = by_teams[("Rakow Czestochowa", "Motor Lublin")]
+    assert live.markets == {"1x2": {"home": 2.18, "draw": 2.42, "away": 3.07}}
+
+    upcoming = by_teams[("Sporting CP", "Benfica")]
+    assert upcoming.kickoff == datetime(2026, 9, 14, 19, 30, tzinfo=timezone.utc)
+    assert upcoming.markets == {"1x2": {"home": 1.95, "draw": 3.4, "away": 3.9}}
+
+    also_upcoming = by_teams[("FC Porto", "Braga")]
+    assert also_upcoming.markets == {"1x2": {"home": 1.75, "draw": 3.6, "away": 4.6}}
+
+
+# Regression for a real bug (2026-09-11 live run): betclic.fixtures.url is
+# an infinite-scroll list, so scrolling (scroll_count in config.yaml)
+# fires a *separate* XHR per page -- each page is captured as its own,
+# separate blob in `blobs` (unlike the single-blob-multiple-grpc-keys case
+# above), holding a *different* slice of matches. Taking only the first
+# blob's matches silently dropped every later page: live, the total
+# offer count stayed flat at one page's worth no matter how much
+# scrolling happened, until _rows_from_json was fixed to merge across
+# every blob instead of stopping at the first non-empty one.
+PAGE_1_BLOB = {
+    "grpc:1111111111": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "1",
+                        "matchDateUtc": "2026-09-12T14:30:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [{"name": "Aali"}, {"name": "Malkiya"}],
+                        "competition": {"name": "Bahrein - Liga"},
+                        "market": {
+                            "mainSelections": [
+                                {"name": "Aali", "odds": 1.5},
+                                {"name": "Empate", "odds": 3.5},
+                                {"name": "Malkiya", "odds": 5.0},
+                            ]
+                        },
+                    }
+                ]
+            }
+        }
+    }
+}
+
+# A second, separate captured response -- as if triggered by a
+# scroll-to-bottom -- with a *different* match (not a repeat of page 1).
+PAGE_2_BLOB = {
+    "grpc:2222222222": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "2",
+                        "matchDateUtc": "2026-09-12T18:45:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [{"name": "Sevilla"}, {"name": "Valencia"}],
+                        "competition": {"name": "Espanha - La Liga"},
+                        "market": {
+                            "mainSelections": [
+                                {"name": "Sevilla", "odds": 1.9},
+                                {"name": "Empate", "odds": 3.4},
+                                {"name": "Valencia", "odds": 4.2},
+                            ]
+                        },
+                    }
+                ]
+            }
+        }
+    }
+}
+
+
+class MultiPageFakeSession:
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        return "<html></html>", [PAGE_1_BLOB, PAGE_2_BLOB]
+
+
+def test_scrape_today_odds_merges_matches_across_scroll_triggered_pages():
+    cfg = _load_config_single_fixtures_url()
+    offers = scrape_today_odds(cfg, session=MultiPageFakeSession())
+
+    assert len(offers) == 2
+    by_teams = {(o.home_team, o.away_team) for o in offers}
+    assert by_teams == {("Aali", "Malkiya"), ("Sevilla", "Valencia")}
+
+
+class MultiUrlFakeSession:
+    """Returns a *different* blob depending on which competition URL was
+    requested -- mirrors betclic.fixtures.urls (one page per league)
+    rather than one page's captured-JSON list."""
+
+    def __init__(self):
+        self.urls_visited: list[str] = []
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        self.urls_visited.append(url)
+        if "premier-league" in url:
+            return "<html></html>", [PAGE_1_BLOB]
+        if "la-liga" in url:
+            return "<html></html>", [PAGE_2_BLOB]
+        return "<html></html>", []
+
+
+def test_scrape_today_odds_visits_every_competition_url_and_merges_results():
+    cfg = load_config()
+    fixtures_page = cfg.betclic.page("fixtures")
+    fixtures_page.urls = [
+        "https://www.betclic.pt/futebol-s1/inglaterra-premier-league-c3",
+        "https://www.betclic.pt/futebol-s1/espanha-la-liga-c7",
+        "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-c5",  # no matches for this one
+    ]
+    cfg.betclic.request_delay_seconds = 0  # skip the real polite_delay sleep in this test
+
+    session = MultiUrlFakeSession()
+    offers = scrape_today_odds(cfg, session=session)
+
+    # Visited every configured URL (not just the first with results).
+    assert len(session.urls_visited) == 3
+    by_teams = {(o.home_team, o.away_team) for o in offers}
+    assert by_teams == {("Aali", "Malkiya"), ("Sevilla", "Valencia")}
+
+
+# Third confirmed shape (2026-09-11): a match's own detail page, requested
+# specifically to calibrate BTTS / over-under (the listing page above only
+# carries the inline 1X2 market). Same Angular TransferState pattern, but
+# this grpc:<hash> key holds {"response": {"payload": {"match": {...}}}}
+# (singular "match") with every market grouped under
+# match.subCategories[].markets[] -- real example: "CD Nacional - FC
+# Alverca" (Liga Portugal Betclic). Two selection shapes coexist in the
+# same payload: "As duas equipas marcam" (BTTS) wraps each selection as
+# {"selectionOneof": {"oneofKind": "selection", "selection": {...}}}, while
+# "Total de golos - acima/abaixo" (over/under) uses plain {name, odds}
+# objects -- config.yaml's betclic.odds.fields matches each shape exactly.
+MATCH_DETAIL_BLOB = {
+    "grpc:2547122988": {
+        "response": {
+            "oneofKind": "payload",
+            "payload": {
+                "match": {
+                    "matchId": "1217462611771392",
+                    "subCategories": [
+                        {
+                            "markets": [
+                                {
+                                    "id": "1217462616989698",
+                                    "name": "Resultado (Tempo Regulamentar)",
+                                    "mainSelections": [
+                                        {"name": "CD Nacional", "odds": 2.55},
+                                        {"name": "Empate", "odds": 3.2},
+                                        {"name": "FC Alverca", "odds": 2.67},
+                                    ],
+                                },
+                                {
+                                    "id": "1217463160180773",
+                                    "name": "Total de golos - acima/abaixo",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {"name": "Acima de 0,5", "odds": 1.03},
+                                                {"name": "Abaixo de 0,5", "odds": 5.75},
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"name": "Acima de 2,5", "odds": 1.84},
+                                                {"name": "Abaixo de 2,5", "odds": 1.68},
+                                            ]
+                                        },
+                                    ],
+                                },
+                                {
+                                    "id": "1217463160180824",
+                                    "name": "As duas equipas marcam",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "oneofKind": "selection",
+                                                        "selection": {"name": "Sim", "odds": 1.68},
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "oneofKind": "selection",
+                                                        "selection": {"name": "Não", "odds": 1.83},
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    ],
+                                },
+                            ]
+                        }
+                    ],
+                }
+            },
+        }
+    }
+}
+
+FIXTURES_LIST_BLOB = {
+    "grpc:3335296709": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "1217462611771392",
+                        "name": "CD Nacional - FC Alverca",
+                        "matchDateUtc": "2026-09-12T14:30:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [
+                            {"contestantId": "a", "name": "CD Nacional"},
+                            {"contestantId": "b", "name": "FC Alverca"},
+                        ],
+                        "competition": {"id": "32", "name": "Liga Portugal Betclic"},
+                        "market": {
+                            "name": "Resultado (Tempo Regulamentar)",
+                            "mainSelections": [
+                                {"name": "CD Nacional", "odds": 2.55},
+                                {"name": "Empate", "odds": 3.2},
+                                {"name": "FC Alverca", "odds": 2.67},
+                            ],
+                        },
+                    }
+                ]
+            }
+        }
+    }
+}
+
+
+class TwoStepFakeSession:
+    """First call (the fixtures list) returns FIXTURES_LIST_BLOB; every
+    subsequent call (one per match's detail page) returns MATCH_DETAIL_BLOB
+    -- mirrors scrape_today_odds()'s "list page, then hop to each match's
+    own page" flow."""
+
+    def __init__(self):
+        self.calls = []
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        self.calls.append(url)
+        if len(self.calls) == 1:
+            return "<html></html>", [FIXTURES_LIST_BLOB]
+        return "<html></html>", [MATCH_DETAIL_BLOB]
+
+
+def test_build_match_url_from_betclic_routing_template():
+    cfg = load_config()
+    row = {
+        "home_team": "CD Nacional",
+        "away_team": "FC Alverca",
+        "league": "Liga Portugal Betclic",
+        "match_id": "1217462611771392",
+        "competition_id": "32",
+    }
+    url = _build_match_url(cfg, row)
+    assert url == "/futebol-s1/liga-portugal-betclic-c32/cd-nacional-fc-alverca-m1217462611771392"
+
+
+def test_scrape_today_odds_reads_btts_and_over_under_from_match_detail_page():
+    cfg = _load_config_single_fixtures_url()
+    session = TwoStepFakeSession()
+    # The detail-page hop is now skipped for matches not kicking off on
+    # `day` (see the "only today's matches" filter in scrape_today_odds)
+    # -- pin it to the fixture's own kickoff date (2026-09-12) so this
+    # test still exercises the hop.
+    offers = scrape_today_odds(cfg, session=session, day=date(2026, 9, 12))
+
+    assert len(offers) == 1
+    offer = offers[0]
+    assert offer.home_team == "CD Nacional"
+    assert offer.away_team == "FC Alverca"
+    # 1x2 from the listing page + btts/over-under from the detail-page hop.
+    assert offer.markets == {
+        "1x2": {"home": 2.55, "draw": 3.2, "away": 2.67},
+        "btts": {"yes": 1.68, "no": 1.83},
+        # Both lines the fixture's selectionMatrix carries -- confirms
+        # the whole matrix is expanded, not just a hardcoded 2.5 line.
+        "over_under_0.5": {"over": 1.03, "under": 5.75},
+        "over_under_2.5": {"over": 1.84, "under": 1.68},
+    }
+    # scrape_today_odds should have hopped to the built detail-page URL.
+    assert len(session.calls) == 2
+    assert session.calls[1].endswith(
+        "/futebol-s1/liga-portugal-betclic-c32/cd-nacional-fc-alverca-m1217462611771392"
+    )
+
+
+# Regression for a real live-run problem (2026-09-14): a competition page
+# lists *every* upcoming fixture for that league (days or weeks out), not
+# just today's -- 219 matches parsed from 17 competition pages when only
+# ~15 xGScore fixtures were for today, each triggering its own detail-page
+# hop (~5s apiece with the polite delay) for matches that could never be
+# matched to a today-only xGScore fixture anyway.
+TWO_MATCHES_LIST_BLOB = {
+    "grpc:1111111111": {
+        "response": {
+            "payload": {
+                "matches": [
+                    {
+                        "matchId": "today-1",
+                        "name": "CD Nacional - FC Alverca",
+                        "matchDateUtc": "2026-09-12T14:30:00.0000000Z",
+                        "isLive": False,
+                        "contestants": [{"name": "CD Nacional"}, {"name": "FC Alverca"}],
+                        "competition": {"id": "32", "name": "Liga Portugal Betclic"},
+                        "market": {
+                            "mainSelections": [
+                                {"name": "CD Nacional", "odds": 2.55},
+                                {"name": "Empate", "odds": 3.2},
+                                {"name": "FC Alverca", "odds": 2.67},
+                            ]
+                        },
+                    },
+                    {
+                        "matchId": "future-1",
+                        "name": "Sporting - Benfica",
+                        "matchDateUtc": "2026-10-30T20:00:00.0000000Z",  # weeks out
+                        "isLive": False,
+                        "contestants": [{"name": "Sporting"}, {"name": "Benfica"}],
+                        "competition": {"id": "32", "name": "Liga Portugal Betclic"},
+                        "market": {
+                            "mainSelections": [
+                                {"name": "Sporting", "odds": 1.9},
+                                {"name": "Empate", "odds": 3.3},
+                                {"name": "Benfica", "odds": 4.1},
+                            ]
+                        },
+                    },
+                ]
+            }
+        }
+    }
+}
+
+
+class TwoMatchesFakeSession:
+    """Like ``TwoStepFakeSession``, but the list page carries two matches
+    -- one kicking off ``day``, one weeks out -- so the detail-page hop's
+    "only today's matches" filter has something to actually filter."""
+
+    def __init__(self):
+        self.calls = []
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        self.calls.append(url)
+        if len(self.calls) == 1:
+            return "<html></html>", [TWO_MATCHES_LIST_BLOB]
+        return "<html></html>", [MATCH_DETAIL_BLOB]
+
+
+def test_scrape_today_odds_skips_detail_hop_for_matches_not_kicking_off_today():
+    cfg = _load_config_single_fixtures_url()
+    session = TwoMatchesFakeSession()
+    offers = scrape_today_odds(cfg, session=session, day=date(2026, 9, 12))
+
+    # Both matches are still returned...
+    assert len(offers) == 2
+    by_teams = {(o.home_team, o.away_team): o for o in offers}
+
+    # ...but only the one kicking off on `day` got the detail-page hop
+    # (btts/over-under on top of its inline 1x2)...
+    today_offer = by_teams[("CD Nacional", "FC Alverca")]
+    assert today_offer.markets == {
+        "1x2": {"home": 2.55, "draw": 3.2, "away": 2.67},
+        "btts": {"yes": 1.68, "no": 1.83},
+        # Both lines the fixture's selectionMatrix carries -- confirms
+        # the whole matrix is expanded, not just a hardcoded 2.5 line.
+        "over_under_0.5": {"over": 1.03, "under": 5.75},
+        "over_under_2.5": {"over": 1.84, "under": 1.68},
+    }
+
+    # ...while the one weeks out kept only its inline 1x2 -- no detail
+    # page was ever requested for it.
+    future_offer = by_teams[("Sporting", "Benfica")]
+    assert future_offer.markets == {"1x2": {"home": 1.9, "draw": 3.3, "away": 4.1}}
+
+    # One call for the listing page + exactly one detail-page hop (not two).
+    assert len(session.calls) == 2
+
+
+def _over_under_rule() -> SelectionMatrixRule:
+    return SelectionMatrixRule(
+        json_path="market.selectionMatrix",
+        name_pattern=r"^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$",
+        direction_map={"Acima": "over", "Abaixo": "under"},
+        market_template="over_under_{line}",
+    )
+
+
+def test_expand_selection_matrix_markets_covers_every_line_in_one_market():
+    blob = {
+        "market": {
+            "selectionMatrix": [
+                {"selections": [{"name": "Acima de 0,5", "odds": 1.03}, {"name": "Abaixo de 0,5", "odds": 5.75}]},
+                {"selections": [{"name": "Acima de 1,5", "odds": 1.25}, {"name": "Abaixo de 1,5", "odds": 3.5}]},
+                {"selections": [{"name": "Acima de 2,5", "odds": 1.84}, {"name": "Abaixo de 2,5", "odds": 1.68}]},
+            ]
+        }
+    }
+    result = _expand_selection_matrix_markets([blob], [_over_under_rule()])
+    assert result == {
+        "over_under_0.5": {"over": 1.03, "under": 5.75},
+        "over_under_1.5": {"over": 1.25, "under": 3.5},
+        "over_under_2.5": {"over": 1.84, "under": 1.68},
+    }
+
+
+def test_expand_selection_matrix_markets_handles_wrapped_selection_shape():
+    # The "As duas equipas marcam" (BTTS) market wraps each selection as
+    # {selectionOneof: {selection: {...}}} instead of the flat {name,
+    # odds} shape over/under uses -- this helper must handle either.
+    blob = {
+        "market": {
+            "selectionMatrix": [
+                {
+                    "selections": [
+                        {"selectionOneof": {"selection": {"name": "Acima de 0,5", "odds": 1.1}}},
+                        {"selectionOneof": {"selection": {"name": "Abaixo de 0,5", "odds": 6.0}}},
+                    ]
+                }
+            ]
+        }
+    }
+    result = _expand_selection_matrix_markets([blob], [_over_under_rule()])
+    assert result == {"over_under_0.5": {"over": 1.1, "under": 6.0}}
+
+
+def test_expand_selection_matrix_markets_skips_names_that_dont_match_the_pattern():
+    blob = {
+        "market": {
+            "selectionMatrix": [
+                {"selections": [{"name": "Acima de 2,5", "odds": 1.84}, {"name": "Empate Anula Aposta", "odds": 2.0}]}
+            ]
+        }
+    }
+    result = _expand_selection_matrix_markets([blob], [_over_under_rule()])
+    assert result == {"over_under_2.5": {"over": 1.84}}
+
+
+# CALIBRATED (2026-09-14), from a real match page dump (Inter - Udinese):
+# Betclic offers a *per-team* goals total market too, one for each team,
+# each named "<team> - Total de golos" (the team name is baked into the
+# market's own `name`, unlike the combined "Total de golos -
+# acima/abaixo" market above). This test uses the REAL confirmed
+# config.yaml rules (not a synthetic one like _over_under_rule() above)
+# against a trimmed real shape, to catch a regression in the actual
+# `ends_with(...)` JMESPath expressions themselves.
+INTER_UDINESE_MATCH_DETAIL_BLOB = {
+    "grpc:3757155395": {
+        "response": {
+            "payload": {
+                "match": {
+                    "matchId": "1211848943738880",
+                    "subCategories": [
+                        {
+                            "markets": [
+                                {
+                                    "name": "Total de golos - acima/abaixo",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Acima de 2,5", "odds": 1.35}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Abaixo de 2,5", "odds": 2.52}
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    ],
+                                },
+                                {
+                                    "name": "Inter - Total de golos",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Acima de 1,5", "odds": 1.2}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Abaixo de 1,5", "odds": 3.23}
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    ],
+                                },
+                                {
+                                    "name": "Udinese - Total de golos",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Acima de 0,5", "odds": 1.76}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Abaixo de 0,5", "odds": 1.75}
+                                                    }
+                                                },
+                                            ]
+                                        }
+                                    ],
+                                },
+                                {
+                                    "name": "As duas equipas marcam",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Sim", "odds": 1.85}}},
+                                                {"selectionOneof": {"selection": {"name": "Não", "odds": 1.66}}},
+                                            ]
+                                        }
+                                    ],
+                                },
+                                {
+                                    "name": "Resultado duplo",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Inter ou empate", "odds": 1.04}
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Inter ou Udinese", "odds": 1.08}
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate ou Udinese", "odds": 4.35}
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                    ],
+                                },
+                                {
+                                    "name": "Resultado handicap",
+                                    "selectionMatrix": [
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (-4)", "odds": 7.25}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter -4)", "odds": 6.6}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (+4)", "odds": 1.2}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (-3)", "odds": 3.93}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter -3)", "odds": 4.8}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (+3)", "odds": 1.52}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (-2)", "odds": 2.28}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter -2)", "odds": 4.05}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (+2)", "odds": 2.3}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (-1)", "odds": 1.52}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter -1)", "odds": 4.3}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (+1)", "odds": 4.35}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                        {
+                                            "selections": [
+                                                {"selectionOneof": {"selection": {"name": "Inter (+1)", "odds": 1.04}}},
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Empate (Inter +1)", "odds": 16.25}
+                                                    }
+                                                },
+                                                {
+                                                    "selectionOneof": {
+                                                        "selection": {"name": "Udinese (-1)", "odds": 26}
+                                                    }
+                                                },
+                                            ]
+                                        },
+                                    ],
+                                },
+                            ]
+                        }
+                    ],
+                }
+            }
+        }
+    }
+}
+
+
+def test_expand_selection_matrix_markets_covers_home_and_away_team_totals():
+    cfg = load_config()
+    rules = cfg.betclic.page("odds").selection_matrix_markets
+    result = _expand_selection_matrix_markets([INTER_UDINESE_MATCH_DETAIL_BLOB], rules)
+
+    assert result == {
+        "over_under_2.5": {"over": 1.35, "under": 2.52},
+        # Inter (home) listed first among the two per-team markets.
+        "home_total_1.5": {"over": 1.2, "under": 3.23},
+        # Udinese (away) listed second.
+        "away_total_0.5": {"over": 1.76, "under": 1.75},
+    }
+
+
+class _SingleBlobFakeSession:
+    """Mimics BrowserSession.get_html_and_captured_json for a single
+    match-detail-page hop, always returning the same captured JSON blob
+    regardless of URL/wait_ms -- used to exercise the FULL real
+    config.yaml odds pipeline (fields + market_aliases +
+    selection_matrix_markets + handicap_matrix_markets all at once) in
+    one call to _scrape_detail_markets, the same function
+    scrape_today_odds() itself calls for each match's detail-page hop.
+    """
+
+    def __init__(self, blob: dict):
+        self._blob = blob
+
+    def get_html_and_captured_json(self, url, wait_ms=2000, **_kwargs):
+        return "<html></html>", [self._blob]
+
+
+def test_scrape_detail_markets_covers_btts_double_chance_and_handicap_from_real_dump():
+    # CALIBRATED (2026-09-14): btts/double_chance/handicap all added to
+    # config.yaml from the same real Inter - Udinese match page dump as
+    # the per-team goals totals above -- this locks in the full,
+    # combined real-config pipeline (not just one isolated helper) so a
+    # future config.yaml edit that breaks any one of these markets
+    # fails a test immediately.
+    cfg = load_config()
+    session = _SingleBlobFakeSession(INTER_UDINESE_MATCH_DETAIL_BLOB)
+    result = _scrape_detail_markets(cfg, "https://example.invalid/inter-udinese", session)
+
+    assert result["btts"] == {"yes": 1.85, "no": 1.66}
+    assert result["double_chance"] == {"1x": 1.04, "12": 1.08, "x2": 4.35}
+    # Betclic's own 3-way integer handicap lines (-4..+1, from Inter's
+    # side) shifted to their xGScore Asian-half-line equivalent -- see
+    # HandicapMatrixRule's docstring for the derivation. The 2nd-to-last
+    # row ("Udinese (+2)" -> away handicap 1.5) is the exact case the
+    # user confirmed by hand ("handicap +2 na Betclic = handicap +1.5
+    # no xgscore").
+    assert result["handicap_home"] == {"-4.5": 7.25, "-3.5": 3.93, "-2.5": 2.28, "-1.5": 1.52, "0.5": 1.04}
+    assert result["handicap_away"] == {"3.5": 1.2, "2.5": 1.52, "1.5": 2.3, "0.5": 4.35, "-1.5": 26.0}

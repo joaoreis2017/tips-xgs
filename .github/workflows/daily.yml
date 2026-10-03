@@ -1,0 +1,86 @@
+name: Daily xGScore + Betclic run
+
+on:
+  # DISABLED (2026-10-02): the schedule trigger below used to fire this
+  # every day regardless of whether a proxy is configured -- without
+  # one, Betclic 403s every request (see config.AppConfig.betclic_proxy
+  # and browser.py's diagnostic logging), so this ran anyway, committed
+  # an odds-less snapshot, and PUSHED OVER a same-day local run's real
+  # data (real incident: a local run with 10/11 fixtures matched got
+  # silently overwritten by this workflow's own 0/12 a few hours later).
+  # Re-enable the `schedule:` block below only once BETCLIC_PROXY_SERVER/
+  # _USERNAME/_PASSWORD are set as repository secrets -- until then, use
+  # README.md's "Opção A" (run locally + push -- deploy-on-push.yml
+  # publishes it) or "Opção B" (cron/systemd on a Portuguese-IP machine
+  # that itself commits+pushes) instead. workflow_dispatch is kept so
+  # this can still be triggered manually, e.g. to test a newly-added
+  # proxy.
+  #
+  # schedule:
+  #   - cron: "0 8 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+          playwright install --with-deps chromium
+
+      - name: Run daily pipeline
+        env:
+          # Betclic geo-blocks this runner's (non-Portuguese) datacenter
+          # IP -- confirmed via browser.py's diagnostic logging (a
+          # literal "Error 403 Forbidden" page). Routing just the
+          # Betclic browser session through a proxy with a Portuguese
+          # exit IP works around it -- see config.AppConfig.betclic_proxy.
+          # Add these as repository secrets (Settings -> Secrets and
+          # variables -> Actions) once you have a proxy; until then
+          # they're empty and this step behaves exactly as before (no
+          # proxy, same as a local run).
+          BETCLIC_PROXY_SERVER: ${{ secrets.BETCLIC_PROXY_SERVER }}
+          BETCLIC_PROXY_USERNAME: ${{ secrets.BETCLIC_PROXY_USERNAME }}
+          BETCLIC_PROXY_PASSWORD: ${{ secrets.BETCLIC_PROXY_PASSWORD }}
+        run: python scripts/run_daily.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name "tipsxgs-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "data: daily xGScore/Betclic snapshot $(date -u +%Y-%m-%d)"
+          git push
+
+      - name: Upload dashboard artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: data
+
+  deploy:
+    needs: scrape
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

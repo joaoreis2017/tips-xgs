@@ -168,7 +168,10 @@ def test_mid_bets_lists_every_entry_in_the_inclusive_band():
     # entry, or one outside the window, is still dropped outright.
     game = _game(
         markets={
-            "1x2": {"home": 0.65},  # 65%, odd in range (inclusive edge) -> shows
+            # 67% (not 65%) so value_ratio at the odd's inclusive edge
+            # (1.5) still clears the default min_value_ratio=1.0 bar:
+            # 0.67*1.5=1.005.
+            "1x2": {"home": 0.67},  # odd in range (inclusive edge) -> shows
             "btts": {"yes": 0.65},  # 65%, odd outside range (below 1.5) -> dropped
             "double_chance": {"1x": 0.65},  # 65%, no odd at all -> dropped
         },
@@ -183,12 +186,28 @@ def test_mid_bets_lists_every_entry_in_the_inclusive_band():
     assert ctx["multiple_legs"] == []
 
 
+def test_mid_bets_also_requires_value_ratio_at_least_one():
+    # Explicitly requested (2026-10-06): same "maior ou igual a 1.00x"
+    # bar as the multiple, on top of the mid band's own probability/odd
+    # range -- and the old, separate "apostas de valor" section is gone
+    # entirely (no ctx["value_bets"] key at all any more).
+    game = _game(
+        markets={"1x2": {"home": 0.65}},  # value_ratio 0.65*1.5=0.975, below the bar
+        odds_markets={"1x2": {"home": 1.5}},
+    )
+
+    ctx = build_context(date(2026, 9, 12), [game])
+    assert ctx["mid_bets"] == []
+    assert "value_bets" not in ctx
+
+
 def test_daily_plan_sections_are_independent_and_still_require_a_matched_odd():
     # CHANGED (2026-09-29, explicitly requested): sections no longer
     # exclude a fixture just because another section also listed it --
     # each is a complete, independent view of its own band, so the same
-    # fixture can appear in more than one. A game with no Betclic offer
-    # at all still can never land in any of them (no odd anywhere).
+    # fixture can appear in more than one (here it can't, since the
+    # bands themselves don't overlap). A game with no Betclic offer at
+    # all still can never land in either (no odd anywhere).
     no_offer = _game(
         markets={"1x2": {"home": 0.65}}, odds_markets=None, slug="no-offer", home="Team C", away="Team D"
     )
@@ -200,10 +219,9 @@ def test_daily_plan_sections_are_independent_and_still_require_a_matched_odd():
         away="Team B",
     )
     mid_offer = _game(
-        # odd deliberately at the mid band's own lower (inclusive) edge
-        # -- value_ratio 0.65*1.5=0.975, below the value section's own
-        # >1.0 bar, so it shouldn't show up there too.
-        markets={"1x2": {"home": 0.65}},
+        # 67% (not 65%) and odd 1.5 -> value_ratio 1.005, clearing the
+        # default min_value_ratio=1.0 bar both sections now share.
+        markets={"1x2": {"home": 0.67}},
         odds_markets={"1x2": {"home": 1.5}},
         slug="mid-offer",
         home="Team E",
@@ -218,15 +236,9 @@ def test_daily_plan_sections_are_independent_and_still_require_a_matched_odd():
     mid_slugs = {b["game_slug"] for b in ctx["mid_bets"]}
     assert mid_slugs == {"mid-offer"}
 
-    # high-offer's value_ratio (0.9 * 1.35 = 1.215) also clears the value
-    # section's own bar -- it shows up there too, independently of
-    # already being a multiple leg above.
-    value_slugs = {b["game_slug"] for b in ctx["value_bets"]}
-    assert value_slugs == {"high-offer"}
-
     # no-offer never shows anywhere -- it clears the mid band's
-    # probability range (65%) but has no odd at all.
-    all_slugs = leg_slugs | mid_slugs | value_slugs
+    # probability range (65%-69%, as "67%") but has no odd at all.
+    all_slugs = leg_slugs | mid_slugs
     assert "no-offer" not in all_slugs
 
 

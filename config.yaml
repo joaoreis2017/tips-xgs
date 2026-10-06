@@ -45,7 +45,7 @@ report_min_probability: 0.5   # xGScore's own probability must be > this (0..1)
 # from). Explicitly requested to remove that choice entirely -- they
 # now only serve as the *eligibility criteria* the daily bet plan below
 # uses to make its own picks deterministically (report_multiple_*/
-# report_value_single_*/report_mid_single_* further down): every event
+# report_min_value_ratio/report_mid_single_* further down): every event
 # whose *displayed* probability (whole percent, rounded -- see
 # valuebets._rounded_percent) falls in [report_high_probability_min,
 # 100] is eligible as a leg for the daily multiple; everything in
@@ -68,25 +68,26 @@ report_high_odd_max: 1.45
 report_mid_odd_min: 1.5     # mid band: inclusive (>=1.5 and <=2.2)
 report_mid_odd_max: 2.2
 
-# The daily bet plan itself (explicitly requested): three sections, each
-# listing EVERY candidate within its own band, sorted by probability
-# descending (changed 2026-09-29 -- previously each narrowed down to one
-# single pick) -- see valuebets.py's "Daily bet plan" section, and
+# The daily bet plan itself (explicitly requested): each section lists
+# EVERY candidate within its own band, sorted by probability descending
+# (changed 2026-09-29 -- previously each narrowed down to one single
+# pick) -- see valuebets.py's "Daily bet plan" section, and
 # report.build_context for how these get assembled. The multiple's legs
 # and the mid-stake bets reuse the two bands above as their own
-# eligibility criteria; the value-stake bets aren't tied to either band
-# -- any market/odd clearing the bar below.
-report_value_single_min_probability: 0.45
-# CHANGED (2026-10-06, explicitly requested): "só quero que apareçam as
-# apostas de valor superior a 1" -- strictly >1.0 (pick_value_bets uses
-# a strict ">", so exactly 1.00x/break-even still doesn't count).
-report_value_single_min_value_ratio: 1.0
+# eligibility criteria.
+#
+# CHANGED (2026-10-06, explicitly requested): the separate,
+# band-unrestricted "0.50€ apostas de valor" section was removed
+# entirely; both remaining sections now ALSO require value_ratio >=
+# report_min_value_ratio (inclusive) on top of their own
+# probability/odd band -- "nestas duas secções apenas quero as apostas
+# de valor maior ou igual a 1.00x".
+report_min_value_ratio: 1.0
 
 # Stake amounts -- display-only (shown in each section's heading), not
 # used in any calculation. Change these if the daily budget split
 # changes.
 report_multiple_stake: 0.50
-report_value_single_stake: 0.50
 report_mid_single_stake: 1.00
 
 xgscore:

@@ -70,7 +70,7 @@
 
 <div class="panel">
   <h2>🎫 Múltipla do dia · {{ "%.2f"|format(multiple_stake) }}€</h2>
-  <p class="subtitle" style="margin:-6px 0 12px;">Todas as pernas possíveis (uma por jogo no máximo), ordenadas por probabilidade — probabilidade ≥ {{ "%.0f"|format(high_probability_min * 100) }}% e odd Betclic entre {{ "%.2f"|format(high_odd_min) }} e {{ "%.2f"|format(high_odd_max) }} (exclusive).</p>
+  <p class="subtitle" style="margin:-6px 0 12px;">Todas as pernas possíveis (uma por jogo no máximo), ordenadas por probabilidade — probabilidade ≥ {{ "%.0f"|format(high_probability_min * 100) }}%, odd Betclic entre {{ "%.2f"|format(high_odd_min) }} e {{ "%.2f"|format(high_odd_max) }} (exclusive) e valor ≥ {{ "%.2f"|format(min_value_ratio) }}×.</p>
   {% if multiple_legs %}
   <table>
     <thead><tr>
@@ -127,18 +127,9 @@
 {% endmacro %}
 
 {{ bets_list_panel(
-  "💰",
-  "Apostas de valor",
-  "Todas as jogadas de valor do dia em qualquer jogo/mercado, ordenadas por probabilidade — probabilidade ≥ " ~ "%.0f"|format(value_single_min_probability * 100) ~ "% e valor ≥ " ~ "%.2f"|format(value_single_min_value_ratio) ~ "×.",
-  value_bets,
-  value_single_stake,
-  "Sem jogadas a cumprir estes critérios hoje (ver docs/CALIBRATION.md)."
-) }}
-
-{{ bets_list_panel(
   "📊",
   "Apostas de probabilidade média",
-  "Todas as jogadas com probabilidade entre " ~ "%.0f"|format(mid_probability_min * 100) ~ "% e " ~ "%.0f"|format(mid_probability_max * 100) ~ "%, odd Betclic entre " ~ "%.2f"|format(mid_odd_min) ~ " e " ~ "%.2f"|format(mid_odd_max) ~ " (inclusive), ordenadas por probabilidade.",
+  "Todas as jogadas com probabilidade entre " ~ "%.0f"|format(mid_probability_min * 100) ~ "% e " ~ "%.0f"|format(mid_probability_max * 100) ~ "%, odd Betclic entre " ~ "%.2f"|format(mid_odd_min) ~ " e " ~ "%.2f"|format(mid_odd_max) ~ " (inclusive) e valor ≥ " ~ "%.2f"|format(min_value_ratio) ~ "×, ordenadas por probabilidade.",
   mid_bets,
   mid_single_stake,
   "Sem jogadas a cumprir estes critérios hoje (ver docs/CALIBRATION.md)."

@@ -222,20 +222,18 @@ class AppConfig:
     # every candidate within each band rather than one single pick on
     # 2026-09-29) -- see valuebets.py's "Daily bet plan" section. The
     # multiple's legs and the mid-stake bets reuse the two bands above as
-    # their own eligibility criteria (same "safe"/"mid-confidence"
-    # shape); only the value-stake bets need their own bar, since they
-    # aren't tied to either band -- any market/odd with enough value.
-    report_value_single_min_probability: float = 0.45
-    # CHANGED (2026-10-06, explicitly requested): "só quero que
-    # apareçam as apostas de valor superior a 1" -- strictly >1.0 (see
-    # valuebets.pick_value_bets), not the stricter >=1.10 this used to
-    # be.
-    report_value_single_min_value_ratio: float = 1.0
+    # their own eligibility criteria (same "safe"/"mid-confidence" shape).
+    #
+    # CHANGED (2026-10-06, explicitly requested): the separate,
+    # band-unrestricted "0.50€ apostas de valor" section was removed
+    # entirely; both remaining sections (multiple, mid-stake single) now
+    # also require value_ratio >= report_min_value_ratio (inclusive --
+    # "maior ou igual a 1.00x") on top of their own probability/odd band.
+    report_min_value_ratio: float = 1.0
     # Stake amounts -- display-only (shown in each section's heading),
     # not used in any calculation. Change these if the daily budget
     # split changes.
     report_multiple_stake: float = 0.50
-    report_value_single_stake: float = 0.50
     report_mid_single_stake: float = 1.00
     # Real bug report (2026-10-02): the GitHub Actions run got 0 Betclic
     # odds every time, while an identical local run (from a Portuguese
@@ -348,10 +346,8 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         report_high_odd_max=float(raw.get("report_high_odd_max", 1.45)),
         report_mid_odd_min=float(raw.get("report_mid_odd_min", 1.5)),
         report_mid_odd_max=float(raw.get("report_mid_odd_max", 2.2)),
-        report_value_single_min_probability=float(raw.get("report_value_single_min_probability", 0.45)),
-        report_value_single_min_value_ratio=float(raw.get("report_value_single_min_value_ratio", 1.0)),
+        report_min_value_ratio=float(raw.get("report_min_value_ratio", 1.0)),
         report_multiple_stake=float(raw.get("report_multiple_stake", 0.50)),
-        report_value_single_stake=float(raw.get("report_value_single_stake", 0.50)),
         report_mid_single_stake=float(raw.get("report_mid_single_stake", 1.00)),
         betclic_proxy_server=os.environ.get("BETCLIC_PROXY_SERVER") or None,
         betclic_proxy_username=os.environ.get("BETCLIC_PROXY_USERNAME") or None,

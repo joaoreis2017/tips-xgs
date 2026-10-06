@@ -14,7 +14,6 @@ from .valuebets import (
     multiple_combined_probability,
     pick_band_bets,
     pick_multiple_legs,
-    pick_value_bets,
 )
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
@@ -51,10 +50,8 @@ def build_context(
     mid_probability_max: float = 0.69,
     mid_odd_min: float = 1.5,
     mid_odd_max: float = 2.2,
-    value_single_min_probability: float = 0.45,
-    value_single_min_value_ratio: float = 1.0,
+    min_value_ratio: float = 1.0,
     multiple_stake: float = 0.50,
-    value_single_stake: float = 0.50,
     mid_single_stake: float = 1.00,
 ) -> dict:
     game_ctx = []
@@ -106,12 +103,8 @@ def build_context(
         min_probability=high_probability_min,
         min_odd=high_odd_min,
         max_odd=high_odd_max,
+        min_value_ratio=min_value_ratio,
         coverable_markets=betclic_markets,
-    )
-    value_bets = pick_value_bets(
-        games,
-        min_probability=value_single_min_probability,
-        min_value_ratio=value_single_min_value_ratio,
     )
     mid_bets = pick_band_bets(
         games,
@@ -120,6 +113,7 @@ def build_context(
         min_odd=mid_odd_min,
         max_odd=mid_odd_max,
         odd_bounds_inclusive=True,
+        min_value_ratio=min_value_ratio,
         coverable_markets=betclic_markets,
     )
 
@@ -136,10 +130,7 @@ def build_context(
         "high_probability_min": high_probability_min,
         "high_odd_min": high_odd_min,
         "high_odd_max": high_odd_max,
-        "value_bets": [_pick_ctx(v) for v in value_bets],
-        "value_single_stake": value_single_stake,
-        "value_single_min_probability": value_single_min_probability,
-        "value_single_min_value_ratio": value_single_min_value_ratio,
+        "min_value_ratio": min_value_ratio,
         "mid_bets": [_pick_ctx(m) for m in mid_bets],
         "mid_single_stake": mid_single_stake,
         "mid_probability_min": mid_probability_min,
@@ -164,10 +155,8 @@ def render_dashboard(
     mid_probability_max: float = 0.69,
     mid_odd_min: float = 1.5,
     mid_odd_max: float = 2.2,
-    value_single_min_probability: float = 0.45,
-    value_single_min_value_ratio: float = 1.0,
+    min_value_ratio: float = 1.0,
     multiple_stake: float = 0.50,
-    value_single_stake: float = 0.50,
     mid_single_stake: float = 1.00,
 ) -> Path:
     env = Environment(
@@ -189,10 +178,8 @@ def render_dashboard(
             mid_probability_max=mid_probability_max,
             mid_odd_min=mid_odd_min,
             mid_odd_max=mid_odd_max,
-            value_single_min_probability=value_single_min_probability,
-            value_single_min_value_ratio=value_single_min_value_ratio,
+            min_value_ratio=min_value_ratio,
             multiple_stake=multiple_stake,
-            value_single_stake=value_single_stake,
             mid_single_stake=mid_single_stake,
         )
     )

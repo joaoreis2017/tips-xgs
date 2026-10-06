@@ -216,9 +216,9 @@ def top_probability_bets_today(
 # --- Daily bet plan -----------------------------------------------------
 #
 # Explicitly requested (2026-09-18): stop showing candidate lists the
-# user has to pick from -- split every event into the three stakes the
-# user actually places each day (a small multiple, plus two single bets
-# at two different stake sizes), each governed by its own fixed
+# user has to pick from -- split every event into the stakes the user
+# actually places each day (originally a small multiple plus two single
+# bets at two different stake sizes), each governed by its own fixed
 # probability/odd band. Same games.json in, same output out every time --
 # no randomness anywhere below.
 #
@@ -229,10 +229,16 @@ def top_probability_bets_today(
 # already-configured parameters is hidden. The bands/parameters
 # themselves are unchanged; only "and then pick just one" was removed.
 # Dropped along with it: max_legs (the multiple no longer caps how many
-# legs it shows) and exclude_fixture_ids (the three sections no longer
-# hide a fixture from one another just because another section also
-# listed it -- each section is now a complete, independent view of its
-# own band).
+# legs it shows) and exclude_fixture_ids (the sections no longer hide a
+# fixture from one another just because another section also listed it
+# -- each section is a complete, independent view of its own band).
+#
+# CHANGED (2026-10-06, explicitly requested): the band-unrestricted
+# "0.50€ apostas de valor" single (pick_value_bets) was removed
+# entirely -- too many low-value entries slipped through. The two
+# remaining sections (multiple, mid-band single) now additionally
+# require value_ratio >= 1.0 (inclusive) via each function's own
+# min_value_ratio param, on top of their existing probability/odd bands.
 
 BetPick = tuple[MatchedGame, ValueBetEntry]
 
@@ -242,18 +248,22 @@ def pick_multiple_legs(
     min_probability: float,
     min_odd: float,
     max_odd: float,
+    min_value_ratio: float = 1.0,
     coverable_markets: set[str] | None = None,
 ) -> list[BetPick]:
     """Every candidate leg for the daily multiple/parlay: entries
     clearing ``min_probability`` with a matched odd strictly between
     ``min_odd``/``max_odd`` (the "safe, moderate-odd" shape of the
-    dashboard's high-confidence band -- see ``top_probability_bets_today``),
-    sorted by probability descending. At most ONE leg per fixture (two
-    outcomes of the *same* match aren't independent, so combining them
-    into one multiple would misrepresent ``multiple_combined_odd``/
-    ``multiple_combined_probability`` below) -- when a fixture has more
-    than one qualifying outcome, the one with the higher ``value_ratio``
-    wins that fixture's slot.
+    dashboard's high-confidence band -- see ``top_probability_bets_today``)
+    AND a ``value_ratio`` of at least ``min_value_ratio`` (explicitly
+    requested: "nestas duas secções apenas quero as apostas de valor
+    maior ou igual a 1.00x" -- inclusive, unlike the removed "apostas de
+    valor" section's strict ``>``), sorted by probability descending. At
+    most ONE leg per fixture (two outcomes of the *same* match aren't
+    independent, so combining them into one multiple would misrepresent
+    ``multiple_combined_odd``/``multiple_combined_probability`` below) --
+    when a fixture has more than one qualifying outcome, the one with
+    the higher ``value_ratio`` wins that fixture's slot.
     """
     candidates = top_probability_bets_today(
         games,
@@ -263,6 +273,11 @@ def pick_multiple_legs(
         odd_bounds_inclusive=False,
         coverable_markets=coverable_markets,
     )
+    candidates = [
+        (game, entry)
+        for game, entry in candidates
+        if entry.value_ratio is not None and entry.value_ratio >= min_value_ratio
+    ]
 
     best_per_fixture: dict[str, BetPick] = {}
     for game, entry in candidates:
@@ -301,34 +316,6 @@ def multiple_combined_probability(legs: list[BetPick]) -> float | None:
     return probability
 
 
-def pick_value_bets(
-    games: list[MatchedGame],
-    min_probability: float = 0.0,
-    min_value_ratio: float = 1.0,
-) -> list[BetPick]:
-    """Every value bet across every game/market clearing both
-    ``min_probability`` and ``min_value_ratio``, sorted by probability
-    descending (highest chance of landing first) -- the "0.50€ apostas de
-    valor" section's full list, band-unrestricted (any market, any odd).
-
-    ``value_ratio`` must be STRICTLY greater than ``min_value_ratio``
-    (explicitly requested: "só quero que apareçam as apostas de valor
-    superior a 1" -- exactly 1.00×, break-even, doesn't count as a value
-    bet, so the default bar itself is 1.0, not >=1.0).
-    """
-    candidates = [
-        (game, entry)
-        for game in games
-        for entry in game.value_bets
-        if entry.odd is not None
-        and entry.value_ratio is not None
-        and entry.probability >= min_probability
-        and entry.value_ratio > min_value_ratio
-    ]
-    candidates.sort(key=lambda pair: pair[1].probability, reverse=True)
-    return candidates
-
-
 def pick_band_bets(
     games: list[MatchedGame],
     min_probability: float,
@@ -336,15 +323,18 @@ def pick_band_bets(
     min_odd: float,
     max_odd: float,
     odd_bounds_inclusive: bool = True,
+    min_value_ratio: float = 1.0,
     coverable_markets: set[str] | None = None,
 ) -> list[BetPick]:
     """Every entry within one probability/odd band (see
     ``top_probability_bets_today``, which already sorts by probability
-    descending), the band-restricted counterpart to ``pick_value_bets``
-    above -- used for a section that should only show bets from a
-    specific confidence band (e.g. "60%-69%, odd 1.5-2.2").
+    descending) AND a ``value_ratio`` of at least ``min_value_ratio``
+    (explicitly requested: "nestas duas secções apenas quero as apostas
+    de valor maior ou igual a 1.00x") -- used for a section that should
+    only show bets from a specific confidence band (e.g. "60%-69%, odd
+    1.5-2.2").
     """
-    return top_probability_bets_today(
+    candidates = top_probability_bets_today(
         games,
         min_probability=min_probability,
         max_probability=max_probability,
@@ -353,3 +343,8 @@ def pick_band_bets(
         odd_bounds_inclusive=odd_bounds_inclusive,
         coverable_markets=coverable_markets,
     )
+    return [
+        (game, entry)
+        for game, entry in candidates
+        if entry.value_ratio is not None and entry.value_ratio >= min_value_ratio
+    ]

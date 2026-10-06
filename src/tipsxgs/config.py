@@ -226,7 +226,11 @@ class AppConfig:
     # shape); only the value-stake bets need their own bar, since they
     # aren't tied to either band -- any market/odd with enough value.
     report_value_single_min_probability: float = 0.45
-    report_value_single_min_value_ratio: float = 1.10
+    # CHANGED (2026-10-06, explicitly requested): "só quero que
+    # apareçam as apostas de valor superior a 1" -- strictly >1.0 (see
+    # valuebets.pick_value_bets), not the stricter >=1.10 this used to
+    # be.
+    report_value_single_min_value_ratio: float = 1.0
     # Stake amounts -- display-only (shown in each section's heading),
     # not used in any calculation. Change these if the daily budget
     # split changes.
@@ -345,7 +349,7 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         report_mid_odd_min=float(raw.get("report_mid_odd_min", 1.5)),
         report_mid_odd_max=float(raw.get("report_mid_odd_max", 2.2)),
         report_value_single_min_probability=float(raw.get("report_value_single_min_probability", 0.45)),
-        report_value_single_min_value_ratio=float(raw.get("report_value_single_min_value_ratio", 1.10)),
+        report_value_single_min_value_ratio=float(raw.get("report_value_single_min_value_ratio", 1.0)),
         report_multiple_stake=float(raw.get("report_multiple_stake", 0.50)),
         report_value_single_stake=float(raw.get("report_value_single_stake", 0.50)),
         report_mid_single_stake=float(raw.get("report_mid_single_stake", 1.00)),

@@ -77,7 +77,10 @@ report_mid_odd_max: 2.2
 # eligibility criteria; the value-stake bets aren't tied to either band
 # -- any market/odd clearing the bar below.
 report_value_single_min_probability: 0.45
-report_value_single_min_value_ratio: 1.10
+# CHANGED (2026-10-06, explicitly requested): "só quero que apareçam as
+# apostas de valor superior a 1" -- strictly >1.0 (pick_value_bets uses
+# a strict ">", so exactly 1.00x/break-even still doesn't count).
+report_value_single_min_value_ratio: 1.0
 
 # Stake amounts -- display-only (shown in each section's heading), not
 # used in any calculation. Change these if the daily budget split

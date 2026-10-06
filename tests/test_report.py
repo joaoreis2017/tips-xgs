@@ -200,8 +200,11 @@ def test_daily_plan_sections_are_independent_and_still_require_a_matched_odd():
         away="Team B",
     )
     mid_offer = _game(
+        # odd deliberately at the mid band's own lower (inclusive) edge
+        # -- value_ratio 0.65*1.5=0.975, below the value section's own
+        # >1.0 bar, so it shouldn't show up there too.
         markets={"1x2": {"home": 0.65}},
-        odds_markets={"1x2": {"home": 1.6}},
+        odds_markets={"1x2": {"home": 1.5}},
         slug="mid-offer",
         home="Team E",
         away="Team F",

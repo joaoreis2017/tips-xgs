@@ -310,6 +310,11 @@ def pick_value_bets(
     ``min_probability`` and ``min_value_ratio``, sorted by probability
     descending (highest chance of landing first) -- the "0.50€ apostas de
     valor" section's full list, band-unrestricted (any market, any odd).
+
+    ``value_ratio`` must be STRICTLY greater than ``min_value_ratio``
+    (explicitly requested: "só quero que apareçam as apostas de valor
+    superior a 1" -- exactly 1.00×, break-even, doesn't count as a value
+    bet, so the default bar itself is 1.0, not >=1.0).
     """
     candidates = [
         (game, entry)
@@ -318,7 +323,7 @@ def pick_value_bets(
         if entry.odd is not None
         and entry.value_ratio is not None
         and entry.probability >= min_probability
-        and entry.value_ratio >= min_value_ratio
+        and entry.value_ratio > min_value_ratio
     ]
     candidates.sort(key=lambda pair: pair[1].probability, reverse=True)
     return candidates

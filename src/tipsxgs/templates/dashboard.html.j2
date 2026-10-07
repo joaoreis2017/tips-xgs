@@ -126,10 +126,15 @@
 </div>
 {% endmacro %}
 
+{% if mid_probability_max is none %}
+  {% set mid_subtitle = "Todas as jogadas com probabilidade ≥ " ~ "%.0f"|format(mid_probability_min * 100) ~ "%, odd Betclic entre " ~ "%.2f"|format(mid_odd_min) ~ " e " ~ "%.2f"|format(mid_odd_max) ~ " (inclusive) e valor ≥ " ~ "%.2f"|format(min_value_ratio) ~ "×, ordenadas por probabilidade." %}
+{% else %}
+  {% set mid_subtitle = "Todas as jogadas com probabilidade entre " ~ "%.0f"|format(mid_probability_min * 100) ~ "% e " ~ "%.0f"|format(mid_probability_max * 100) ~ "%, odd Betclic entre " ~ "%.2f"|format(mid_odd_min) ~ " e " ~ "%.2f"|format(mid_odd_max) ~ " (inclusive) e valor ≥ " ~ "%.2f"|format(min_value_ratio) ~ "×, ordenadas por probabilidade." %}
+{% endif %}
 {{ bets_list_panel(
   "📊",
   "Apostas de probabilidade média",
-  "Todas as jogadas com probabilidade entre " ~ "%.0f"|format(mid_probability_min * 100) ~ "% e " ~ "%.0f"|format(mid_probability_max * 100) ~ "%, odd Betclic entre " ~ "%.2f"|format(mid_odd_min) ~ " e " ~ "%.2f"|format(mid_odd_max) ~ " (inclusive) e valor ≥ " ~ "%.2f"|format(min_value_ratio) ~ "×, ordenadas por probabilidade.",
+  mid_subtitle,
   mid_bets,
   mid_single_stake,
   "Sem jogadas a cumprir estes critérios hoje (ver docs/CALIBRATION.md)."

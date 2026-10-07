@@ -201,10 +201,19 @@ class AppConfig:
     # report_mid_probability_max] goes in the mid-confidence one.
     # Anything below report_mid_probability_min isn't shown in either.
     # Both probability bounds are inclusive, matching how the user
-    # specified them ("70%, inclusive" / "60% a 69%, inclusive").
+    # specified them ("70%, inclusive" / originally "60% a 69%,
+    # inclusive").
+    #
+    # CHANGED (2026-10-07, explicitly requested): the mid band's upper
+    # bound was removed -- now open-ended ("probabilidade maior ou
+    # igual a 60%", no ceiling), keeping only its own odd range
+    # (1.5-2.2) and the value_ratio bar as the remaining eligibility
+    # criteria. None here means "no upper bound" end to end (config.py,
+    # report.py, valuebets.pick_band_bets/top_probability_bets_today all
+    # already treat max_probability=None as open-ended).
     report_high_probability_min: float = 0.70
     report_mid_probability_min: float = 0.60
-    report_mid_probability_max: float = 0.69
+    report_mid_probability_max: float | None = None
     # Both bands also require a matched odd within their own range now
     # -- anything with no odd, or an odd outside the window, is dropped
     # outright rather than kept as "—". See
@@ -341,7 +350,11 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         report_min_probability=float(raw.get("report_min_probability", 0.5)),
         report_high_probability_min=float(raw.get("report_high_probability_min", 0.70)),
         report_mid_probability_min=float(raw.get("report_mid_probability_min", 0.60)),
-        report_mid_probability_max=float(raw.get("report_mid_probability_max", 0.69)),
+        report_mid_probability_max=(
+            float(raw["report_mid_probability_max"])
+            if raw.get("report_mid_probability_max") is not None
+            else None
+        ),
         report_high_odd_min=float(raw.get("report_high_odd_min", 1.25)),
         report_high_odd_max=float(raw.get("report_high_odd_max", 1.45)),
         report_mid_odd_min=float(raw.get("report_mid_odd_min", 1.5)),

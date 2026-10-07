@@ -51,9 +51,15 @@ report_min_probability: 0.5   # xGScore's own probability must be > this (0..1)
 # 100] is eligible as a leg for the daily multiple; everything in
 # [report_mid_probability_min, report_mid_probability_max] is eligible
 # for the "mid" single stake. Both probability bounds are inclusive.
+#
+# CHANGED (2026-10-07, explicitly requested): report_mid_probability_max
+# removed (now null/open-ended) -- "probabilidade maior ou igual a 60%"
+# instead of "entre 60% e 69%". The mid band's own odd range
+# (report_mid_odd_min/max below) and report_min_value_ratio stay as the
+# only other eligibility criteria for that section.
 report_high_probability_min: 0.70   # >= 70% (displayed)
-report_mid_probability_min: 0.60    # 60%..69% (displayed) band
-report_mid_probability_max: 0.69
+report_mid_probability_min: 0.60    # >= 60% (displayed), no upper bound
+report_mid_probability_max: null
 
 # Both bands also require a matched Betclic odd within their own range
 # -- an odd-less entry, or one outside the window, is never eligible.

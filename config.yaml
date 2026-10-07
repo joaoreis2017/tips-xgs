@@ -410,6 +410,7 @@ betclic:
       #- "https://www.betclic.pt/futebol-s1/liga-europa-c3453"
       #- "https://www.betclic.pt/futebol-s1/liga-conferencia-c28946"
       - "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676"
+      - "https://www.betclic.pt/futebol-sfootball/brasil-serie-a-c187"
     # Each competition page is much lighter than the old generic page --
     # no scrolling needed, and less time per visit -- but there are many
     # of them, so this adds up (~17 pages x (wait_ms + a polite delay

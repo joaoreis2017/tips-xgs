@@ -3,6 +3,7 @@ shape confirmed on betclic.pt (2026-09-11) -- see config.yaml's
 betclic.fixtures section for where this structure came from.
 """
 
+import logging
 from datetime import date, datetime, timezone
 
 from tipsxgs.betclic.odds import (
@@ -878,3 +879,23 @@ def test_scrape_detail_markets_covers_btts_double_chance_and_handicap_from_real_
     # no xgscore").
     assert result["handicap_home"] == {"-4.5": 7.25, "-3.5": 3.93, "-2.5": 2.28, "-1.5": 1.52, "0.5": 1.04}
     assert result["handicap_away"] == {"3.5": 1.2, "2.5": 1.52, "1.5": 2.3, "0.5": 4.35, "-1.5": 26.0}
+
+
+def test_scrape_detail_markets_logs_diagnostic_when_nothing_extracted(caplog):
+    # Real bug report (2026-10-11): three Primeira Liga matches that day
+    # silently kept only their inline 1x2 odds (no btts/over-under/
+    # handicap/totals) -- no exception was raised (that's logged
+    # separately, at scrape_today_odds's own call site), the page's own
+    # extraction just found nothing for any configured rule to match.
+    # This diagnostic (html length/<title>/blob count, same shape as
+    # _scrape_list's own for the listing page) is what would show
+    # whether that's a page-structure difference for this competition or
+    # Betclic simply not having published those markets yet.
+    cfg = load_config()
+    session = _SingleBlobFakeSession({"not": "the shape any rule expects"})
+
+    with caplog.at_level(logging.WARNING, logger="tipsxgs.betclic.odds"):
+        result = _scrape_detail_markets(cfg, "https://example.invalid/empty-match", session)
+
+    assert result == {}
+    assert any("No detail-page markets" in r.message for r in caplog.records)

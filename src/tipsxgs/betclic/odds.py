@@ -307,6 +307,28 @@ def _scrape_detail_markets(cfg: AppConfig, match_url: str, session: BrowserSessi
     if page_cfg.handicap_matrix_markets:
         markets = merge_markets(markets, _expand_handicap_matrix_markets(blobs, page_cfg.handicap_matrix_markets))
 
+    if not markets:
+        # Real bug report (2026-10-11): every match that day got full
+        # btts/over-under/handicap/totals coverage from this hop EXCEPT
+        # three Primeira Liga (Betclic's own domestic league) matches,
+        # which silently kept only their inline 1x2 odds -- no exception
+        # was raised (that's logged separately, at the call site), this
+        # page just had nothing for any configured rule to match. Same
+        # diagnostic shape as _scrape_list's own -- html length/<title>/
+        # blob count -- to tell "page structure differs for this
+        # competition" apart from "Betclic just hasn't published these
+        # markets yet for this match" without needing live access to
+        # re-inspect it.
+        title_match = re.search(r"<title[^>]*>([^<]*)</title>", html, re.IGNORECASE)
+        logger.warning(
+            "No detail-page markets (btts/over-under/handicap/totals) extracted from %s: "
+            "html length=%d, <title>=%r, JSON blobs captured=%d.",
+            match_url,
+            len(html),
+            title_match.group(1).strip() if title_match else None,
+            len(blobs),
+        )
+
     return markets
 
 

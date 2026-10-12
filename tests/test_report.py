@@ -162,16 +162,18 @@ def test_multiple_legs_requires_probability_and_odd_in_range():
 
 def test_mid_bets_lists_every_entry_in_the_inclusive_band():
     # CHANGED (2026-09-29, explicitly requested): the mid-stake section
-    # is no longer narrowed to one pick -- every entry within 60%-69%
-    # probability AND a matched odd between 1.5 and 2.2 (both bounds
-    # inclusive) shows, sorted by probability descending. An odd-less
-    # entry, or one outside the window, is still dropped outright.
+    # is no longer narrowed to one pick -- every entry at or above 70%
+    # probability (floor raised from 60% on 2026-10-12, no upper bound
+    # since 2026-10-07) AND a matched odd between 1.5 and 2.2 (both
+    # bounds inclusive) shows, sorted by probability descending. An
+    # odd-less entry, or one outside the window, is still dropped
+    # outright.
     game = _game(
         markets={
-            # 67% (not 65%) so value_ratio at the odd's inclusive edge
+            # 75% (not 65%) so value_ratio at the odd's inclusive edge
             # (1.5) still clears the default min_value_ratio=1.0 bar:
-            # 0.67*1.5=1.005.
-            "1x2": {"home": 0.67},  # odd in range (inclusive edge) -> shows
+            # 0.75*1.5=1.125.
+            "1x2": {"home": 0.75},  # odd in range (inclusive edge) -> shows
             "btts": {"yes": 0.65},  # 65%, odd outside range (below 1.5) -> dropped
             "double_chance": {"1x": 0.65},  # 65%, no odd at all -> dropped
         },
@@ -209,7 +211,7 @@ def test_daily_plan_sections_are_independent_and_still_require_a_matched_odd():
     # bands themselves don't overlap). A game with no Betclic offer at
     # all still can never land in either (no odd anywhere).
     no_offer = _game(
-        markets={"1x2": {"home": 0.65}}, odds_markets=None, slug="no-offer", home="Team C", away="Team D"
+        markets={"1x2": {"home": 0.75}}, odds_markets=None, slug="no-offer", home="Team C", away="Team D"
     )
     high_offer = _game(
         markets={"1x2": {"home": 0.9}},
@@ -219,9 +221,10 @@ def test_daily_plan_sections_are_independent_and_still_require_a_matched_odd():
         away="Team B",
     )
     mid_offer = _game(
-        # 67% (not 65%) and odd 1.5 -> value_ratio 1.005, clearing the
-        # default min_value_ratio=1.0 bar both sections now share.
-        markets={"1x2": {"home": 0.67}},
+        # 75% (not 65%) and odd 1.5 -> value_ratio 1.125, clearing the
+        # default min_value_ratio=1.0 bar both sections now share, and
+        # clearing the mid band's floor (raised to 70% on 2026-10-12).
+        markets={"1x2": {"home": 0.75}},
         odds_markets={"1x2": {"home": 1.5}},
         slug="mid-offer",
         home="Team E",
@@ -237,7 +240,7 @@ def test_daily_plan_sections_are_independent_and_still_require_a_matched_odd():
     assert mid_slugs == {"mid-offer"}
 
     # no-offer never shows anywhere -- it clears the mid band's
-    # probability range (65%-69%, as "67%") but has no odd at all.
+    # probability floor (>=70%, as "75%") but has no odd at all.
     all_slugs = leg_slugs | mid_slugs
     assert "no-offer" not in all_slugs
 

@@ -211,19 +211,26 @@ class AppConfig:
     # criteria. None here means "no upper bound" end to end (config.py,
     # report.py, valuebets.pick_band_bets/top_probability_bets_today all
     # already treat max_probability=None as open-ended).
-    report_high_probability_min: float = 0.70
-    report_mid_probability_min: float = 0.60
+    #
+    # CHANGED (2026-10-12, explicitly requested): high band's floor
+    # raised 70% -> 80%; mid band's own floor raised 60% -> 70% (its
+    # open upper bound above is unchanged).
+    report_high_probability_min: float = 0.80
+    report_mid_probability_min: float = 0.70
     report_mid_probability_max: float | None = None
     # Both bands also require a matched odd within their own range now
     # -- anything with no odd, or an odd outside the window, is dropped
     # outright rather than kept as "—". See
     # valuebets.top_probability_bets_today's min_odd/max_odd/
     # odd_bounds_inclusive.
-    # High band: "odd acima de 1.25 e abaixo de 1.45" -- both exclusive.
-    report_high_odd_min: float = 1.25
-    report_high_odd_max: float = 1.45
+    # CHANGED (2026-10-12, explicitly requested): high band's odd range
+    # widened 1.25-1.45 (exclusive) -> 1.20-1.49, AND switched to
+    # inclusive ("todos os valores inclusive" -- see
+    # valuebets.pick_multiple_legs's own odd_bounds_inclusive=True).
+    report_high_odd_min: float = 1.20
+    report_high_odd_max: float = 1.49
     # Mid band: "odd superior a 1.5 e inferior a 2.2, inclusive para os
-    # 2" -- both inclusive, unlike the high band above.
+    # 2" -- both inclusive, same as the high band above now.
     report_mid_odd_min: float = 1.5
     report_mid_odd_max: float = 2.2
 
@@ -348,15 +355,15 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         xgscore=_site_section(raw.get("xgscore", {})),
         betclic=_site_section(raw.get("betclic", {})),
         report_min_probability=float(raw.get("report_min_probability", 0.5)),
-        report_high_probability_min=float(raw.get("report_high_probability_min", 0.70)),
-        report_mid_probability_min=float(raw.get("report_mid_probability_min", 0.60)),
+        report_high_probability_min=float(raw.get("report_high_probability_min", 0.80)),
+        report_mid_probability_min=float(raw.get("report_mid_probability_min", 0.70)),
         report_mid_probability_max=(
             float(raw["report_mid_probability_max"])
             if raw.get("report_mid_probability_max") is not None
             else None
         ),
-        report_high_odd_min=float(raw.get("report_high_odd_min", 1.25)),
-        report_high_odd_max=float(raw.get("report_high_odd_max", 1.45)),
+        report_high_odd_min=float(raw.get("report_high_odd_min", 1.20)),
+        report_high_odd_max=float(raw.get("report_high_odd_max", 1.49)),
         report_mid_odd_min=float(raw.get("report_mid_odd_min", 1.5)),
         report_mid_odd_max=float(raw.get("report_mid_odd_max", 2.2)),
         report_min_value_ratio=float(raw.get("report_min_value_ratio", 1.0)),

@@ -70,7 +70,7 @@
 
 <div class="panel">
   <h2>🎫 Múltipla do dia · {{ "%.2f"|format(multiple_stake) }}€</h2>
-  <p class="subtitle" style="margin:-6px 0 12px;">Todas as pernas possíveis (uma por jogo no máximo), ordenadas por probabilidade — probabilidade ≥ {{ "%.0f"|format(high_probability_min * 100) }}%, odd Betclic entre {{ "%.2f"|format(high_odd_min) }} e {{ "%.2f"|format(high_odd_max) }} (exclusive) e valor ≥ {{ "%.2f"|format(min_value_ratio) }}×.</p>
+  <p class="subtitle" style="margin:-6px 0 12px;">Todas as pernas possíveis (uma por jogo no máximo), ordenadas por probabilidade — probabilidade ≥ {{ "%.0f"|format(high_probability_min * 100) }}%, odd Betclic entre {{ "%.2f"|format(high_odd_min) }} e {{ "%.2f"|format(high_odd_max) }} (inclusive) e valor ≥ {{ "%.2f"|format(min_value_ratio) }}×.</p>
   {% if multiple_legs %}
   <table>
     <thead><tr>

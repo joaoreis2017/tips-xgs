@@ -252,15 +252,15 @@ def pick_multiple_legs(
     coverable_markets: set[str] | None = None,
 ) -> list[BetPick]:
     """Every candidate leg for the daily multiple/parlay: entries
-    clearing ``min_probability`` with a matched odd strictly between
+    clearing ``min_probability`` with a matched odd between
     ``min_odd``/``max_odd`` (the "safe, moderate-odd" shape of the
     dashboard's high-confidence band -- see ``top_probability_bets_today``)
-    AND a ``value_ratio`` of at least ``min_value_ratio`` (explicitly
-    requested: "nestas duas secções apenas quero as apostas de valor
-    maior ou igual a 1.00x" -- inclusive, unlike the removed "apostas de
-    valor" section's strict ``>``), sorted by probability descending. At
-    most ONE leg per fixture (two outcomes of the *same* match aren't
-    independent, so combining them into one multiple would misrepresent
+    AND a ``value_ratio`` of at least ``min_value_ratio``, sorted by
+    probability descending. All three bounds are inclusive (explicitly
+    requested 2026-10-12: "todos os valores inclusive" -- CHANGED from
+    the odd range's previous exclusive bounds). At most ONE leg per
+    fixture (two outcomes of the *same* match aren't independent, so
+    combining them into one multiple would misrepresent
     ``multiple_combined_odd``/``multiple_combined_probability`` below) --
     when a fixture has more than one qualifying outcome, the one with
     the higher ``value_ratio`` wins that fixture's slot.
@@ -270,7 +270,7 @@ def pick_multiple_legs(
         min_probability=min_probability,
         min_odd=min_odd,
         max_odd=max_odd,
-        odd_bounds_inclusive=False,
+        odd_bounds_inclusive=True,
         coverable_markets=coverable_markets,
     )
     candidates = [

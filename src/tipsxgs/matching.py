@@ -87,9 +87,32 @@ _COUNTRY_NAME_ALIASES: dict[str, str] = {
 }
 
 
+# Club nicknames, acronyms and Portuguese city-name translations that
+# fuzzy-matching alone can't bridge -- same rationale as
+# _COUNTRY_NAME_ALIASES above (two genuinely different words/abbreviations,
+# not just an accent or minor spelling difference), but for club football.
+# Real bug report (2026-10-14): 3 of 10 Champions League fixtures went
+# unmatched -- Bodø-Glimt vs Borussia D. (xGScore) against Bodø/Glimt vs
+# Dortmund (Betclic); Slovan B. vs Stuttgart against Slovan Bratislava vs
+# Estugarda; Man City vs PSG against Manchester City vs Paris SG -- each
+# scoring just under min_confidence=80 because of a translated city name,
+# a bare-initial club nickname or an acronym that the abbreviation
+# expander (requires a >=3-char stem, see _MIN_ABBREVIATION_STEM_LEN
+# below) and the fuzzy scorers can't close on their own.
+_CLUB_NAME_ALIASES: dict[str, str] = {
+    "estugarda": "stuttgart",
+    "borussia d.": "dortmund",
+    "slovan b.": "slovan bratislava",
+    "man city": "manchester city",
+    "psg": "paris sg",
+}
+
+_TEAM_NAME_ALIASES: dict[str, str] = {**_COUNTRY_NAME_ALIASES, **_CLUB_NAME_ALIASES}
+
+
 def _normalize_team_name(name: str) -> str:
     normalized = name.strip().lower()
-    return _COUNTRY_NAME_ALIASES.get(normalized, normalized)
+    return _TEAM_NAME_ALIASES.get(normalized, normalized)
 
 
 def _pair_key(home: str, away: str) -> str:

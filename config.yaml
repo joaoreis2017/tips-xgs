@@ -321,7 +321,14 @@ xgscore:
 
 betclic:
   base_url: "https://www.betclic.pt"
-  request_delay_seconds: 2.0   # be polite -- one request every N seconds
+  # CHANGED (2026-10-14, explicitly requested): raised from 2.0 -- a
+  # same-day re-run (~1h apart) saw Betclic 403 every single Champions
+  # League match's detail page (vs. only some the first time), a
+  # worse block than before, so slowing requests down further is worth
+  # trying even though the root cause may be a daily-volume block
+  # rather than a pure request-rate one (in which case this alone
+  # won't fix it).
+  request_delay_seconds: 5.0   # be polite -- one request every N seconds
 
   fixtures:
     # CALIBRATED (2026-09-11): betclic.pt is an Angular app that embeds its

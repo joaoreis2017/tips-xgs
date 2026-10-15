@@ -99,12 +99,23 @@ _COUNTRY_NAME_ALIASES: dict[str, str] = {
 # a bare-initial club nickname or an acronym that the abbreviation
 # expander (requires a >=3-char stem, see _MIN_ABBREVIATION_STEM_LEN
 # below) and the fuzzy scorers can't close on their own.
+# Real bug report (2026-10-15): 2 more fixtures unmatched the same way --
+# Jagiellonia vs Ararat A. (xGScore, 78.7) against Jagiellonia Bialystok
+# vs Ararat-Armenia (Betclic) -- "A." is a 1-char stem, below the
+# abbreviation expander's >=3 threshold, and "Ararat-Armenia" is one
+# hyphenated token so it never matches the two separate tokens "ararat"
+# + "a." anyway; Huracán vs Gimnasia LP (75.4) against CA Huracan vs
+# Gimnasia Y Esgrima -- Betclic drops the "La Plata" location suffix
+# entirely rather than abbreviating it, so there's no "g..." token on
+# the Betclic side for "LP" to expand against.
 _CLUB_NAME_ALIASES: dict[str, str] = {
     "estugarda": "stuttgart",
     "borussia d.": "dortmund",
     "slovan b.": "slovan bratislava",
     "man city": "manchester city",
     "psg": "paris sg",
+    "ararat a.": "ararat-armenia",
+    "gimnasia lp": "gimnasia y esgrima",
 }
 
 _TEAM_NAME_ALIASES: dict[str, str] = {**_COUNTRY_NAME_ALIASES, **_CLUB_NAME_ALIASES}

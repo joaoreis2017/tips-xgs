@@ -441,6 +441,7 @@ def test_build_match_url_from_betclic_routing_template():
 
 def test_scrape_today_odds_reads_btts_and_over_under_from_match_detail_page():
     cfg = _load_config_single_fixtures_url()
+    cfg.betclic.request_delay_seconds = 0  # skip the real polite_delay sleep in this test
     session = TwoStepFakeSession()
     # The detail-page hop is now skipped for matches not kicking off on
     # `day` (see the "only today's matches" filter in scrape_today_odds)
@@ -533,6 +534,7 @@ class TwoMatchesFakeSession:
 
 def test_scrape_today_odds_skips_detail_hop_for_matches_not_kicking_off_today():
     cfg = _load_config_single_fixtures_url()
+    cfg.betclic.request_delay_seconds = 0  # skip the real polite_delay sleep in this test
     session = TwoMatchesFakeSession()
     offers = scrape_today_odds(cfg, session=session, day=date(2026, 9, 12))
 
@@ -559,6 +561,91 @@ def test_scrape_today_odds_skips_detail_hop_for_matches_not_kicking_off_today():
 
     # One call for the listing page + exactly one detail-page hop (not two).
     assert len(session.calls) == 2
+
+
+class BlockedThenRecoversFakeSession:
+    """First call is the fixtures list; the first detail-page hop comes
+    back as Betclic's own 403 page (short HTML, no JSON blobs -- see
+    _scrape_detail_markets's "No detail-page markets" warning); every
+    later call succeeds with MATCH_DETAIL_BLOB. Mirrors the shape seen in
+    real runs (2026-10-14/15): a match blocked on the first attempt but
+    not on a later retry."""
+
+    FORBIDDEN_HTML = "<html><head><title>Betclic - Error 403 Forbidden</title></head></html>"
+
+    def __init__(self):
+        self.calls = []
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        self.calls.append(url)
+        if len(self.calls) == 1:
+            return "<html></html>", [FIXTURES_LIST_BLOB]
+        if len(self.calls) == 2:
+            return self.FORBIDDEN_HTML, []
+        return "<html></html>", [MATCH_DETAIL_BLOB]
+
+
+def test_scrape_today_odds_retries_a_match_blocked_on_the_first_detail_hop(monkeypatch, caplog):
+    # Explicitly requested (2026-10-15): don't give up on a match's
+    # detail-page markets after a single 403 -- retry it (after a real
+    # pause) since live runs showed the block clearing up within the
+    # same run. _DETAIL_HOP_RETRY_DELAY_SECONDS dropped to 0 here purely
+    # so the test doesn't actually sleep; the retry logic itself is
+    # otherwise unchanged.
+    import tipsxgs.betclic.odds as odds_module
+
+    monkeypatch.setattr(odds_module, "_DETAIL_HOP_RETRY_DELAY_SECONDS", 0)
+
+    cfg = _load_config_single_fixtures_url()
+    cfg.betclic.request_delay_seconds = 0  # skip the real polite_delay sleep in this test
+    session = BlockedThenRecoversFakeSession()
+    with caplog.at_level(logging.WARNING):
+        offers = scrape_today_odds(cfg, session=session, day=date(2026, 9, 12))
+
+    assert len(offers) == 1
+    offer = offers[0]
+    # The retry succeeded -- btts/over-under made it in despite the
+    # first attempt's 403.
+    assert offer.markets == {
+        "1x2": {"home": 2.55, "draw": 3.2, "away": 2.67},
+        "btts": {"yes": 1.68, "no": 1.83},
+        "over_under_0.5": {"over": 1.03, "under": 5.75},
+        "over_under_2.5": {"over": 1.84, "under": 1.68},
+    }
+    # Listing + the failed first hop + the successful retry hop.
+    assert len(session.calls) == 3
+    # No "still have no detail-page markets" warning -- it recovered.
+    assert "still have no detail-page markets" not in caplog.text
+
+
+def test_scrape_today_odds_warns_when_a_match_never_recovers(monkeypatch, caplog):
+    import tipsxgs.betclic.odds as odds_module
+
+    monkeypatch.setattr(odds_module, "_DETAIL_HOP_RETRY_DELAY_SECONDS", 0)
+    monkeypatch.setattr(odds_module, "_DETAIL_HOP_RETRY_PASSES", 1)
+
+    class AlwaysBlockedFakeSession:
+        def __init__(self):
+            self.calls = []
+
+        def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+            self.calls.append(url)
+            if len(self.calls) == 1:
+                return "<html></html>", [FIXTURES_LIST_BLOB]
+            return BlockedThenRecoversFakeSession.FORBIDDEN_HTML, []
+
+    cfg = _load_config_single_fixtures_url()
+    cfg.betclic.request_delay_seconds = 0  # skip the real polite_delay sleep in this test
+    session = AlwaysBlockedFakeSession()
+    with caplog.at_level(logging.WARNING):
+        offers = scrape_today_odds(cfg, session=session, day=date(2026, 9, 12))
+
+    assert len(offers) == 1
+    assert offers[0].markets == {"1x2": {"home": 2.55, "draw": 3.2, "away": 2.67}}
+    # Listing + first hop + exactly 1 retry pass (capped), all blocked.
+    assert len(session.calls) == 3
+    assert "still have no detail-page markets" in caplog.text
+    assert "CD Nacional - FC Alverca" in caplog.text
 
 
 def _over_under_rule() -> SelectionMatrixRule:

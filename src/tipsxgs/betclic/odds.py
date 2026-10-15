@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from datetime import date, datetime, timezone
 from urllib.parse import urljoin
 
@@ -401,6 +402,18 @@ def _row_to_offer(cfg: AppConfig, row: dict) -> tuple[OddsOffer, str | None] | N
     return offer, (str(match_url) if match_url else None)
 
 
+# Explicitly requested (2026-10-15): live runs on 2026-10-14/15 showed
+# Betclic's detail-page bot-block hit in a contiguous run of matches
+# rather than independently per match -- once tripped it blocked almost
+# every subsequent hop for a while, then cleared up on its own -- so
+# scrape_today_odds below retries matches that got no detail-page
+# markets at all, after a real pause (not just request_delay_seconds),
+# rather than giving up on the first 403. This can't force Betclic to
+# unblock sooner, so it's a mitigation, not a guarantee of 100% coverage.
+_DETAIL_HOP_RETRY_PASSES = 2
+_DETAIL_HOP_RETRY_DELAY_SECONDS = 60
+
+
 def scrape_today_odds(
     cfg: AppConfig, session: BrowserSession | None = None, day: date | None = None
 ) -> list[OddsOffer]:
@@ -453,8 +466,17 @@ def scrape_today_odds(
             )
 
         logger.info("Betclic listing done -- hopping to each today's match's detail page for BTTS/over-under...")
+
+        def _hop(offer: OddsOffer, match_url: str) -> dict[str, dict[str, float]]:
+            try:
+                return _scrape_detail_markets(cfg, match_url, session)
+            except Exception:
+                logger.exception("failed to scrape betclic odds detail for %s", match_url)
+                return {}
+
         offers = []
         hop_i = 0
+        failed_hops: list[tuple[OddsOffer, str]] = []
         for offer, match_url in parsed_rows:
             if match_url and _is_today(offer):
                 hop_i += 1
@@ -469,14 +491,53 @@ def scrape_today_odds(
                     offer.away_team,
                 )
                 with polite_delay(cfg.betclic.request_delay_seconds):
-                    try:
-                        detail_markets = _scrape_detail_markets(cfg, match_url, session)
-                    except Exception:  # noqa: BLE001
-                        logger.exception("failed to scrape betclic odds detail for %s", match_url)
-                        detail_markets = {}
-                for market, outcomes in detail_markets.items():
-                    offer.markets.setdefault(market, {}).update(outcomes)
+                    detail_markets = _hop(offer, match_url)
+                if detail_markets:
+                    for market, outcomes in detail_markets.items():
+                        offer.markets.setdefault(market, {}).update(outcomes)
+                else:
+                    failed_hops.append((offer, match_url))
             offers.append(offer)
+
+        # See _DETAIL_HOP_RETRY_PASSES's own docstring above for why this
+        # retries rather than accepting the first failure.
+        for retry_round in range(1, _DETAIL_HOP_RETRY_PASSES + 1):
+            if not failed_hops:
+                break
+            logger.info(
+                "Retry pass %d/%d: waiting %ds before re-fetching %d match(es) with no detail-page markets...",
+                retry_round,
+                _DETAIL_HOP_RETRY_PASSES,
+                _DETAIL_HOP_RETRY_DELAY_SECONDS,
+                len(failed_hops),
+            )
+            time.sleep(_DETAIL_HOP_RETRY_DELAY_SECONDS)
+            still_failed: list[tuple[OddsOffer, str]] = []
+            for i, (offer, match_url) in enumerate(failed_hops, start=1):
+                logger.info(
+                    "Retrying Betclic match odds %d/%d: %s - %s",
+                    i,
+                    len(failed_hops),
+                    offer.home_team,
+                    offer.away_team,
+                )
+                with polite_delay(cfg.betclic.request_delay_seconds):
+                    detail_markets = _hop(offer, match_url)
+                if detail_markets:
+                    for market, outcomes in detail_markets.items():
+                        offer.markets.setdefault(market, {}).update(outcomes)
+                else:
+                    still_failed.append((offer, match_url))
+            failed_hops = still_failed
+
+        if failed_hops:
+            logger.warning(
+                "%d match(es) still have no detail-page markets after %d retry pass(es): %s",
+                len(failed_hops),
+                _DETAIL_HOP_RETRY_PASSES,
+                ", ".join(f"{offer.home_team} - {offer.away_team}" for offer, _ in failed_hops),
+            )
+
         return offers
     finally:
         if own_session:

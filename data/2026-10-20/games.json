@@ -1,6 +1,6 @@
 {
   "date": "2026-10-20",
-  "generated_at": "2026-10-20T11:37:04.251157",
+  "generated_at": "2026-10-20T14:43:30.693755",
   "games": [
     {
       "fixture": {
@@ -205,7 +205,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-20T10:34:37.049130+00:00"
+        "scraped_at": "2026-10-20T13:41:03.882029+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -215,79 +215,79 @@
         "markets": {
           "1x2": {
             "home": 1.55,
-            "draw": 4.2,
-            "away": 5.1
+            "draw": 4.25,
+            "away": 5.0
           },
           "btts": {
-            "yes": 1.5,
-            "no": 2.12
+            "yes": 1.47,
+            "no": 2.18
           },
           "double_chance": {
-            "1x": 1.14,
-            "12": 1.19,
+            "1x": 1.15,
+            "12": 1.18,
             "x2": 2.3
           },
           "over_under_1.5": {
-            "over": 1.11,
-            "under": 4.15
+            "over": 1.1,
+            "under": 4.3
           },
           "over_under_2.5": {
-            "over": 1.42,
-            "under": 2.3
-          },
-          "over_under_3.5": {
-            "over": 2.02,
-            "under": 1.55
-          },
-          "over_under_4.5": {
-            "over": 3.18,
-            "under": 1.21
-          },
-          "over_under_5.5": {
-            "over": 6.9,
-            "under": 1.07
-          },
-          "home_total_1.5": {
-            "over": 1.43,
+            "over": 1.39,
             "under": 2.38
           },
+          "over_under_3.5": {
+            "over": 1.95,
+            "under": 1.59
+          },
+          "over_under_4.5": {
+            "over": 3.03,
+            "under": 1.23
+          },
+          "over_under_5.5": {
+            "over": 6.4,
+            "under": 1.08
+          },
+          "home_total_1.5": {
+            "over": 1.41,
+            "under": 2.45
+          },
           "home_total_2.5": {
-            "over": 2.3,
-            "under": 1.46
+            "over": 2.23,
+            "under": 1.49
           },
           "home_total_3.5": {
-            "over": 4.05,
-            "under": 1.15
+            "over": 3.9,
+            "under": 1.16
           },
           "away_total_0.5": {
-            "over": 1.37,
-            "under": 2.55
+            "over": 1.35,
+            "under": 2.65
           },
           "away_total_1.5": {
-            "over": 2.72,
-            "under": 1.33
+            "over": 2.63,
+            "under": 1.35
           },
           "away_total_2.5": {
-            "over": 7.75,
-            "under": 1.06
+            "over": 7.25,
+            "under": 1.07
           },
           "handicap_home": {
-            "-3.5": 8.0,
-            "-2.5": 4.1,
-            "-1.5": 2.32,
-            "0.5": 1.14,
+            "-3.5": 7.75,
+            "-2.5": 4.05,
+            "-1.5": 2.3,
+            "0.5": 1.15,
             "1.5": 1.03
           },
           "handicap_away": {
             "2.5": 1.19,
-            "1.5": 1.51,
+            "1.5": 1.52,
             "0.5": 2.3,
-            "-1.5": 11.0,
-            "-2.5": 43.0
+            "-1.5": 10.75,
+            "-2.5": 40.0
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8/fenerbahce-slavia-praga-m1252855256203264",
-        "scraped_at": "2026-10-20T10:35:48.530433+00:00"
+        "scraped_at": "2026-10-20T13:42:15.011410+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -584,11 +584,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 2.5 - Menos",
           "probability": 0.8909999999999999,
-          "odd": 1.06,
-          "implied_probability": 0.9433962264150942,
-          "fair_probability": 0.8796821793416572,
-          "edge": 0.011317820658342748,
-          "value_ratio": 0.94446,
+          "odd": 1.07,
+          "implied_probability": 0.9345794392523364,
+          "fair_probability": 0.8713942307692308,
+          "edge": 0.019605769230769066,
+          "value_ratio": 0.9533699999999999,
           "rank_by_probability": 25
         },
         {
@@ -596,11 +596,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 5.5 Golos - Menos",
           "probability": 0.887,
-          "odd": 1.07,
-          "implied_probability": 0.9345794392523364,
-          "fair_probability": 0.8657465495608532,
-          "edge": 0.021253450439146837,
-          "value_ratio": 0.9490900000000001,
+          "odd": 1.08,
+          "implied_probability": 0.9259259259259258,
+          "fair_probability": 0.8556149732620321,
+          "edge": 0.03138502673796795,
+          "value_ratio": 0.95796,
           "rank_by_probability": 26
         },
         {
@@ -620,11 +620,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 1.5 Golos - Mais",
           "probability": 0.8740000000000001,
-          "odd": 1.11,
-          "implied_probability": 0.9009009009009008,
-          "fair_probability": 0.7889733840304183,
-          "edge": 0.08502661596958183,
-          "value_ratio": 0.9701400000000002,
+          "odd": 1.1,
+          "implied_probability": 0.9090909090909091,
+          "fair_probability": 0.7962962962962963,
+          "edge": 0.07770370370370383,
+          "value_ratio": 0.9614000000000001,
           "rank_by_probability": 28
         },
         {
@@ -668,11 +668,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 3.5 - Menos",
           "probability": 0.8340000000000001,
-          "odd": 1.15,
-          "implied_probability": 0.8695652173913044,
-          "fair_probability": 0.7788461538461539,
-          "edge": 0.05515384615384622,
-          "value_ratio": 0.9591000000000001,
+          "odd": 1.16,
+          "implied_probability": 0.8620689655172414,
+          "fair_probability": 0.7707509881422925,
+          "edge": 0.0632490118577076,
+          "value_ratio": 0.96744,
           "rank_by_probability": 32
         },
         {
@@ -680,11 +680,11 @@
           "outcome": "0.5",
           "label": "Handicap Casa - 0.5",
           "probability": 0.8109999999999999,
-          "odd": 1.14,
-          "implied_probability": 0.8771929824561404,
-          "fair_probability": 0.8771929824561404,
-          "edge": -0.06619298245614047,
-          "value_ratio": 0.9245399999999998,
+          "odd": 1.15,
+          "implied_probability": 0.8695652173913044,
+          "fair_probability": 0.8695652173913044,
+          "edge": -0.05856521739130449,
+          "value_ratio": 0.9326499999999999,
           "rank_by_probability": 33
         },
         {
@@ -704,11 +704,11 @@
           "outcome": "1x",
           "label": "Dupla Hipótese - Casa ou Empate",
           "probability": 0.8109999999999999,
-          "odd": 1.14,
-          "implied_probability": 0.8771929824561404,
-          "fair_probability": 0.40755852045982494,
-          "edge": 0.403441479540175,
-          "value_ratio": 0.9245399999999998,
+          "odd": 1.15,
+          "implied_probability": 0.8695652173913044,
+          "fair_probability": 0.40410958904109595,
+          "edge": 0.406890410958904,
+          "value_ratio": 0.9326499999999999,
           "rank_by_probability": 35
         },
         {
@@ -740,11 +740,11 @@
           "outcome": "12",
           "label": "Dupla Hipótese - Casa ou Fora",
           "probability": 0.777,
-          "odd": 1.19,
-          "implied_probability": 0.8403361344537815,
-          "fair_probability": 0.3904342128774793,
-          "edge": 0.3865657871225207,
-          "value_ratio": 0.92463,
+          "odd": 1.18,
+          "implied_probability": 0.8474576271186441,
+          "fair_probability": 0.3938356164383562,
+          "edge": 0.38316438356164384,
+          "value_ratio": 0.91686,
           "rank_by_probability": 38
         },
         {
@@ -764,11 +764,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 4.5 Golos - Menos",
           "probability": 0.769,
-          "odd": 1.21,
-          "implied_probability": 0.8264462809917356,
-          "fair_probability": 0.7243735763097949,
-          "edge": 0.044626423690205086,
-          "value_ratio": 0.93049,
+          "odd": 1.23,
+          "implied_probability": 0.8130081300813008,
+          "fair_probability": 0.7112676056338029,
+          "edge": 0.05773239436619715,
+          "value_ratio": 0.94587,
           "rank_by_probability": 40
         },
         {
@@ -800,11 +800,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 1.5 - Menos",
           "probability": 0.6829999999999999,
-          "odd": 1.33,
-          "implied_probability": 0.7518796992481203,
-          "fair_probability": 0.671604938271605,
-          "edge": 0.011395061728394995,
-          "value_ratio": 0.9083899999999999,
+          "odd": 1.35,
+          "implied_probability": 0.7407407407407407,
+          "fair_probability": 0.6608040201005025,
+          "edge": 0.022195979899497398,
+          "value_ratio": 0.9220499999999999,
           "rank_by_probability": 43
         },
         {
@@ -812,11 +812,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 0.5 - Mais",
           "probability": 0.682,
-          "odd": 1.37,
-          "implied_probability": 0.7299270072992701,
-          "fair_probability": 0.6505102040816327,
-          "edge": 0.031489795918367314,
-          "value_ratio": 0.9343400000000002,
+          "odd": 1.35,
+          "implied_probability": 0.7407407407407407,
+          "fair_probability": 0.6624999999999999,
+          "edge": 0.019500000000000184,
+          "value_ratio": 0.9207000000000001,
           "rank_by_probability": 44
         },
         {
@@ -824,11 +824,11 @@
           "outcome": "yes",
           "label": "Ambas Marcam - Sim",
           "probability": 0.672,
-          "odd": 1.5,
-          "implied_probability": 0.6666666666666666,
-          "fair_probability": 0.585635359116022,
-          "edge": 0.086364640883978,
-          "value_ratio": 1.008,
+          "odd": 1.47,
+          "implied_probability": 0.6802721088435374,
+          "fair_probability": 0.5972602739726027,
+          "edge": 0.07473972602739731,
+          "value_ratio": 0.98784,
           "rank_by_probability": 45
         },
         {
@@ -836,11 +836,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 2.5 Golos - Mais",
           "probability": 0.664,
-          "odd": 1.42,
-          "implied_probability": 0.7042253521126761,
-          "fair_probability": 0.6182795698924731,
-          "edge": 0.04572043010752691,
-          "value_ratio": 0.94288,
+          "odd": 1.39,
+          "implied_probability": 0.7194244604316548,
+          "fair_probability": 0.6312997347480107,
+          "edge": 0.032700265251989324,
+          "value_ratio": 0.92296,
           "rank_by_probability": 46
         },
         {
@@ -848,11 +848,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 2.5 - Menos",
           "probability": 0.644,
-          "odd": 1.46,
-          "implied_probability": 0.684931506849315,
-          "fair_probability": 0.6117021276595744,
-          "edge": 0.03229787234042558,
-          "value_ratio": 0.94024,
+          "odd": 1.49,
+          "implied_probability": 0.6711409395973155,
+          "fair_probability": 0.5994623655913979,
+          "edge": 0.044537634408602145,
+          "value_ratio": 0.95956,
           "rank_by_probability": 47
         },
         {
@@ -860,11 +860,11 @@
           "outcome": "1.5",
           "label": "Handicap Fora - 1.5",
           "probability": 0.631,
-          "odd": 1.51,
-          "implied_probability": 0.6622516556291391,
-          "fair_probability": 0.6622516556291391,
-          "edge": -0.03125165562913912,
-          "value_ratio": 0.95281,
+          "odd": 1.52,
+          "implied_probability": 0.6578947368421053,
+          "fair_probability": 0.6578947368421053,
+          "edge": -0.026894736842105305,
+          "value_ratio": 0.95912,
           "rank_by_probability": 48
         },
         {
@@ -872,11 +872,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 1.5 - Mais",
           "probability": 0.626,
-          "odd": 1.43,
-          "implied_probability": 0.6993006993006994,
-          "fair_probability": 0.6246719160104987,
-          "edge": 0.0013280839895013496,
-          "value_ratio": 0.89518,
+          "odd": 1.41,
+          "implied_probability": 0.7092198581560284,
+          "fair_probability": 0.6347150259067358,
+          "edge": -0.008715025906735785,
+          "value_ratio": 0.88266,
           "rank_by_probability": 49
         },
         {
@@ -884,11 +884,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 3.5 Golos - Menos",
           "probability": 0.604,
-          "odd": 1.55,
-          "implied_probability": 0.6451612903225806,
-          "fair_probability": 0.565826330532213,
-          "edge": 0.038173669467787,
-          "value_ratio": 0.9362,
+          "odd": 1.59,
+          "implied_probability": 0.6289308176100629,
+          "fair_probability": 0.5508474576271186,
+          "edge": 0.05315254237288136,
+          "value_ratio": 0.96036,
           "rank_by_probability": 50
         },
         {
@@ -898,8 +898,8 @@
           "probability": 0.588,
           "odd": 1.55,
           "implied_probability": 0.6451612903225806,
-          "fair_probability": 0.5977396400167433,
-          "edge": -0.009739640016743323,
+          "fair_probability": 0.5971197752019669,
+          "edge": -0.00911977520196694,
           "value_ratio": 0.9114,
           "rank_by_probability": 51
         },
@@ -1030,8 +1030,8 @@
           "probability": 0.41200000000000003,
           "odd": 2.3,
           "implied_probability": 0.4347826086956522,
-          "fair_probability": 0.20200726666269583,
-          "edge": 0.2099927333373042,
+          "fair_probability": 0.20205479452054798,
+          "edge": 0.20994520547945206,
           "value_ratio": 0.9476,
           "rank_by_probability": 62
         },
@@ -1040,11 +1040,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 3.5 Golos - Mais",
           "probability": 0.396,
-          "odd": 2.02,
-          "implied_probability": 0.49504950495049505,
-          "fair_probability": 0.4341736694677872,
-          "edge": -0.038173669467787164,
-          "value_ratio": 0.7999200000000001,
+          "odd": 1.95,
+          "implied_probability": 0.5128205128205129,
+          "fair_probability": 0.4491525423728814,
+          "edge": -0.05315254237288136,
+          "value_ratio": 0.7722,
           "rank_by_probability": 63
         },
         {
@@ -1052,11 +1052,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 1.5 - Menos",
           "probability": 0.374,
-          "odd": 2.38,
-          "implied_probability": 0.42016806722689076,
-          "fair_probability": 0.3753280839895013,
-          "edge": -0.0013280839895012941,
-          "value_ratio": 0.8901199999999999,
+          "odd": 2.45,
+          "implied_probability": 0.4081632653061224,
+          "fair_probability": 0.3652849740932642,
+          "edge": 0.008715025906735785,
+          "value_ratio": 0.9163000000000001,
           "rank_by_probability": 64
         },
         {
@@ -1064,11 +1064,11 @@
           "outcome": "-1.5",
           "label": "Handicap Casa - -1.5",
           "probability": 0.369,
-          "odd": 2.32,
-          "implied_probability": 0.4310344827586207,
-          "fair_probability": 0.4310344827586207,
-          "edge": -0.062034482758620724,
-          "value_ratio": 0.85608,
+          "odd": 2.3,
+          "implied_probability": 0.4347826086956522,
+          "fair_probability": 0.4347826086956522,
+          "edge": -0.06578260869565222,
+          "value_ratio": 0.8486999999999999,
           "rank_by_probability": 65
         },
         {
@@ -1076,11 +1076,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 2.5 - Mais",
           "probability": 0.35600000000000004,
-          "odd": 2.3,
-          "implied_probability": 0.4347826086956522,
-          "fair_probability": 0.38829787234042556,
-          "edge": -0.032297872340425526,
-          "value_ratio": 0.8188,
+          "odd": 2.23,
+          "implied_probability": 0.4484304932735426,
+          "fair_probability": 0.40053763440860213,
+          "edge": -0.04453763440860209,
+          "value_ratio": 0.79388,
           "rank_by_probability": 66
         },
         {
@@ -1088,11 +1088,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 2.5 Golos - Menos",
           "probability": 0.336,
-          "odd": 2.3,
-          "implied_probability": 0.4347826086956522,
-          "fair_probability": 0.3817204301075269,
-          "edge": -0.045720430107526855,
-          "value_ratio": 0.7728,
+          "odd": 2.38,
+          "implied_probability": 0.42016806722689076,
+          "fair_probability": 0.3687002652519894,
+          "edge": -0.03270026525198938,
+          "value_ratio": 0.7996800000000001,
           "rank_by_probability": 67
         },
         {
@@ -1100,11 +1100,11 @@
           "outcome": "no",
           "label": "Ambas Marcam - Não",
           "probability": 0.32799999999999996,
-          "odd": 2.12,
-          "implied_probability": 0.4716981132075471,
-          "fair_probability": 0.41436464088397784,
-          "edge": -0.08636464088397788,
-          "value_ratio": 0.69536,
+          "odd": 2.18,
+          "implied_probability": 0.4587155963302752,
+          "fair_probability": 0.4027397260273972,
+          "edge": -0.07473972602739726,
+          "value_ratio": 0.71504,
           "rank_by_probability": 68
         },
         {
@@ -1112,11 +1112,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 0.5 - Menos",
           "probability": 0.318,
-          "odd": 2.55,
-          "implied_probability": 0.3921568627450981,
-          "fair_probability": 0.34948979591836743,
-          "edge": -0.031489795918367425,
-          "value_ratio": 0.8109,
+          "odd": 2.65,
+          "implied_probability": 0.37735849056603776,
+          "fair_probability": 0.3375,
+          "edge": -0.019500000000000017,
+          "value_ratio": 0.8427,
           "rank_by_probability": 69
         },
         {
@@ -1124,11 +1124,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 1.5 - Mais",
           "probability": 0.317,
-          "odd": 2.72,
-          "implied_probability": 0.3676470588235294,
-          "fair_probability": 0.32839506172839505,
-          "edge": -0.01139506172839505,
-          "value_ratio": 0.8622400000000001,
+          "odd": 2.63,
+          "implied_probability": 0.3802281368821293,
+          "fair_probability": 0.33919597989949757,
+          "edge": -0.022195979899497564,
+          "value_ratio": 0.83371,
           "rank_by_probability": 70
         },
         {
@@ -1160,11 +1160,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 4.5 Golos - Mais",
           "probability": 0.231,
-          "odd": 3.18,
-          "implied_probability": 0.31446540880503143,
-          "fair_probability": 0.27562642369020496,
-          "edge": -0.04462642369020495,
-          "value_ratio": 0.7345800000000001,
+          "odd": 3.03,
+          "implied_probability": 0.33003300330033003,
+          "fair_probability": 0.2887323943661972,
+          "edge": -0.057732394366197176,
+          "value_ratio": 0.6999299999999999,
           "rank_by_probability": 73
         },
         {
@@ -1184,11 +1184,11 @@
           "outcome": "draw",
           "label": "Resultado Final - Empate",
           "probability": 0.223,
-          "odd": 4.2,
-          "implied_probability": 0.23809523809523808,
-          "fair_probability": 0.22059439095856004,
-          "edge": 0.0024056090414399656,
-          "value_ratio": 0.9366000000000001,
+          "odd": 4.25,
+          "implied_probability": 0.23529411764705882,
+          "fair_probability": 0.21777309448542323,
+          "edge": 0.005226905514576774,
+          "value_ratio": 0.94775,
           "rank_by_probability": 75
         },
         {
@@ -1220,11 +1220,11 @@
           "outcome": "away",
           "label": "Resultado Final - Fora",
           "probability": 0.18899999999999997,
-          "odd": 5.1,
-          "implied_probability": 0.19607843137254904,
-          "fair_probability": 0.18166596902469653,
-          "edge": 0.0073340309753034405,
-          "value_ratio": 0.9638999999999998,
+          "odd": 5.0,
+          "implied_probability": 0.2,
+          "fair_probability": 0.18510713031260975,
+          "edge": 0.0038928696873902213,
+          "value_ratio": 0.9449999999999998,
           "rank_by_probability": 78
         },
         {
@@ -1232,11 +1232,11 @@
           "outcome": "-2.5",
           "label": "Handicap Casa - -2.5",
           "probability": 0.18899999999999997,
-          "odd": 4.1,
-          "implied_probability": 0.24390243902439027,
-          "fair_probability": 0.24390243902439027,
-          "edge": -0.05490243902439029,
-          "value_ratio": 0.7748999999999998,
+          "odd": 4.05,
+          "implied_probability": 0.2469135802469136,
+          "fair_probability": 0.2469135802469136,
+          "edge": -0.05791358024691362,
+          "value_ratio": 0.7654499999999999,
           "rank_by_probability": 79
         },
         {
@@ -1256,11 +1256,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 3.5 - Mais",
           "probability": 0.166,
-          "odd": 4.05,
-          "implied_probability": 0.2469135802469136,
-          "fair_probability": 0.22115384615384615,
-          "edge": -0.05515384615384614,
-          "value_ratio": 0.6723,
+          "odd": 3.9,
+          "implied_probability": 0.25641025641025644,
+          "fair_probability": 0.22924901185770752,
+          "edge": -0.06324901185770751,
+          "value_ratio": 0.6474,
           "rank_by_probability": 81
         },
         {
@@ -1304,11 +1304,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 1.5 Golos - Menos",
           "probability": 0.126,
-          "odd": 4.15,
-          "implied_probability": 0.24096385542168672,
-          "fair_probability": 0.21102661596958175,
-          "edge": -0.08502661596958175,
-          "value_ratio": 0.5229,
+          "odd": 4.3,
+          "implied_probability": 0.23255813953488372,
+          "fair_probability": 0.2037037037037037,
+          "edge": -0.07770370370370369,
+          "value_ratio": 0.5418,
           "rank_by_probability": 85
         },
         {
@@ -1328,11 +1328,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 5.5 Golos - Mais",
           "probability": 0.113,
-          "odd": 6.9,
-          "implied_probability": 0.14492753623188406,
-          "fair_probability": 0.1342534504391468,
-          "edge": -0.021253450439146795,
-          "value_ratio": 0.7797000000000001,
+          "odd": 6.4,
+          "implied_probability": 0.15625,
+          "fair_probability": 0.14438502673796794,
+          "edge": -0.03138502673796793,
+          "value_ratio": 0.7232000000000001,
           "rank_by_probability": 87
         },
         {
@@ -1340,11 +1340,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 2.5 - Mais",
           "probability": 0.109,
-          "odd": 7.75,
-          "implied_probability": 0.12903225806451613,
-          "fair_probability": 0.1203178206583428,
-          "edge": -0.011317820658342803,
-          "value_ratio": 0.84475,
+          "odd": 7.25,
+          "implied_probability": 0.13793103448275862,
+          "fair_probability": 0.12860576923076925,
+          "edge": -0.019605769230769246,
+          "value_ratio": 0.79025,
           "rank_by_probability": 88
         },
         {
@@ -1376,11 +1376,11 @@
           "outcome": "-3.5",
           "label": "Handicap Casa - -3.5",
           "probability": 0.081,
-          "odd": 8.0,
-          "implied_probability": 0.125,
-          "fair_probability": 0.125,
-          "edge": -0.044,
-          "value_ratio": 0.648,
+          "odd": 7.75,
+          "implied_probability": 0.12903225806451613,
+          "fair_probability": 0.12903225806451613,
+          "edge": -0.04803225806451612,
+          "value_ratio": 0.62775,
           "rank_by_probability": 91
         },
         {
@@ -1388,11 +1388,11 @@
           "outcome": "-1.5",
           "label": "Handicap Fora - -1.5",
           "probability": 0.075,
-          "odd": 11.0,
-          "implied_probability": 0.09090909090909091,
-          "fair_probability": 0.09090909090909091,
-          "edge": -0.015909090909090914,
-          "value_ratio": 0.825,
+          "odd": 10.75,
+          "implied_probability": 0.09302325581395349,
+          "fair_probability": 0.09302325581395349,
+          "edge": -0.01802325581395349,
+          "value_ratio": 0.80625,
           "rank_by_probability": 92
         },
         {
@@ -1520,11 +1520,11 @@
           "outcome": "-2.5",
           "label": "Handicap Fora - -2.5",
           "probability": 0.022000000000000002,
-          "odd": 43.0,
-          "implied_probability": 0.023255813953488372,
-          "fair_probability": 0.023255813953488372,
-          "edge": -0.0012558139534883696,
-          "value_ratio": 0.9460000000000001,
+          "odd": 40.0,
+          "implied_probability": 0.025,
+          "fair_probability": 0.025,
+          "edge": -0.002999999999999999,
+          "value_ratio": 0.8800000000000001,
           "rank_by_probability": 103
         },
         {
@@ -1840,7 +1840,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-20T10:34:45.053678+00:00"
+        "scraped_at": "2026-10-20T13:41:11.917862+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -1851,78 +1851,78 @@
           "1x2": {
             "home": 8.5,
             "draw": 5.4,
-            "away": 1.29
+            "away": 1.28
           },
           "btts": {
-            "yes": 1.71,
-            "no": 1.8
+            "yes": 1.69,
+            "no": 1.82
           },
           "double_chance": {
-            "1x": 3.35,
-            "12": 1.12,
+            "1x": 3.37,
+            "12": 1.11,
             "x2": 1.07
           },
           "over_under_1.5": {
-            "over": 1.11,
-            "under": 4.2
+            "over": 1.1,
+            "under": 4.3
           },
           "over_under_2.5": {
-            "over": 1.4,
-            "under": 2.35
+            "over": 1.38,
+            "under": 2.4
           },
           "over_under_3.5": {
-            "over": 2.0,
-            "under": 1.56
+            "over": 1.96,
+            "under": 1.59
           },
           "over_under_4.5": {
-            "over": 3.1,
-            "under": 1.22
+            "over": 3.03,
+            "under": 1.24
           },
           "over_under_5.5": {
-            "over": 6.75,
-            "under": 1.07
+            "over": 6.4,
+            "under": 1.08
           },
           "home_total_0.5": {
-            "over": 1.62,
-            "under": 1.98
+            "over": 1.6,
+            "under": 2.02
           },
           "home_total_1.5": {
-            "over": 3.8,
-            "under": 1.17
+            "over": 3.7,
+            "under": 1.18
           },
           "home_total_2.5": {
-            "over": 15.25,
+            "over": 14.5,
             "under": 1.02
           },
           "away_total_1.5": {
-            "over": 1.3,
-            "under": 2.87
+            "over": 1.29,
+            "under": 2.92
           },
           "away_total_2.5": {
-            "over": 1.91,
-            "under": 1.67
+            "over": 1.89,
+            "under": 1.7
           },
           "away_total_3.5": {
-            "over": 3.2,
-            "under": 1.24
+            "over": 3.13,
+            "under": 1.25
           },
           "handicap_home": {
-            "-1.5": 19.5,
-            "0.5": 3.35,
-            "1.5": 1.91,
+            "-1.5": 19.0,
+            "0.5": 3.37,
+            "1.5": 1.93,
             "2.5": 1.36,
-            "3.5": 1.12
+            "3.5": 1.13
           },
           "handicap_away": {
             "0.5": 1.07,
-            "-1.5": 1.75,
-            "-2.5": 2.83,
-            "-3.5": 5.25,
-            "-4.5": 10.0
+            "-1.5": 1.74,
+            "-2.5": 2.8,
+            "-3.5": 5.1,
+            "-4.5": 9.75
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8/sabah-fk-dortmund-m1252856658145280",
-        "scraped_at": "2026-10-20T10:35:48.530518+00:00"
+        "scraped_at": "2026-10-20T13:42:15.011500+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -2149,8 +2149,8 @@
           "probability": 0.946,
           "odd": 1.02,
           "implied_probability": 0.9803921568627451,
-          "fair_probability": 0.9373079287031346,
-          "edge": 0.008692071296865334,
+          "fair_probability": 0.9342783505154639,
+          "edge": 0.011721649484536023,
           "value_ratio": 0.96492,
           "rank_by_probability": 19
         },
@@ -2207,11 +2207,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 5.5 Golos - Menos",
           "probability": 0.9259999999999999,
-          "odd": 1.07,
-          "implied_probability": 0.9345794392523364,
-          "fair_probability": 0.8631713554987214,
-          "edge": 0.06282864450127856,
-          "value_ratio": 0.99082,
+          "odd": 1.08,
+          "implied_probability": 0.9259259259259258,
+          "fair_probability": 0.8556149732620321,
+          "edge": 0.07038502673796787,
+          "value_ratio": 1.00008,
           "rank_by_probability": 24
         },
         {
@@ -2243,11 +2243,11 @@
           "outcome": "3.5",
           "label": "Handicap Casa - 3.5",
           "probability": 0.91,
-          "odd": 1.12,
-          "implied_probability": 0.8928571428571428,
-          "fair_probability": 0.8928571428571428,
-          "edge": 0.017142857142857237,
-          "value_ratio": 1.0192,
+          "odd": 1.13,
+          "implied_probability": 0.8849557522123894,
+          "fair_probability": 0.8849557522123894,
+          "edge": 0.025044247787610607,
+          "value_ratio": 1.0283,
           "rank_by_probability": 27
         },
         {
@@ -2293,8 +2293,8 @@
           "probability": 0.866,
           "odd": 1.07,
           "implied_probability": 0.9345794392523364,
-          "fair_probability": 0.43960679094072574,
-          "edge": 0.42639320905927425,
+          "fair_probability": 0.43831362853426764,
+          "edge": 0.42768637146573235,
           "value_ratio": 0.92662,
           "rank_by_probability": 31
         },
@@ -2303,11 +2303,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 3.5 - Menos",
           "probability": 0.847,
-          "odd": 1.24,
-          "implied_probability": 0.8064516129032259,
-          "fair_probability": 0.7207207207207207,
-          "edge": 0.1262792792792793,
-          "value_ratio": 1.0502799999999999,
+          "odd": 1.25,
+          "implied_probability": 0.8,
+          "fair_probability": 0.7146118721461188,
+          "edge": 0.1323881278538812,
+          "value_ratio": 1.0587499999999999,
           "rank_by_probability": 32
         },
         {
@@ -2315,11 +2315,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 4.5 Golos - Menos",
           "probability": 0.8320000000000001,
-          "odd": 1.22,
-          "implied_probability": 0.819672131147541,
-          "fair_probability": 0.7175925925925927,
-          "edge": 0.1144074074074074,
-          "value_ratio": 1.0150400000000002,
+          "odd": 1.24,
+          "implied_probability": 0.8064516129032259,
+          "fair_probability": 0.7096018735362997,
+          "edge": 0.12239812646370041,
+          "value_ratio": 1.0316800000000002,
           "rank_by_probability": 33
         },
         {
@@ -2351,11 +2351,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 1.5 Golos - Mais",
           "probability": 0.821,
-          "odd": 1.11,
-          "implied_probability": 0.9009009009009008,
-          "fair_probability": 0.7909604519774011,
-          "edge": 0.030039548022598894,
-          "value_ratio": 0.9113100000000001,
+          "odd": 1.1,
+          "implied_probability": 0.9090909090909091,
+          "fair_probability": 0.7962962962962963,
+          "edge": 0.024703703703703672,
+          "value_ratio": 0.9031,
           "rank_by_probability": 36
         },
         {
@@ -2387,11 +2387,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 1.5 - Menos",
           "probability": 0.7929999999999999,
-          "odd": 1.17,
-          "implied_probability": 0.8547008547008548,
-          "fair_probability": 0.7645875251509054,
-          "edge": 0.028412474849094482,
-          "value_ratio": 0.9278099999999999,
+          "odd": 1.18,
+          "implied_probability": 0.8474576271186441,
+          "fair_probability": 0.7581967213114754,
+          "edge": 0.03480327868852451,
+          "value_ratio": 0.9357399999999999,
           "rank_by_probability": 39
         },
         {
@@ -2411,11 +2411,11 @@
           "outcome": "12",
           "label": "Dupla Hipótese - Casa ou Fora",
           "probability": 0.78,
-          "odd": 1.12,
-          "implied_probability": 0.8928571428571428,
-          "fair_probability": 0.419981487773729,
-          "edge": 0.360018512226271,
-          "value_ratio": 0.8736000000000002,
+          "odd": 1.11,
+          "implied_probability": 0.9009009009009008,
+          "fair_probability": 0.422518542821321,
+          "edge": 0.357481457178679,
+          "value_ratio": 0.8658000000000001,
           "rank_by_probability": 41
         },
         {
@@ -2447,11 +2447,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 3.5 Golos - Menos",
           "probability": 0.6990000000000001,
-          "odd": 1.56,
-          "implied_probability": 0.641025641025641,
-          "fair_probability": 0.5617977528089887,
-          "edge": 0.13720224719101137,
-          "value_ratio": 1.09044,
+          "odd": 1.59,
+          "implied_probability": 0.6289308176100629,
+          "fair_probability": 0.552112676056338,
+          "edge": 0.1468873239436621,
+          "value_ratio": 1.1114100000000002,
           "rank_by_probability": 44
         },
         {
@@ -2471,11 +2471,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 2.5 - Menos",
           "probability": 0.6609999999999999,
-          "odd": 1.67,
-          "implied_probability": 0.5988023952095809,
-          "fair_probability": 0.5335195530726257,
-          "edge": 0.12748044692737426,
-          "value_ratio": 1.10387,
+          "odd": 1.7,
+          "implied_probability": 0.5882352941176471,
+          "fair_probability": 0.5264623955431754,
+          "edge": 0.1345376044568245,
+          "value_ratio": 1.1237,
           "rank_by_probability": 46
         },
         {
@@ -2483,11 +2483,11 @@
           "outcome": "away",
           "label": "Resultado Final - Fora",
           "probability": 0.6459999999999999,
-          "odd": 1.29,
-          "implied_probability": 0.7751937984496123,
-          "fair_probability": 0.7190863373595902,
-          "edge": -0.07308633735959025,
-          "value_ratio": 0.8333399999999999,
+          "odd": 1.28,
+          "implied_probability": 0.78125,
+          "fair_probability": 0.7206556553413301,
+          "edge": -0.07465565534133023,
+          "value_ratio": 0.82688,
           "rank_by_probability": 47
         },
         {
@@ -2507,11 +2507,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 1.5 - Mais",
           "probability": 0.609,
-          "odd": 1.3,
-          "implied_probability": 0.7692307692307692,
-          "fair_probability": 0.6882494004796162,
-          "edge": -0.07924940047961626,
-          "value_ratio": 0.7917,
+          "odd": 1.29,
+          "implied_probability": 0.7751937984496123,
+          "fair_probability": 0.6935866983372921,
+          "edge": -0.08458669833729215,
+          "value_ratio": 0.78561,
           "rank_by_probability": 49
         },
         {
@@ -2519,11 +2519,11 @@
           "outcome": "1.5",
           "label": "Handicap Casa - 1.5",
           "probability": 0.589,
-          "odd": 1.91,
-          "implied_probability": 0.5235602094240838,
-          "fair_probability": 0.5235602094240838,
-          "edge": 0.0654397905759162,
-          "value_ratio": 1.12499,
+          "odd": 1.93,
+          "implied_probability": 0.5181347150259068,
+          "fair_probability": 0.5181347150259068,
+          "edge": 0.07086528497409317,
+          "value_ratio": 1.1367699999999998,
           "rank_by_probability": 50
         },
         {
@@ -2543,11 +2543,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 2.5 Golos - Mais",
           "probability": 0.5710000000000001,
-          "odd": 1.4,
-          "implied_probability": 0.7142857142857143,
-          "fair_probability": 0.6266666666666666,
-          "edge": -0.05566666666666653,
-          "value_ratio": 0.7994,
+          "odd": 1.38,
+          "implied_probability": 0.7246376811594204,
+          "fair_probability": 0.6349206349206349,
+          "edge": -0.06392063492063482,
+          "value_ratio": 0.78798,
           "rank_by_probability": 52
         },
         {
@@ -2555,11 +2555,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 0.5 - Mais",
           "probability": 0.569,
-          "odd": 1.62,
-          "implied_probability": 0.6172839506172839,
-          "fair_probability": 0.5499999999999999,
-          "edge": 0.019000000000000017,
-          "value_ratio": 0.9217799999999999,
+          "odd": 1.6,
+          "implied_probability": 0.625,
+          "fair_probability": 0.5580110497237569,
+          "edge": 0.010988950276243026,
+          "value_ratio": 0.9104,
           "rank_by_probability": 53
         },
         {
@@ -2567,11 +2567,11 @@
           "outcome": "yes",
           "label": "Ambas Marcam - Sim",
           "probability": 0.5539999999999999,
-          "odd": 1.71,
-          "implied_probability": 0.5847953216374269,
-          "fair_probability": 0.5128205128205128,
-          "edge": 0.04117948717948716,
-          "value_ratio": 0.9473399999999998,
+          "odd": 1.69,
+          "implied_probability": 0.591715976331361,
+          "fair_probability": 0.5185185185185186,
+          "edge": 0.035481481481481336,
+          "value_ratio": 0.9362599999999999,
           "rank_by_probability": 54
         },
         {
@@ -2627,11 +2627,11 @@
           "outcome": "no",
           "label": "Ambas Marcam - Não",
           "probability": 0.446,
-          "odd": 1.8,
-          "implied_probability": 0.5555555555555556,
-          "fair_probability": 0.4871794871794872,
-          "edge": -0.04117948717948722,
-          "value_ratio": 0.8028000000000001,
+          "odd": 1.82,
+          "implied_probability": 0.5494505494505494,
+          "fair_probability": 0.48148148148148145,
+          "edge": -0.03548148148148145,
+          "value_ratio": 0.81172,
           "rank_by_probability": 59
         },
         {
@@ -2639,11 +2639,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 0.5 - Menos",
           "probability": 0.431,
-          "odd": 1.98,
-          "implied_probability": 0.5050505050505051,
-          "fair_probability": 0.45,
-          "edge": -0.019000000000000017,
-          "value_ratio": 0.85338,
+          "odd": 2.02,
+          "implied_probability": 0.49504950495049505,
+          "fair_probability": 0.4419889502762431,
+          "edge": -0.010988950276243081,
+          "value_ratio": 0.87062,
           "rank_by_probability": 60
         },
         {
@@ -2651,11 +2651,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 2.5 Golos - Menos",
           "probability": 0.429,
-          "odd": 2.35,
-          "implied_probability": 0.425531914893617,
-          "fair_probability": 0.3733333333333333,
-          "edge": 0.0556666666666667,
-          "value_ratio": 1.00815,
+          "odd": 2.4,
+          "implied_probability": 0.4166666666666667,
+          "fair_probability": 0.36507936507936506,
+          "edge": 0.06392063492063493,
+          "value_ratio": 1.0295999999999998,
           "rank_by_probability": 61
         },
         {
@@ -2675,11 +2675,11 @@
           "outcome": "-1.5",
           "label": "Handicap Fora - -1.5",
           "probability": 0.41100000000000003,
-          "odd": 1.75,
-          "implied_probability": 0.5714285714285714,
-          "fair_probability": 0.5714285714285714,
-          "edge": -0.16042857142857136,
-          "value_ratio": 0.7192500000000001,
+          "odd": 1.74,
+          "implied_probability": 0.5747126436781609,
+          "fair_probability": 0.5747126436781609,
+          "edge": -0.16371264367816085,
+          "value_ratio": 0.71514,
           "rank_by_probability": 63
         },
         {
@@ -2687,11 +2687,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 1.5 - Menos",
           "probability": 0.391,
-          "odd": 2.87,
-          "implied_probability": 0.3484320557491289,
-          "fair_probability": 0.3117505995203837,
-          "edge": 0.07924940047961632,
-          "value_ratio": 1.1221700000000001,
+          "odd": 2.92,
+          "implied_probability": 0.3424657534246575,
+          "fair_probability": 0.30641330166270786,
+          "edge": 0.08458669833729215,
+          "value_ratio": 1.14172,
           "rank_by_probability": 64
         },
         {
@@ -2699,11 +2699,11 @@
           "outcome": "0.5",
           "label": "Handicap Casa - 0.5",
           "probability": 0.354,
-          "odd": 3.35,
-          "implied_probability": 0.29850746268656714,
-          "fair_probability": 0.29850746268656714,
-          "edge": 0.055492537313432844,
-          "value_ratio": 1.1859,
+          "odd": 3.37,
+          "implied_probability": 0.29673590504451036,
+          "fair_probability": 0.29673590504451036,
+          "edge": 0.05726409495548962,
+          "value_ratio": 1.19298,
           "rank_by_probability": 65
         },
         {
@@ -2711,11 +2711,11 @@
           "outcome": "1x",
           "label": "Dupla Hipótese - Casa ou Empate",
           "probability": 0.354,
-          "odd": 3.35,
-          "implied_probability": 0.29850746268656714,
-          "fair_probability": 0.14041172128554522,
-          "edge": 0.21358827871445477,
-          "value_ratio": 1.1859,
+          "odd": 3.37,
+          "implied_probability": 0.29673590504451036,
+          "fair_probability": 0.13916782864441138,
+          "edge": 0.2148321713555886,
+          "value_ratio": 1.19298,
           "rank_by_probability": 66
         },
         {
@@ -2723,11 +2723,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 2.5 - Mais",
           "probability": 0.33899999999999997,
-          "odd": 1.91,
-          "implied_probability": 0.5235602094240838,
-          "fair_probability": 0.4664804469273742,
-          "edge": -0.12748044692737426,
-          "value_ratio": 0.6474899999999999,
+          "odd": 1.89,
+          "implied_probability": 0.5291005291005292,
+          "fair_probability": 0.4735376044568245,
+          "edge": -0.13453760445682456,
+          "value_ratio": 0.6407099999999999,
           "rank_by_probability": 67
         },
         {
@@ -2747,11 +2747,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 3.5 Golos - Mais",
           "probability": 0.301,
-          "odd": 2.0,
-          "implied_probability": 0.5,
-          "fair_probability": 0.43820224719101125,
-          "edge": -0.13720224719101126,
-          "value_ratio": 0.602,
+          "odd": 1.96,
+          "implied_probability": 0.5102040816326531,
+          "fair_probability": 0.447887323943662,
+          "edge": -0.146887323943662,
+          "value_ratio": 0.5899599999999999,
           "rank_by_probability": 69
         },
         {
@@ -2785,8 +2785,8 @@
           "probability": 0.22,
           "odd": 5.4,
           "implied_probability": 0.18518518518518517,
-          "fair_probability": 0.1717817361470132,
-          "edge": 0.048218263852986804,
+          "fair_probability": 0.17082208126609308,
+          "edge": 0.04917791873390692,
           "value_ratio": 1.1880000000000002,
           "rank_by_probability": 72
         },
@@ -2795,11 +2795,11 @@
           "outcome": "-2.5",
           "label": "Handicap Fora - -2.5",
           "probability": 0.21100000000000002,
-          "odd": 2.83,
-          "implied_probability": 0.35335689045936397,
-          "fair_probability": 0.35335689045936397,
-          "edge": -0.14235689045936395,
-          "value_ratio": 0.59713,
+          "odd": 2.8,
+          "implied_probability": 0.35714285714285715,
+          "fair_probability": 0.35714285714285715,
+          "edge": -0.14614285714285713,
+          "value_ratio": 0.5908,
           "rank_by_probability": 73
         },
         {
@@ -2807,11 +2807,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 1.5 - Mais",
           "probability": 0.207,
-          "odd": 3.8,
-          "implied_probability": 0.2631578947368421,
-          "fair_probability": 0.23541247484909456,
-          "edge": -0.028412474849094566,
-          "value_ratio": 0.7866,
+          "odd": 3.7,
+          "implied_probability": 0.27027027027027023,
+          "fair_probability": 0.24180327868852453,
+          "edge": -0.034803278688524536,
+          "value_ratio": 0.7659,
           "rank_by_probability": 74
         },
         {
@@ -2843,11 +2843,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 1.5 Golos - Menos",
           "probability": 0.179,
-          "odd": 4.2,
-          "implied_probability": 0.23809523809523808,
-          "fair_probability": 0.20903954802259886,
-          "edge": -0.030039548022598866,
-          "value_ratio": 0.7518,
+          "odd": 4.3,
+          "implied_probability": 0.23255813953488372,
+          "fair_probability": 0.2037037037037037,
+          "edge": -0.0247037037037037,
+          "value_ratio": 0.7696999999999999,
           "rank_by_probability": 77
         },
         {
@@ -2879,11 +2879,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 4.5 Golos - Mais",
           "probability": 0.168,
-          "odd": 3.1,
-          "implied_probability": 0.3225806451612903,
-          "fair_probability": 0.2824074074074074,
-          "edge": -0.11440740740740737,
-          "value_ratio": 0.5208,
+          "odd": 3.03,
+          "implied_probability": 0.33003300330033003,
+          "fair_probability": 0.29039812646370017,
+          "edge": -0.12239812646370016,
+          "value_ratio": 0.50904,
           "rank_by_probability": 80
         },
         {
@@ -2891,11 +2891,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 3.5 - Mais",
           "probability": 0.153,
-          "odd": 3.2,
-          "implied_probability": 0.3125,
-          "fair_probability": 0.27927927927927926,
-          "edge": -0.12627927927927926,
-          "value_ratio": 0.48960000000000004,
+          "odd": 3.13,
+          "implied_probability": 0.3194888178913738,
+          "fair_probability": 0.2853881278538813,
+          "edge": -0.1323881278538813,
+          "value_ratio": 0.47889,
           "rank_by_probability": 81
         },
         {
@@ -2905,8 +2905,8 @@
           "probability": 0.134,
           "odd": 8.5,
           "implied_probability": 0.11764705882352941,
-          "fair_probability": 0.10913192649339662,
-          "edge": 0.02486807350660339,
+          "fair_probability": 0.10852226339257678,
+          "edge": 0.025477736607423224,
           "value_ratio": 1.139,
           "rank_by_probability": 82
         },
@@ -2951,11 +2951,11 @@
           "outcome": "-3.5",
           "label": "Handicap Fora - -3.5",
           "probability": 0.09,
-          "odd": 5.25,
-          "implied_probability": 0.19047619047619047,
-          "fair_probability": 0.19047619047619047,
-          "edge": -0.10047619047619047,
-          "value_ratio": 0.4725,
+          "odd": 5.1,
+          "implied_probability": 0.19607843137254904,
+          "fair_probability": 0.19607843137254904,
+          "edge": -0.10607843137254905,
+          "value_ratio": 0.45899999999999996,
           "rank_by_probability": 86
         },
         {
@@ -2987,11 +2987,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 5.5 Golos - Mais",
           "probability": 0.07400000000000001,
-          "odd": 6.75,
-          "implied_probability": 0.14814814814814814,
-          "fair_probability": 0.13682864450127877,
-          "edge": -0.06282864450127876,
-          "value_ratio": 0.49950000000000006,
+          "odd": 6.4,
+          "implied_probability": 0.15625,
+          "fair_probability": 0.14438502673796794,
+          "edge": -0.07038502673796793,
+          "value_ratio": 0.4736000000000001,
           "rank_by_probability": 89
         },
         {
@@ -3047,11 +3047,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 2.5 - Mais",
           "probability": 0.054000000000000006,
-          "odd": 15.25,
-          "implied_probability": 0.06557377049180328,
-          "fair_probability": 0.06269207129686541,
-          "edge": -0.008692071296865403,
-          "value_ratio": 0.8235000000000001,
+          "odd": 14.5,
+          "implied_probability": 0.06896551724137931,
+          "fair_probability": 0.06572164948453608,
+          "edge": -0.011721649484536079,
+          "value_ratio": 0.7830000000000001,
           "rank_by_probability": 94
         },
         {
@@ -3071,11 +3071,11 @@
           "outcome": "-1.5",
           "label": "Handicap Casa - -1.5",
           "probability": 0.044000000000000004,
-          "odd": 19.5,
-          "implied_probability": 0.05128205128205128,
-          "fair_probability": 0.05128205128205128,
-          "edge": -0.007282051282051276,
-          "value_ratio": 0.8580000000000001,
+          "odd": 19.0,
+          "implied_probability": 0.05263157894736842,
+          "fair_probability": 0.05263157894736842,
+          "edge": -0.008631578947368414,
+          "value_ratio": 0.8360000000000001,
           "rank_by_probability": 96
         },
         {
@@ -3095,11 +3095,11 @@
           "outcome": "-4.5",
           "label": "Handicap Fora - -4.5",
           "probability": 0.033,
-          "odd": 10.0,
-          "implied_probability": 0.1,
-          "fair_probability": 0.1,
-          "edge": -0.067,
-          "value_ratio": 0.33,
+          "odd": 9.75,
+          "implied_probability": 0.10256410256410256,
+          "fair_probability": 0.10256410256410256,
+          "edge": -0.06956410256410256,
+          "value_ratio": 0.32175000000000004,
           "rank_by_probability": 98
         },
         {
@@ -3475,7 +3475,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-20T10:34:52.955316+00:00"
+        "scraped_at": "2026-10-20T13:41:19.948968+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -3489,13 +3489,13 @@
             "away": 5.5
           },
           "btts": {
-            "yes": 1.58,
-            "no": 1.98
+            "yes": 1.59,
+            "no": 1.96
           },
           "double_chance": {
-            "1x": 1.14,
+            "1x": 1.13,
             "12": 1.18,
-            "x2": 2.38
+            "x2": 2.42
           },
           "over_under_0.5": {
             "over": 1.01,
@@ -3503,7 +3503,7 @@
           },
           "over_under_1.5": {
             "over": 1.13,
-            "under": 3.88
+            "under": 3.85
           },
           "over_under_2.5": {
             "over": 1.48,
@@ -3519,45 +3519,45 @@
           },
           "home_total_0.5": {
             "over": 1.08,
-            "under": 6.6
+            "under": 6.75
           },
           "home_total_1.5": {
-            "over": 1.46,
-            "under": 2.3
+            "over": 1.45,
+            "under": 2.32
           },
           "home_total_2.5": {
-            "over": 2.37,
-            "under": 1.43
+            "over": 2.35,
+            "under": 1.44
           },
           "away_total_0.5": {
-            "over": 1.43,
-            "under": 2.37
+            "over": 1.45,
+            "under": 2.33
           },
           "away_total_1.5": {
-            "over": 2.98,
-            "under": 1.28
+            "over": 3.03,
+            "under": 1.27
           },
           "away_total_2.5": {
-            "over": 9.25,
+            "over": 9.75,
             "under": 1.04
           },
           "handicap_home": {
-            "-3.5": 8.25,
-            "-2.5": 4.15,
-            "-1.5": 2.3,
-            "0.5": 1.14,
+            "-3.5": 8.0,
+            "-2.5": 4.05,
+            "-1.5": 2.25,
+            "0.5": 1.13,
             "1.5": 1.02
           },
           "handicap_away": {
-            "2.5": 1.18,
-            "1.5": 1.52,
-            "0.5": 2.38,
-            "-1.5": 11.75,
-            "-2.5": 50.0
+            "2.5": 1.19,
+            "1.5": 1.54,
+            "0.5": 2.42,
+            "-1.5": 12.25,
+            "-2.5": 55.0
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8/fc-porto-psv-eindhoven-m1252856771395584",
-        "scraped_at": "2026-10-20T10:35:48.530773+00:00"
+        "scraped_at": "2026-10-20T13:42:15.011774+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -3832,8 +3832,8 @@
           "probability": 0.9390000000000001,
           "odd": 1.04,
           "implied_probability": 0.9615384615384615,
-          "fair_probability": 0.8989310009718173,
-          "edge": 0.04006899902818273,
+          "fair_probability": 0.9036144578313252,
+          "edge": 0.035385542168674844,
           "value_ratio": 0.9765600000000001,
           "rank_by_probability": 23
         },
@@ -3916,8 +3916,8 @@
           "probability": 0.88,
           "odd": 1.08,
           "implied_probability": 0.9259259259259258,
-          "fair_probability": 0.8593749999999999,
-          "edge": 0.020625000000000115,
+          "fair_probability": 0.8620689655172413,
+          "edge": 0.01793103448275868,
           "value_ratio": 0.9504,
           "rank_by_probability": 30
         },
@@ -3938,11 +3938,11 @@
           "outcome": "0.5",
           "label": "Handicap Casa - 0.5",
           "probability": 0.8590000000000001,
-          "odd": 1.14,
-          "implied_probability": 0.8771929824561404,
-          "fair_probability": 0.8771929824561404,
-          "edge": -0.018192982456140316,
-          "value_ratio": 0.97926,
+          "odd": 1.13,
+          "implied_probability": 0.8849557522123894,
+          "fair_probability": 0.8849557522123894,
+          "edge": -0.025955752212389327,
+          "value_ratio": 0.97067,
           "rank_by_probability": 32
         },
         {
@@ -3950,11 +3950,11 @@
           "outcome": "1x",
           "label": "Dupla Hipótese - Casa ou Empate",
           "probability": 0.8590000000000001,
-          "odd": 1.14,
-          "implied_probability": 0.8771929824561404,
-          "fair_probability": 0.4089823498572843,
-          "edge": 0.4500176501427158,
-          "value_ratio": 0.97926,
+          "odd": 1.13,
+          "implied_probability": 0.8849557522123894,
+          "fair_probability": 0.4124443930902999,
+          "edge": 0.4465556069097002,
+          "value_ratio": 0.97067,
           "rank_by_probability": 33
         },
         {
@@ -3998,11 +3998,11 @@
           "outcome": "2.5",
           "label": "Handicap Fora - 2.5",
           "probability": 0.8240000000000001,
-          "odd": 1.18,
-          "implied_probability": 0.8474576271186441,
-          "fair_probability": 0.8474576271186441,
-          "edge": -0.023457627118644075,
-          "value_ratio": 0.9723200000000001,
+          "odd": 1.19,
+          "implied_probability": 0.8403361344537815,
+          "fair_probability": 0.8403361344537815,
+          "edge": -0.01633613445378146,
+          "value_ratio": 0.98056,
           "rank_by_probability": 37
         },
         {
@@ -4024,8 +4024,8 @@
           "probability": 0.802,
           "odd": 1.13,
           "implied_probability": 0.8849557522123894,
-          "fair_probability": 0.7744510978043913,
-          "edge": 0.027548902195608793,
+          "fair_probability": 0.7730923694779116,
+          "edge": 0.028907630522088446,
           "value_ratio": 0.90626,
           "rank_by_probability": 39
         },
@@ -4034,11 +4034,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 1.5 - Menos",
           "probability": 0.7859999999999999,
-          "odd": 1.28,
-          "implied_probability": 0.78125,
-          "fair_probability": 0.6995305164319249,
-          "edge": 0.08646948356807505,
-          "value_ratio": 1.0060799999999999,
+          "odd": 1.27,
+          "implied_probability": 0.7874015748031495,
+          "fair_probability": 0.7046511627906976,
+          "edge": 0.0813488372093023,
+          "value_ratio": 0.9982199999999999,
           "rank_by_probability": 40
         },
         {
@@ -4060,8 +4060,8 @@
           "probability": 0.7759999999999999,
           "odd": 1.18,
           "implied_probability": 0.8474576271186441,
-          "fair_probability": 0.3951185413875459,
-          "edge": 0.38088145861245404,
+          "fair_probability": 0.39496793575596517,
+          "edge": 0.38103206424403474,
           "value_ratio": 0.9156799999999998,
           "rank_by_probability": 42
         },
@@ -4094,11 +4094,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 2.5 - Menos",
           "probability": 0.7,
-          "odd": 1.43,
-          "implied_probability": 0.6993006993006994,
-          "fair_probability": 0.6236842105263158,
-          "edge": 0.07631578947368411,
-          "value_ratio": 1.001,
+          "odd": 1.44,
+          "implied_probability": 0.6944444444444444,
+          "fair_probability": 0.6200527704485488,
+          "edge": 0.07994722955145117,
+          "value_ratio": 1.008,
           "rank_by_probability": 45
         },
         {
@@ -4118,11 +4118,11 @@
           "outcome": "1.5",
           "label": "Handicap Fora - 1.5",
           "probability": 0.638,
-          "odd": 1.52,
-          "implied_probability": 0.6578947368421053,
-          "fair_probability": 0.6578947368421053,
-          "edge": -0.0198947368421053,
-          "value_ratio": 0.9697600000000001,
+          "odd": 1.54,
+          "implied_probability": 0.6493506493506493,
+          "fair_probability": 0.6493506493506493,
+          "edge": -0.011350649350649333,
+          "value_ratio": 0.9825200000000001,
           "rank_by_probability": 47
         },
         {
@@ -4154,11 +4154,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 0.5 - Mais",
           "probability": 0.5870000000000001,
-          "odd": 1.43,
-          "implied_probability": 0.6993006993006994,
-          "fair_probability": 0.6236842105263158,
-          "edge": -0.036684210526315764,
-          "value_ratio": 0.8394100000000001,
+          "odd": 1.45,
+          "implied_probability": 0.6896551724137931,
+          "fair_probability": 0.6164021164021164,
+          "edge": -0.02940211640211632,
+          "value_ratio": 0.8511500000000001,
           "rank_by_probability": 50
         },
         {
@@ -4178,11 +4178,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 1.5 - Mais",
           "probability": 0.5820000000000001,
-          "odd": 1.46,
-          "implied_probability": 0.684931506849315,
-          "fair_probability": 0.6117021276595744,
-          "edge": -0.029702127659574362,
-          "value_ratio": 0.84972,
+          "odd": 1.45,
+          "implied_probability": 0.6896551724137931,
+          "fair_probability": 0.6153846153846153,
+          "edge": -0.033384615384615235,
+          "value_ratio": 0.8439000000000001,
           "rank_by_probability": 52
         },
         {
@@ -4202,11 +4202,11 @@
           "outcome": "yes",
           "label": "Ambas Marcam - Sim",
           "probability": 0.565,
-          "odd": 1.58,
-          "implied_probability": 0.6329113924050632,
-          "fair_probability": 0.5561797752808988,
-          "edge": 0.008820224719101155,
-          "value_ratio": 0.8926999999999999,
+          "odd": 1.59,
+          "implied_probability": 0.6289308176100629,
+          "fair_probability": 0.552112676056338,
+          "edge": 0.012887323943661988,
+          "value_ratio": 0.89835,
           "rank_by_probability": 54
         },
         {
@@ -4262,11 +4262,11 @@
           "outcome": "no",
           "label": "Ambas Marcam - Não",
           "probability": 0.435,
-          "odd": 1.98,
-          "implied_probability": 0.5050505050505051,
-          "fair_probability": 0.44382022471910115,
-          "edge": -0.008820224719101155,
-          "value_ratio": 0.8613,
+          "odd": 1.96,
+          "implied_probability": 0.5102040816326531,
+          "fair_probability": 0.447887323943662,
+          "edge": -0.012887323943661988,
+          "value_ratio": 0.8526,
           "rank_by_probability": 59
         },
         {
@@ -4286,11 +4286,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 1.5 - Menos",
           "probability": 0.418,
-          "odd": 2.3,
-          "implied_probability": 0.4347826086956522,
-          "fair_probability": 0.38829787234042556,
-          "edge": 0.029702127659574418,
-          "value_ratio": 0.9613999999999999,
+          "odd": 2.32,
+          "implied_probability": 0.4310344827586207,
+          "fair_probability": 0.3846153846153846,
+          "edge": 0.0333846153846154,
+          "value_ratio": 0.9697599999999998,
           "rank_by_probability": 61
         },
         {
@@ -4310,11 +4310,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 0.5 - Menos",
           "probability": 0.413,
-          "odd": 2.37,
-          "implied_probability": 0.42194092827004215,
-          "fair_probability": 0.37631578947368416,
-          "edge": 0.03668421052631582,
-          "value_ratio": 0.97881,
+          "odd": 2.33,
+          "implied_probability": 0.4291845493562232,
+          "fair_probability": 0.3835978835978836,
+          "edge": 0.029402116402116374,
+          "value_ratio": 0.96229,
           "rank_by_probability": 63
         },
         {
@@ -4322,11 +4322,11 @@
           "outcome": "0.5",
           "label": "Handicap Fora - 0.5",
           "probability": 0.365,
-          "odd": 2.38,
-          "implied_probability": 0.42016806722689076,
-          "fair_probability": 0.42016806722689076,
-          "edge": -0.05516806722689077,
-          "value_ratio": 0.8686999999999999,
+          "odd": 2.42,
+          "implied_probability": 0.4132231404958678,
+          "fair_probability": 0.4132231404958678,
+          "edge": -0.04822314049586779,
+          "value_ratio": 0.8833,
           "rank_by_probability": 64
         },
         {
@@ -4334,11 +4334,11 @@
           "outcome": "x2",
           "label": "Dupla Hipótese - Empate ou Fora",
           "probability": 0.365,
-          "odd": 2.38,
-          "implied_probability": 0.42016806722689076,
-          "fair_probability": 0.19589910875516978,
-          "edge": 0.16910089124483021,
-          "value_ratio": 0.8686999999999999,
+          "odd": 2.42,
+          "implied_probability": 0.4132231404958678,
+          "fair_probability": 0.19258767115373507,
+          "edge": 0.17241232884626492,
+          "value_ratio": 0.8833,
           "rank_by_probability": 65
         },
         {
@@ -4346,11 +4346,11 @@
           "outcome": "-1.5",
           "label": "Handicap Casa - -1.5",
           "probability": 0.36200000000000004,
-          "odd": 2.3,
-          "implied_probability": 0.4347826086956522,
-          "fair_probability": 0.4347826086956522,
-          "edge": -0.07278260869565217,
-          "value_ratio": 0.8326,
+          "odd": 2.25,
+          "implied_probability": 0.4444444444444444,
+          "fair_probability": 0.4444444444444444,
+          "edge": -0.08244444444444438,
+          "value_ratio": 0.8145000000000001,
           "rank_by_probability": 66
         },
         {
@@ -4370,11 +4370,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 2.5 - Mais",
           "probability": 0.3,
-          "odd": 2.37,
-          "implied_probability": 0.42194092827004215,
-          "fair_probability": 0.37631578947368416,
-          "edge": -0.07631578947368417,
-          "value_ratio": 0.711,
+          "odd": 2.35,
+          "implied_probability": 0.425531914893617,
+          "fair_probability": 0.3799472295514512,
+          "edge": -0.07994722955145123,
+          "value_ratio": 0.705,
           "rank_by_probability": 68
         },
         {
@@ -4430,11 +4430,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 1.5 - Mais",
           "probability": 0.214,
-          "odd": 2.98,
-          "implied_probability": 0.33557046979865773,
-          "fair_probability": 0.3004694835680751,
-          "edge": -0.08646948356807513,
-          "value_ratio": 0.63772,
+          "odd": 3.03,
+          "implied_probability": 0.33003300330033003,
+          "fair_probability": 0.29534883720930233,
+          "edge": -0.08134883720930233,
+          "value_ratio": 0.64842,
           "rank_by_probability": 73
         },
         {
@@ -4442,11 +4442,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 1.5 Golos - Menos",
           "probability": 0.198,
-          "odd": 3.88,
-          "implied_probability": 0.2577319587628866,
-          "fair_probability": 0.2255489021956088,
-          "edge": -0.027548902195608793,
-          "value_ratio": 0.76824,
+          "odd": 3.85,
+          "implied_probability": 0.2597402597402597,
+          "fair_probability": 0.22690763052208832,
+          "edge": -0.028907630522088307,
+          "value_ratio": 0.7623000000000001,
           "rank_by_probability": 74
         },
         {
@@ -4466,11 +4466,11 @@
           "outcome": "-2.5",
           "label": "Handicap Casa - -2.5",
           "probability": 0.17600000000000002,
-          "odd": 4.15,
-          "implied_probability": 0.24096385542168672,
-          "fair_probability": 0.24096385542168672,
-          "edge": -0.0649638554216867,
-          "value_ratio": 0.7304000000000002,
+          "odd": 4.05,
+          "implied_probability": 0.2469135802469136,
+          "fair_probability": 0.2469135802469136,
+          "edge": -0.07091358024691358,
+          "value_ratio": 0.7128,
           "rank_by_probability": 76
         },
         {
@@ -4550,11 +4550,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 0.5 - Menos",
           "probability": 0.12,
-          "odd": 6.6,
-          "implied_probability": 0.15151515151515152,
-          "fair_probability": 0.140625,
-          "edge": -0.020625000000000004,
-          "value_ratio": 0.7919999999999999,
+          "odd": 6.75,
+          "implied_probability": 0.14814814814814814,
+          "fair_probability": 0.13793103448275862,
+          "edge": -0.017931034482758623,
+          "value_ratio": 0.8099999999999999,
           "rank_by_probability": 83
         },
         {
@@ -4622,11 +4622,11 @@
           "outcome": "-3.5",
           "label": "Handicap Casa - -3.5",
           "probability": 0.063,
-          "odd": 8.25,
-          "implied_probability": 0.12121212121212122,
-          "fair_probability": 0.12121212121212122,
-          "edge": -0.058212121212121215,
-          "value_ratio": 0.51975,
+          "odd": 8.0,
+          "implied_probability": 0.125,
+          "fair_probability": 0.125,
+          "edge": -0.062,
+          "value_ratio": 0.504,
           "rank_by_probability": 89
         },
         {
@@ -4634,11 +4634,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 2.5 - Mais",
           "probability": 0.061,
-          "odd": 9.25,
-          "implied_probability": 0.10810810810810811,
-          "fair_probability": 0.10106899902818271,
-          "edge": -0.040068999028182714,
-          "value_ratio": 0.56425,
+          "odd": 9.75,
+          "implied_probability": 0.10256410256410256,
+          "fair_probability": 0.09638554216867469,
+          "edge": -0.03538554216867469,
+          "value_ratio": 0.59475,
           "rank_by_probability": 90
         },
         {
@@ -4682,11 +4682,11 @@
           "outcome": "-1.5",
           "label": "Handicap Fora - -1.5",
           "probability": 0.053,
-          "odd": 11.75,
-          "implied_probability": 0.0851063829787234,
-          "fair_probability": 0.0851063829787234,
-          "edge": -0.032106382978723404,
-          "value_ratio": 0.62275,
+          "odd": 12.25,
+          "implied_probability": 0.08163265306122448,
+          "fair_probability": 0.08163265306122448,
+          "edge": -0.028632653061224485,
+          "value_ratio": 0.64925,
           "rank_by_probability": 94
         },
         {
@@ -4778,11 +4778,11 @@
           "outcome": "-2.5",
           "label": "Handicap Fora - -2.5",
           "probability": 0.015,
-          "odd": 50.0,
-          "implied_probability": 0.02,
-          "fair_probability": 0.02,
-          "edge": -0.005000000000000001,
-          "value_ratio": 0.75,
+          "odd": 55.0,
+          "implied_probability": 0.01818181818181818,
+          "fair_probability": 0.01818181818181818,
+          "edge": -0.0031818181818181815,
+          "value_ratio": 0.825,
           "rank_by_probability": 102
         },
         {
@@ -5110,7 +5110,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-20T10:35:01.098159+00:00"
+        "scraped_at": "2026-10-20T13:41:27.858827+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -5125,7 +5125,7 @@
           },
           "btts": {
             "yes": 1.18,
-            "no": 3.45
+            "no": 3.42
           },
           "double_chance": {
             "1x": 1.55,
@@ -5133,52 +5133,52 @@
             "x2": 1.5
           },
           "over_under_2.5": {
-            "over": 1.15,
-            "under": 3.68
+            "over": 1.16,
+            "under": 3.6
           },
           "over_under_3.5": {
-            "over": 1.42,
-            "under": 2.28
+            "over": 1.44,
+            "under": 2.25
           },
           "over_under_4.5": {
-            "over": 1.95,
-            "under": 1.59
+            "over": 1.98,
+            "under": 1.57
           },
           "over_under_5.5": {
-            "over": 3.08,
-            "under": 1.27
+            "over": 3.15,
+            "under": 1.26
           },
           "over_under_6.5": {
-            "over": 4.25,
-            "under": 1.11
+            "over": 4.35,
+            "under": 1.1
           },
           "home_total_0.5": {
-            "over": 1.07,
+            "over": 1.08,
             "under": 6.75
           },
           "home_total_1.5": {
-            "over": 1.44,
-            "under": 2.33
+            "over": 1.46,
+            "under": 2.3
           },
           "home_total_2.5": {
-            "over": 2.35,
-            "under": 1.44
+            "over": 2.38,
+            "under": 1.43
           },
           "away_total_1.5": {
-            "over": 1.42,
-            "under": 2.42
+            "over": 1.43,
+            "under": 2.38
           },
           "away_total_2.5": {
-            "over": 2.27,
-            "under": 1.47
+            "over": 2.3,
+            "under": 1.46
           },
           "away_total_3.5": {
-            "over": 4.0,
-            "under": 1.15
+            "over": 4.05,
+            "under": 1.14
           },
           "handicap_home": {
             "-2.5": 8.0,
-            "-1.5": 3.93,
+            "-1.5": 3.95,
             "0.5": 1.55,
             "1.5": 1.22,
             "2.5": 1.07
@@ -5186,13 +5186,13 @@
           "handicap_away": {
             "1.5": 1.2,
             "0.5": 1.5,
-            "-1.5": 3.68,
+            "-1.5": 3.7,
             "-2.5": 7.25,
-            "-3.5": 12.5
+            "-3.5": 12.75
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8/paris-sg-barcelona-m1252854665842688",
-        "scraped_at": "2026-10-20T10:35:48.530649+00:00"
+        "scraped_at": "2026-10-20T13:42:15.011641+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -5429,11 +5429,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 0.5 - Mais",
           "probability": 0.9159999999999999,
-          "odd": 1.07,
-          "implied_probability": 0.9345794392523364,
-          "fair_probability": 0.8631713554987214,
-          "edge": 0.052828644501278554,
-          "value_ratio": 0.98012,
+          "odd": 1.08,
+          "implied_probability": 0.9259259259259258,
+          "fair_probability": 0.8620689655172413,
+          "edge": 0.0539310344827586,
+          "value_ratio": 0.9892799999999999,
           "rank_by_probability": 20
         },
         {
@@ -5477,11 +5477,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 3.5 - Menos",
           "probability": 0.888,
-          "odd": 1.15,
-          "implied_probability": 0.8695652173913044,
-          "fair_probability": 0.7766990291262136,
-          "edge": 0.11130097087378643,
-          "value_ratio": 1.0211999999999999,
+          "odd": 1.14,
+          "implied_probability": 0.8771929824561404,
+          "fair_probability": 0.7803468208092486,
+          "edge": 0.10765317919075146,
+          "value_ratio": 1.0123199999999999,
           "rank_by_probability": 24
         },
         {
@@ -5525,11 +5525,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 2.5 Golos - Mais",
           "probability": 0.8440000000000001,
-          "odd": 1.15,
-          "implied_probability": 0.8695652173913044,
-          "fair_probability": 0.761904761904762,
-          "edge": 0.08209523809523811,
-          "value_ratio": 0.9706,
+          "odd": 1.16,
+          "implied_probability": 0.8620689655172414,
+          "fair_probability": 0.7563025210084033,
+          "edge": 0.08769747899159674,
+          "value_ratio": 0.97904,
           "rank_by_probability": 28
         },
         {
@@ -5539,8 +5539,8 @@
           "probability": 0.8390000000000001,
           "odd": 1.18,
           "implied_probability": 0.8474576271186441,
-          "fair_probability": 0.7451403887688984,
-          "edge": 0.09385961123110165,
+          "fair_probability": 0.7434782608695653,
+          "edge": 0.09552173913043482,
           "value_ratio": 0.99002,
           "rank_by_probability": 29
         },
@@ -5645,11 +5645,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 5.5 Golos - Menos",
           "probability": 0.737,
-          "odd": 1.27,
-          "implied_probability": 0.7874015748031495,
-          "fair_probability": 0.7080459770114942,
-          "edge": 0.0289540229885058,
-          "value_ratio": 0.93599,
+          "odd": 1.26,
+          "implied_probability": 0.7936507936507936,
+          "fair_probability": 0.7142857142857142,
+          "edge": 0.022714285714285798,
+          "value_ratio": 0.92862,
           "rank_by_probability": 38
         },
         {
@@ -5657,11 +5657,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 2.5 - Menos",
           "probability": 0.725,
-          "odd": 1.47,
-          "implied_probability": 0.6802721088435374,
-          "fair_probability": 0.606951871657754,
-          "edge": 0.11804812834224598,
-          "value_ratio": 1.06575,
+          "odd": 1.46,
+          "implied_probability": 0.684931506849315,
+          "fair_probability": 0.6117021276595744,
+          "edge": 0.11329787234042554,
+          "value_ratio": 1.0585,
           "rank_by_probability": 39
         },
         {
@@ -5693,11 +5693,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 1.5 - Mais",
           "probability": 0.7090000000000001,
-          "odd": 1.44,
-          "implied_probability": 0.6944444444444444,
-          "fair_probability": 0.6180371352785146,
-          "edge": 0.09096286472148551,
-          "value_ratio": 1.02096,
+          "odd": 1.46,
+          "implied_probability": 0.684931506849315,
+          "fair_probability": 0.6117021276595744,
+          "edge": 0.09729787234042564,
+          "value_ratio": 1.0351400000000002,
           "rank_by_probability": 42
         },
         {
@@ -5753,11 +5753,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 3.5 Golos - Mais",
           "probability": 0.645,
-          "odd": 1.42,
-          "implied_probability": 0.7042253521126761,
-          "fair_probability": 0.6162162162162163,
-          "edge": 0.028783783783783767,
-          "value_ratio": 0.9158999999999999,
+          "odd": 1.44,
+          "implied_probability": 0.6944444444444444,
+          "fair_probability": 0.6097560975609756,
+          "edge": 0.03524390243902442,
+          "value_ratio": 0.9288,
           "rank_by_probability": 47
         },
         {
@@ -5801,11 +5801,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 4.5 Golos - Menos",
           "probability": 0.57,
-          "odd": 1.59,
-          "implied_probability": 0.6289308176100629,
-          "fair_probability": 0.5508474576271186,
-          "edge": 0.01915254237288133,
-          "value_ratio": 0.9063,
+          "odd": 1.57,
+          "implied_probability": 0.6369426751592356,
+          "fair_probability": 0.5577464788732394,
+          "edge": 0.012253521126760591,
+          "value_ratio": 0.8948999999999999,
           "rank_by_probability": 51
         },
         {
@@ -5813,11 +5813,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 2.5 - Menos",
           "probability": 0.5489999999999999,
-          "odd": 1.44,
-          "implied_probability": 0.6944444444444444,
-          "fair_probability": 0.6200527704485488,
-          "edge": -0.07105277044854885,
-          "value_ratio": 0.7905599999999998,
+          "odd": 1.43,
+          "implied_probability": 0.6993006993006994,
+          "fair_probability": 0.6246719160104987,
+          "edge": -0.07567191601049872,
+          "value_ratio": 0.7850699999999998,
           "rank_by_probability": 52
         },
         {
@@ -5825,11 +5825,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 1.5 - Mais",
           "probability": 0.5429999999999999,
-          "odd": 1.42,
-          "implied_probability": 0.7042253521126761,
-          "fair_probability": 0.6302083333333334,
-          "edge": -0.08720833333333344,
-          "value_ratio": 0.7710599999999999,
+          "odd": 1.43,
+          "implied_probability": 0.6993006993006994,
+          "fair_probability": 0.6246719160104987,
+          "edge": -0.08167191601049872,
+          "value_ratio": 0.7764899999999999,
           "rank_by_probability": 53
         },
         {
@@ -5909,11 +5909,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 1.5 - Menos",
           "probability": 0.457,
-          "odd": 2.42,
-          "implied_probability": 0.4132231404958678,
-          "fair_probability": 0.36979166666666663,
-          "edge": 0.08720833333333339,
-          "value_ratio": 1.10594,
+          "odd": 2.38,
+          "implied_probability": 0.42016806722689076,
+          "fair_probability": 0.3753280839895013,
+          "edge": 0.08167191601049872,
+          "value_ratio": 1.08766,
           "rank_by_probability": 60
         },
         {
@@ -5921,11 +5921,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 2.5 - Mais",
           "probability": 0.451,
-          "odd": 2.35,
-          "implied_probability": 0.425531914893617,
-          "fair_probability": 0.3799472295514512,
-          "edge": 0.0710527704485488,
-          "value_ratio": 1.05985,
+          "odd": 2.38,
+          "implied_probability": 0.42016806722689076,
+          "fair_probability": 0.3753280839895013,
+          "edge": 0.07567191601049872,
+          "value_ratio": 1.07338,
           "rank_by_probability": 61
         },
         {
@@ -5933,11 +5933,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 4.5 Golos - Mais",
           "probability": 0.43,
-          "odd": 1.95,
-          "implied_probability": 0.5128205128205129,
-          "fair_probability": 0.4491525423728814,
-          "edge": -0.019152542372881387,
-          "value_ratio": 0.8385,
+          "odd": 1.98,
+          "implied_probability": 0.5050505050505051,
+          "fair_probability": 0.4422535211267606,
+          "edge": -0.012253521126760591,
+          "value_ratio": 0.8513999999999999,
           "rank_by_probability": 62
         },
         {
@@ -5981,11 +5981,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 3.5 Golos - Menos",
           "probability": 0.355,
-          "odd": 2.28,
-          "implied_probability": 0.4385964912280702,
-          "fair_probability": 0.3837837837837838,
-          "edge": -0.028783783783783823,
-          "value_ratio": 0.8093999999999999,
+          "odd": 2.25,
+          "implied_probability": 0.4444444444444444,
+          "fair_probability": 0.3902439024390244,
+          "edge": -0.03524390243902442,
+          "value_ratio": 0.79875,
           "rank_by_probability": 66
         },
         {
@@ -6005,11 +6005,11 @@
           "outcome": "-1.5",
           "label": "Handicap Casa - -1.5",
           "probability": 0.33299999999999996,
-          "odd": 3.93,
-          "implied_probability": 0.2544529262086514,
-          "fair_probability": 0.2544529262086514,
-          "edge": 0.07854707379134857,
-          "value_ratio": 1.30869,
+          "odd": 3.95,
+          "implied_probability": 0.2531645569620253,
+          "fair_probability": 0.2531645569620253,
+          "edge": 0.07983544303797468,
+          "value_ratio": 1.31535,
           "rank_by_probability": 68
         },
         {
@@ -6041,11 +6041,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 1.5 - Menos",
           "probability": 0.29100000000000004,
-          "odd": 2.33,
-          "implied_probability": 0.4291845493562232,
-          "fair_probability": 0.38196286472148544,
-          "edge": -0.0909628647214854,
-          "value_ratio": 0.6780300000000001,
+          "odd": 2.3,
+          "implied_probability": 0.4347826086956522,
+          "fair_probability": 0.38829787234042556,
+          "edge": -0.09729787234042553,
+          "value_ratio": 0.6693,
           "rank_by_probability": 71
         },
         {
@@ -6077,11 +6077,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 2.5 - Mais",
           "probability": 0.275,
-          "odd": 2.27,
-          "implied_probability": 0.44052863436123346,
-          "fair_probability": 0.393048128342246,
-          "edge": -0.11804812834224598,
-          "value_ratio": 0.6242500000000001,
+          "odd": 2.3,
+          "implied_probability": 0.4347826086956522,
+          "fair_probability": 0.38829787234042556,
+          "edge": -0.11329787234042554,
+          "value_ratio": 0.6325,
           "rank_by_probability": 74
         },
         {
@@ -6089,11 +6089,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 5.5 Golos - Mais",
           "probability": 0.263,
-          "odd": 3.08,
-          "implied_probability": 0.3246753246753247,
-          "fair_probability": 0.29195402298850576,
-          "edge": -0.028954022988505745,
-          "value_ratio": 0.8100400000000001,
+          "odd": 3.15,
+          "implied_probability": 0.31746031746031744,
+          "fair_probability": 0.2857142857142857,
+          "edge": -0.022714285714285687,
+          "value_ratio": 0.82845,
           "rank_by_probability": 75
         },
         {
@@ -6197,11 +6197,11 @@
           "outcome": "no",
           "label": "Ambas Marcam - Não",
           "probability": 0.161,
-          "odd": 3.45,
-          "implied_probability": 0.2898550724637681,
-          "fair_probability": 0.2548596112311015,
-          "edge": -0.09385961123110151,
-          "value_ratio": 0.55545,
+          "odd": 3.42,
+          "implied_probability": 0.29239766081871343,
+          "fair_probability": 0.25652173913043474,
+          "edge": -0.09552173913043474,
+          "value_ratio": 0.55062,
           "rank_by_probability": 84
         },
         {
@@ -6209,11 +6209,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 2.5 Golos - Menos",
           "probability": 0.156,
-          "odd": 3.68,
-          "implied_probability": 0.2717391304347826,
-          "fair_probability": 0.23809523809523808,
-          "edge": -0.08209523809523808,
-          "value_ratio": 0.57408,
+          "odd": 3.6,
+          "implied_probability": 0.2777777777777778,
+          "fair_probability": 0.24369747899159663,
+          "edge": -0.08769747899159663,
+          "value_ratio": 0.5616,
           "rank_by_probability": 85
         },
         {
@@ -6221,11 +6221,11 @@
           "outcome": "-1.5",
           "label": "Handicap Fora - -1.5",
           "probability": 0.141,
-          "odd": 3.68,
-          "implied_probability": 0.2717391304347826,
-          "fair_probability": 0.2717391304347826,
-          "edge": -0.1307391304347826,
-          "value_ratio": 0.51888,
+          "odd": 3.7,
+          "implied_probability": 0.27027027027027023,
+          "fair_probability": 0.27027027027027023,
+          "edge": -0.12927027027027024,
+          "value_ratio": 0.5216999999999999,
           "rank_by_probability": 86
         },
         {
@@ -6257,11 +6257,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 3.5 - Mais",
           "probability": 0.11199999999999999,
-          "odd": 4.0,
-          "implied_probability": 0.25,
-          "fair_probability": 0.2233009708737864,
-          "edge": -0.1113009708737864,
-          "value_ratio": 0.44799999999999995,
+          "odd": 4.05,
+          "implied_probability": 0.2469135802469136,
+          "fair_probability": 0.21965317919075145,
+          "edge": -0.10765317919075146,
+          "value_ratio": 0.45359999999999995,
           "rank_by_probability": 89
         },
         {
@@ -6307,8 +6307,8 @@
           "probability": 0.084,
           "odd": 6.75,
           "implied_probability": 0.14814814814814814,
-          "fair_probability": 0.13682864450127877,
-          "edge": -0.05282864450127876,
+          "fair_probability": 0.13793103448275862,
+          "edge": -0.053931034482758614,
           "value_ratio": 0.5670000000000001,
           "rank_by_probability": 93
         },
@@ -6461,11 +6461,11 @@
           "outcome": "-3.5",
           "label": "Handicap Fora - -3.5",
           "probability": 0.021,
-          "odd": 12.5,
-          "implied_probability": 0.08,
-          "fair_probability": 0.08,
-          "edge": -0.059,
-          "value_ratio": 0.2625,
+          "odd": 12.75,
+          "implied_probability": 0.0784313725490196,
+          "fair_probability": 0.0784313725490196,
+          "edge": -0.0574313725490196,
+          "value_ratio": 0.26775000000000004,
           "rank_by_probability": 106
         },
         {
@@ -6745,7 +6745,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-20T10:35:09.126546+00:00"
+        "scraped_at": "2026-10-20T13:41:36.088199+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -6827,7 +6827,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8/estugarda-atletico-de-madrid-m1252857078611968",
-        "scraped_at": "2026-10-20T10:35:48.530901+00:00"
+        "scraped_at": "2026-10-20T13:42:15.011906+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -8380,7 +8380,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-20T10:35:17.177166+00:00"
+        "scraped_at": "2026-10-20T13:41:43.998799+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -8390,79 +8390,79 @@
         "markets": {
           "1x2": {
             "home": 1.09,
-            "draw": 9.0,
-            "away": 18.0
+            "draw": 9.25,
+            "away": 18.75
           },
           "btts": {
-            "yes": 1.84,
+            "yes": 1.85,
             "no": 1.67
           },
           "double_chance": {
             "1x": 1.02,
             "12": 1.04,
-            "x2": 6.4
+            "x2": 6.5
           },
           "over_under_1.5": {
             "over": 1.04,
-            "under": 5.6
+            "under": 5.75
           },
           "over_under_2.5": {
-            "over": 1.19,
-            "under": 3.35
+            "over": 1.18,
+            "under": 3.4
           },
           "over_under_3.5": {
-            "over": 1.53,
-            "under": 2.05
+            "over": 1.51,
+            "under": 2.08
           },
           "over_under_4.5": {
-            "over": 2.17,
-            "under": 1.48
+            "over": 2.13,
+            "under": 1.49
           },
           "over_under_5.5": {
-            "over": 3.25,
-            "under": 1.2
+            "over": 3.18,
+            "under": 1.21
           },
           "home_total_2.5": {
-            "over": 1.4,
-            "under": 2.48
+            "over": 1.38,
+            "under": 2.53
           },
           "home_total_3.5": {
-            "over": 2.0,
-            "under": 1.62
+            "over": 1.96,
+            "under": 1.64
           },
           "home_total_4.5": {
-            "over": 3.13,
-            "under": 1.25
+            "over": 3.05,
+            "under": 1.26
           },
           "away_total_0.5": {
-            "over": 1.82,
-            "under": 1.75
+            "over": 1.83,
+            "under": 1.74
           },
           "away_total_1.5": {
             "over": 4.65,
-            "under": 1.11
+            "under": 1.1
           },
           "away_total_2.5": {
             "over": 24.0,
             "under": 1.01
           },
           "handicap_home": {
-            "-5.5": 8.25,
-            "-4.5": 4.55,
-            "-3.5": 2.7,
-            "-2.5": 1.76,
-            "-1.5": 1.3
+            "-5.5": 7.75,
+            "-4.5": 4.4,
+            "-3.5": 2.63,
+            "-2.5": 1.73,
+            "-1.5": 1.29
           },
           "handicap_away": {
-            "4.5": 1.15,
-            "3.5": 1.39,
-            "2.5": 1.9,
-            "1.5": 3.12,
-            "0.5": 6.4
+            "4.5": 1.16,
+            "3.5": 1.4,
+            "2.5": 1.93,
+            "1.5": 3.18,
+            "0.5": 6.5
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8/roma-slovan-bratislava-m1252856700076032",
-        "scraped_at": "2026-10-20T10:35:48.530711+00:00"
+        "scraped_at": "2026-10-20T13:42:15.011707+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -8687,11 +8687,11 @@
           "outcome": "4.5",
           "label": "Handicap Fora - 4.5",
           "probability": 0.963,
-          "odd": 1.15,
-          "implied_probability": 0.8695652173913044,
-          "fair_probability": 0.8695652173913044,
-          "edge": 0.09343478260869553,
-          "value_ratio": 1.1074499999999998,
+          "odd": 1.16,
+          "implied_probability": 0.8620689655172414,
+          "fair_probability": 0.8620689655172414,
+          "edge": 0.10093103448275853,
+          "value_ratio": 1.1170799999999999,
           "rank_by_probability": 19
         },
         {
@@ -8711,11 +8711,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 5.5 Golos - Menos",
           "probability": 0.943,
-          "odd": 1.2,
-          "implied_probability": 0.8333333333333334,
-          "fair_probability": 0.7303370786516855,
-          "edge": 0.21266292134831444,
-          "value_ratio": 1.1316,
+          "odd": 1.21,
+          "implied_probability": 0.8264462809917356,
+          "fair_probability": 0.7243735763097949,
+          "edge": 0.21862642369020502,
+          "value_ratio": 1.14103,
           "rank_by_probability": 21
         },
         {
@@ -8723,11 +8723,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 4.5 - Menos",
           "probability": 0.9420000000000001,
-          "odd": 1.25,
-          "implied_probability": 0.8,
-          "fair_probability": 0.7146118721461188,
-          "edge": 0.2273881278538813,
-          "value_ratio": 1.1775,
+          "odd": 1.26,
+          "implied_probability": 0.7936507936507936,
+          "fair_probability": 0.7076566125290022,
+          "edge": 0.2343433874709978,
+          "value_ratio": 1.18692,
           "rank_by_probability": 22
         },
         {
@@ -8797,8 +8797,8 @@
           "probability": 0.904,
           "odd": 1.02,
           "implied_probability": 0.9803921568627451,
-          "fair_probability": 0.4672582275637426,
-          "edge": 0.43674177243625745,
+          "fair_probability": 0.4677941705649515,
+          "edge": 0.43620582943504854,
           "value_ratio": 0.92208,
           "rank_by_probability": 28
         },
@@ -8807,11 +8807,11 @@
           "outcome": "3.5",
           "label": "Handicap Fora - 3.5",
           "probability": 0.898,
-          "odd": 1.39,
-          "implied_probability": 0.7194244604316548,
-          "fair_probability": 0.7194244604316548,
-          "edge": 0.17857553956834527,
-          "value_ratio": 1.2482199999999999,
+          "odd": 1.4,
+          "implied_probability": 0.7142857142857143,
+          "fair_probability": 0.7142857142857143,
+          "edge": 0.18371428571428572,
+          "value_ratio": 1.2571999999999999,
           "rank_by_probability": 29
         },
         {
@@ -8855,11 +8855,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 1.5 - Menos",
           "probability": 0.863,
-          "odd": 1.11,
-          "implied_probability": 0.9009009009009008,
-          "fair_probability": 0.8072916666666666,
-          "edge": 0.05570833333333336,
-          "value_ratio": 0.9579300000000001,
+          "odd": 1.1,
+          "implied_probability": 0.9090909090909091,
+          "fair_probability": 0.8086956521739131,
+          "edge": 0.05430434782608684,
+          "value_ratio": 0.9493,
           "rank_by_probability": 33
         },
         {
@@ -8867,11 +8867,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 4.5 Golos - Menos",
           "probability": 0.862,
-          "odd": 1.48,
-          "implied_probability": 0.6756756756756757,
-          "fair_probability": 0.5945205479452055,
-          "edge": 0.2674794520547945,
-          "value_ratio": 1.27576,
+          "odd": 1.49,
+          "implied_probability": 0.6711409395973155,
+          "fair_probability": 0.5883977900552486,
+          "edge": 0.2736022099447514,
+          "value_ratio": 1.28438,
           "rank_by_probability": 34
         },
         {
@@ -8879,11 +8879,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 3.5 - Menos",
           "probability": 0.846,
-          "odd": 1.62,
-          "implied_probability": 0.6172839506172839,
-          "fair_probability": 0.5524861878453038,
-          "edge": 0.2935138121546962,
-          "value_ratio": 1.37052,
+          "odd": 1.64,
+          "implied_probability": 0.6097560975609756,
+          "fair_probability": 0.5444444444444444,
+          "edge": 0.3015555555555556,
+          "value_ratio": 1.3874399999999998,
           "rank_by_probability": 35
         },
         {
@@ -8941,8 +8941,8 @@
           "probability": 0.792,
           "odd": 1.04,
           "implied_probability": 0.9615384615384615,
-          "fair_probability": 0.458272492418286,
-          "edge": 0.33372750758171404,
+          "fair_probability": 0.4587981288233178,
+          "edge": 0.33320187117668226,
           "value_ratio": 0.8236800000000001,
           "rank_by_probability": 40
         },
@@ -8953,8 +8953,8 @@
           "probability": 0.7859999999999999,
           "odd": 1.04,
           "implied_probability": 0.9615384615384615,
-          "fair_probability": 0.8433734939759036,
-          "edge": -0.05737349397590363,
+          "fair_probability": 0.8468335787923416,
+          "edge": -0.060833578792341636,
           "value_ratio": 0.8174399999999999,
           "rank_by_probability": 41
         },
@@ -8963,11 +8963,11 @@
           "outcome": "2.5",
           "label": "Handicap Fora - 2.5",
           "probability": 0.763,
-          "odd": 1.9,
-          "implied_probability": 0.5263157894736842,
-          "fair_probability": 0.5263157894736842,
-          "edge": 0.23668421052631583,
-          "value_ratio": 1.4497,
+          "odd": 1.93,
+          "implied_probability": 0.5181347150259068,
+          "fair_probability": 0.5181347150259068,
+          "edge": 0.2448652849740932,
+          "value_ratio": 1.47259,
           "rank_by_probability": 42
         },
         {
@@ -8975,11 +8975,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 3.5 Golos - Menos",
           "probability": 0.746,
-          "odd": 2.05,
-          "implied_probability": 0.48780487804878053,
-          "fair_probability": 0.4273743016759777,
-          "edge": 0.3186256983240223,
-          "value_ratio": 1.5292999999999999,
+          "odd": 2.08,
+          "implied_probability": 0.4807692307692307,
+          "fair_probability": 0.4206128133704735,
+          "edge": 0.3253871866295265,
+          "value_ratio": 1.55168,
           "rank_by_probability": 43
         },
         {
@@ -9001,8 +9001,8 @@
           "probability": 0.696,
           "odd": 1.09,
           "implied_probability": 0.9174311926605504,
-          "fair_probability": 0.846262341325811,
-          "edge": -0.15026234132581107,
+          "fair_probability": 0.8503609820673425,
+          "edge": -0.1543609820673425,
           "value_ratio": 0.75864,
           "rank_by_probability": 45
         },
@@ -9035,11 +9035,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 2.5 - Menos",
           "probability": 0.66,
-          "odd": 2.48,
-          "implied_probability": 0.40322580645161293,
-          "fair_probability": 0.3608247422680413,
-          "edge": 0.29917525773195874,
-          "value_ratio": 1.6368,
+          "odd": 2.53,
+          "implied_probability": 0.3952569169960475,
+          "fair_probability": 0.35294117647058826,
+          "edge": 0.3070588235294118,
+          "value_ratio": 1.6698,
           "rank_by_probability": 48
         },
         {
@@ -9083,11 +9083,11 @@
           "outcome": "1.5",
           "label": "Handicap Fora - 1.5",
           "probability": 0.547,
-          "odd": 3.12,
-          "implied_probability": 0.3205128205128205,
-          "fair_probability": 0.3205128205128205,
-          "edge": 0.22648717948717956,
-          "value_ratio": 1.7066400000000002,
+          "odd": 3.18,
+          "implied_probability": 0.31446540880503143,
+          "fair_probability": 0.31446540880503143,
+          "edge": 0.2325345911949686,
+          "value_ratio": 1.7394600000000002,
           "rank_by_probability": 52
         },
         {
@@ -9097,8 +9097,8 @@
           "probability": 0.544,
           "odd": 1.67,
           "implied_probability": 0.5988023952095809,
-          "fair_probability": 0.5242165242165242,
-          "edge": 0.019783475783475835,
+          "fair_probability": 0.5255681818181819,
+          "edge": 0.01843181818181816,
           "value_ratio": 0.9084800000000001,
           "rank_by_probability": 53
         },
@@ -9119,11 +9119,11 @@
           "outcome": "under",
           "label": "Total Fora Mais/Menos de 0.5 - Menos",
           "probability": 0.524,
-          "odd": 1.75,
-          "implied_probability": 0.5714285714285714,
-          "fair_probability": 0.5098039215686274,
-          "edge": 0.014196078431372605,
-          "value_ratio": 0.917,
+          "odd": 1.74,
+          "implied_probability": 0.5747126436781609,
+          "fair_probability": 0.5126050420168068,
+          "edge": 0.011394957983193232,
+          "value_ratio": 0.91176,
           "rank_by_probability": 55
         },
         {
@@ -9131,11 +9131,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 2.5 Golos - Mais",
           "probability": 0.518,
-          "odd": 1.19,
-          "implied_probability": 0.8403361344537815,
-          "fair_probability": 0.737885462555066,
-          "edge": -0.21988546255506602,
-          "value_ratio": 0.61642,
+          "odd": 1.18,
+          "implied_probability": 0.8474576271186441,
+          "fair_probability": 0.7423580786026202,
+          "edge": -0.22435807860262014,
+          "value_ratio": 0.61124,
           "rank_by_probability": 56
         },
         {
@@ -9143,11 +9143,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 2.5 Golos - Menos",
           "probability": 0.48200000000000004,
-          "odd": 3.35,
-          "implied_probability": 0.29850746268656714,
-          "fair_probability": 0.26211453744493385,
-          "edge": 0.2198854625550662,
-          "value_ratio": 1.6147000000000002,
+          "odd": 3.4,
+          "implied_probability": 0.29411764705882354,
+          "fair_probability": 0.2576419213973799,
+          "edge": 0.22435807860262014,
+          "value_ratio": 1.6388,
           "rank_by_probability": 57
         },
         {
@@ -9155,11 +9155,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 0.5 - Mais",
           "probability": 0.47600000000000003,
-          "odd": 1.82,
-          "implied_probability": 0.5494505494505494,
-          "fair_probability": 0.4901960784313725,
-          "edge": -0.014196078431372439,
-          "value_ratio": 0.8663200000000001,
+          "odd": 1.83,
+          "implied_probability": 0.5464480874316939,
+          "fair_probability": 0.48739495798319327,
+          "edge": -0.011394957983193232,
+          "value_ratio": 0.8710800000000001,
           "rank_by_probability": 58
         },
         {
@@ -9179,11 +9179,11 @@
           "outcome": "yes",
           "label": "Ambas Marcam - Sim",
           "probability": 0.456,
-          "odd": 1.84,
-          "implied_probability": 0.5434782608695652,
-          "fair_probability": 0.47578347578347574,
-          "edge": -0.019783475783475724,
-          "value_ratio": 0.8390400000000001,
+          "odd": 1.85,
+          "implied_probability": 0.5405405405405405,
+          "fair_probability": 0.47443181818181807,
+          "edge": -0.01843181818181805,
+          "value_ratio": 0.8436,
           "rank_by_probability": 60
         },
         {
@@ -9191,11 +9191,11 @@
           "outcome": "-1.5",
           "label": "Handicap Casa - -1.5",
           "probability": 0.45299999999999996,
-          "odd": 1.3,
-          "implied_probability": 0.7692307692307692,
-          "fair_probability": 0.7692307692307692,
-          "edge": -0.3162307692307692,
-          "value_ratio": 0.5889,
+          "odd": 1.29,
+          "implied_probability": 0.7751937984496123,
+          "fair_probability": 0.7751937984496123,
+          "edge": -0.3221937984496124,
+          "value_ratio": 0.58437,
           "rank_by_probability": 61
         },
         {
@@ -9239,11 +9239,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 2.5 - Mais",
           "probability": 0.34,
-          "odd": 1.4,
-          "implied_probability": 0.7142857142857143,
-          "fair_probability": 0.6391752577319588,
-          "edge": -0.2991752577319588,
-          "value_ratio": 0.476,
+          "odd": 1.38,
+          "implied_probability": 0.7246376811594204,
+          "fair_probability": 0.6470588235294118,
+          "edge": -0.3070588235294118,
+          "value_ratio": 0.4692,
           "rank_by_probability": 65
         },
         {
@@ -9263,11 +9263,11 @@
           "outcome": "0.5",
           "label": "Handicap Fora - 0.5",
           "probability": 0.304,
-          "odd": 6.4,
-          "implied_probability": 0.15625,
-          "fair_probability": 0.15625,
-          "edge": 0.14775,
-          "value_ratio": 1.9456,
+          "odd": 6.5,
+          "implied_probability": 0.15384615384615385,
+          "fair_probability": 0.15384615384615385,
+          "edge": 0.15015384615384614,
+          "value_ratio": 1.976,
           "rank_by_probability": 67
         },
         {
@@ -9275,11 +9275,11 @@
           "outcome": "x2",
           "label": "Dupla Hipótese - Empate ou Fora",
           "probability": 0.304,
-          "odd": 6.4,
-          "implied_probability": 0.15625,
-          "fair_probability": 0.07446928001797148,
-          "edge": 0.2295307199820285,
-          "value_ratio": 1.9456,
+          "odd": 6.5,
+          "implied_probability": 0.15384615384615385,
+          "fair_probability": 0.07340770061173085,
+          "edge": 0.23059229938826914,
+          "value_ratio": 1.976,
           "rank_by_probability": 68
         },
         {
@@ -9299,11 +9299,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 3.5 Golos - Mais",
           "probability": 0.254,
-          "odd": 1.53,
-          "implied_probability": 0.6535947712418301,
-          "fair_probability": 0.5726256983240223,
-          "edge": -0.3186256983240223,
-          "value_ratio": 0.38862,
+          "odd": 1.51,
+          "implied_probability": 0.6622516556291391,
+          "fair_probability": 0.5793871866295266,
+          "edge": -0.3253871866295266,
+          "value_ratio": 0.38354,
           "rank_by_probability": 70
         },
         {
@@ -9311,11 +9311,11 @@
           "outcome": "-2.5",
           "label": "Handicap Casa - -2.5",
           "probability": 0.237,
-          "odd": 1.76,
-          "implied_probability": 0.5681818181818182,
-          "fair_probability": 0.5681818181818182,
-          "edge": -0.33118181818181824,
-          "value_ratio": 0.41712,
+          "odd": 1.73,
+          "implied_probability": 0.5780346820809249,
+          "fair_probability": 0.5780346820809249,
+          "edge": -0.3410346820809249,
+          "value_ratio": 0.41001,
           "rank_by_probability": 71
         },
         {
@@ -9323,11 +9323,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 1.5 Golos - Menos",
           "probability": 0.214,
-          "odd": 5.6,
-          "implied_probability": 0.17857142857142858,
-          "fair_probability": 0.1566265060240964,
-          "edge": 0.057373493975903606,
-          "value_ratio": 1.1984,
+          "odd": 5.75,
+          "implied_probability": 0.17391304347826086,
+          "fair_probability": 0.1531664212076583,
+          "edge": 0.06083357879234169,
+          "value_ratio": 1.2305,
           "rank_by_probability": 72
         },
         {
@@ -9335,11 +9335,11 @@
           "outcome": "draw",
           "label": "Resultado Final - Empate",
           "probability": 0.20800000000000002,
-          "odd": 9.0,
-          "implied_probability": 0.1111111111111111,
-          "fair_probability": 0.10249177244945934,
-          "edge": 0.10550822755054068,
-          "value_ratio": 1.872,
+          "odd": 9.25,
+          "implied_probability": 0.10810810810810811,
+          "fair_probability": 0.10020469950847603,
+          "edge": 0.10779530049152398,
+          "value_ratio": 1.9240000000000002,
           "rank_by_probability": 73
         },
         {
@@ -9395,11 +9395,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 3.5 - Mais",
           "probability": 0.154,
-          "odd": 2.0,
-          "implied_probability": 0.5,
-          "fair_probability": 0.4475138121546961,
-          "edge": -0.2935138121546961,
-          "value_ratio": 0.308,
+          "odd": 1.96,
+          "implied_probability": 0.5102040816326531,
+          "fair_probability": 0.45555555555555555,
+          "edge": -0.3015555555555556,
+          "value_ratio": 0.30184,
           "rank_by_probability": 78
         },
         {
@@ -9407,11 +9407,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 4.5 Golos - Mais",
           "probability": 0.138,
-          "odd": 2.17,
-          "implied_probability": 0.4608294930875576,
-          "fair_probability": 0.4054794520547945,
-          "edge": -0.2674794520547945,
-          "value_ratio": 0.29946,
+          "odd": 2.13,
+          "implied_probability": 0.4694835680751174,
+          "fair_probability": 0.4116022099447514,
+          "edge": -0.2736022099447514,
+          "value_ratio": 0.29394000000000003,
           "rank_by_probability": 79
         },
         {
@@ -9421,8 +9421,8 @@
           "probability": 0.13699999999999998,
           "odd": 4.65,
           "implied_probability": 0.2150537634408602,
-          "fair_probability": 0.19270833333333331,
-          "edge": -0.05570833333333333,
+          "fair_probability": 0.19130434782608696,
+          "edge": -0.05430434782608698,
           "value_ratio": 0.63705,
           "rank_by_probability": 80
         },
@@ -9467,11 +9467,11 @@
           "outcome": "-3.5",
           "label": "Handicap Casa - -3.5",
           "probability": 0.102,
-          "odd": 2.7,
-          "implied_probability": 0.37037037037037035,
-          "fair_probability": 0.37037037037037035,
-          "edge": -0.26837037037037037,
-          "value_ratio": 0.2754,
+          "odd": 2.63,
+          "implied_probability": 0.3802281368821293,
+          "fair_probability": 0.3802281368821293,
+          "edge": -0.27822813688212933,
+          "value_ratio": 0.26826,
           "rank_by_probability": 84
         },
         {
@@ -9479,11 +9479,11 @@
           "outcome": "away",
           "label": "Resultado Final - Fora",
           "probability": 0.096,
-          "odd": 18.0,
-          "implied_probability": 0.05555555555555555,
-          "fair_probability": 0.05124588622472967,
-          "edge": 0.04475411377527033,
-          "value_ratio": 1.728,
+          "odd": 18.75,
+          "implied_probability": 0.05333333333333334,
+          "fair_probability": 0.049434318424181514,
+          "edge": 0.04656568157581849,
+          "value_ratio": 1.8,
           "rank_by_probability": 85
         },
         {
@@ -9551,11 +9551,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 4.5 - Mais",
           "probability": 0.057999999999999996,
-          "odd": 3.13,
-          "implied_probability": 0.3194888178913738,
-          "fair_probability": 0.2853881278538813,
-          "edge": -0.2273881278538813,
-          "value_ratio": 0.18153999999999998,
+          "odd": 3.05,
+          "implied_probability": 0.3278688524590164,
+          "fair_probability": 0.2923433874709977,
+          "edge": -0.2343433874709977,
+          "value_ratio": 0.17689999999999997,
           "rank_by_probability": 91
         },
         {
@@ -9563,11 +9563,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 5.5 Golos - Mais",
           "probability": 0.057,
-          "odd": 3.25,
-          "implied_probability": 0.3076923076923077,
-          "fair_probability": 0.26966292134831465,
-          "edge": -0.21266292134831466,
-          "value_ratio": 0.18525,
+          "odd": 3.18,
+          "implied_probability": 0.31446540880503143,
+          "fair_probability": 0.27562642369020496,
+          "edge": -0.21862642369020496,
+          "value_ratio": 0.18126,
           "rank_by_probability": 92
         },
         {
@@ -9587,11 +9587,11 @@
           "outcome": "-4.5",
           "label": "Handicap Casa - -4.5",
           "probability": 0.037000000000000005,
-          "odd": 4.55,
-          "implied_probability": 0.21978021978021978,
-          "fair_probability": 0.21978021978021978,
-          "edge": -0.18278021978021977,
-          "value_ratio": 0.16835000000000003,
+          "odd": 4.4,
+          "implied_probability": 0.22727272727272727,
+          "fair_probability": 0.22727272727272727,
+          "edge": -0.19027272727272726,
+          "value_ratio": 0.16280000000000003,
           "rank_by_probability": 94
         },
         {
@@ -10015,7 +10015,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-20T10:35:25.198632+00:00"
+        "scraped_at": "2026-10-20T13:41:52.053641+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -10029,11 +10029,11 @@
             "away": 5.6
           },
           "btts": {
-            "yes": 1.51,
+            "yes": 1.5,
             "no": 2.1
           },
           "double_chance": {
-            "1x": 1.12,
+            "1x": 1.13,
             "12": 1.16,
             "x2": 2.52
           },
@@ -10059,10 +10059,10 @@
           },
           "home_total_1.5": {
             "over": 1.37,
-            "under": 2.57
+            "under": 2.55
           },
           "home_total_2.5": {
-            "over": 2.12,
+            "over": 2.13,
             "under": 1.54
           },
           "home_total_3.5": {
@@ -10070,11 +10070,11 @@
             "under": 1.18
           },
           "away_total_0.5": {
-            "over": 1.4,
+            "over": 1.39,
             "under": 2.48
           },
           "away_total_1.5": {
-            "over": 2.82,
+            "over": 2.8,
             "under": 1.31
           },
           "away_total_2.5": {
@@ -10085,11 +10085,11 @@
             "-3.5": 7.0,
             "-2.5": 3.68,
             "-1.5": 2.13,
-            "0.5": 1.12,
+            "0.5": 1.13,
             "1.5": 1.02
           },
           "handicap_away": {
-            "2.5": 1.23,
+            "2.5": 1.22,
             "1.5": 1.6,
             "0.5": 2.52,
             "-1.5": 12.0,
@@ -10097,7 +10097,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8/liverpool-villarreal-m1252856908754944",
-        "scraped_at": "2026-10-20T10:35:48.530833+00:00"
+        "scraped_at": "2026-10-20T13:42:15.011840+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -10478,11 +10478,11 @@
           "outcome": "2.5",
           "label": "Handicap Fora - 2.5",
           "probability": 0.8420000000000001,
-          "odd": 1.23,
-          "implied_probability": 0.8130081300813008,
-          "fair_probability": 0.8130081300813008,
-          "edge": 0.028991869918699287,
-          "value_ratio": 1.03566,
+          "odd": 1.22,
+          "implied_probability": 0.819672131147541,
+          "fair_probability": 0.819672131147541,
+          "edge": 0.022327868852459076,
+          "value_ratio": 1.0272400000000002,
           "rank_by_probability": 32
         },
         {
@@ -10550,11 +10550,11 @@
           "outcome": "0.5",
           "label": "Handicap Casa - 0.5",
           "probability": 0.784,
-          "odd": 1.12,
-          "implied_probability": 0.8928571428571428,
-          "fair_probability": 0.8928571428571428,
-          "edge": -0.10885714285714276,
-          "value_ratio": 0.8780800000000001,
+          "odd": 1.13,
+          "implied_probability": 0.8849557522123894,
+          "fair_probability": 0.8849557522123894,
+          "edge": -0.1009557522123894,
+          "value_ratio": 0.8859199999999999,
           "rank_by_probability": 38
         },
         {
@@ -10562,11 +10562,11 @@
           "outcome": "1x",
           "label": "Dupla Hipótese - Casa ou Empate",
           "probability": 0.784,
-          "odd": 1.12,
-          "implied_probability": 0.8928571428571428,
-          "fair_probability": 0.4149443561208267,
-          "edge": 0.36905564387917333,
-          "value_ratio": 0.8780800000000001,
+          "odd": 1.13,
+          "implied_probability": 0.8849557522123894,
+          "fair_probability": 0.41278807049254407,
+          "edge": 0.37121192950745596,
+          "value_ratio": 0.8859199999999999,
           "rank_by_probability": 39
         },
         {
@@ -10576,8 +10576,8 @@
           "probability": 0.762,
           "odd": 1.16,
           "implied_probability": 0.8620689655172414,
-          "fair_probability": 0.40063593004769477,
-          "edge": 0.36136406995230524,
+          "fair_probability": 0.4021125169453231,
+          "edge": 0.35988748305467694,
           "value_ratio": 0.8839199999999999,
           "rank_by_probability": 40
         },
@@ -10610,11 +10610,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 0.5 - Mais",
           "probability": 0.6940000000000001,
-          "odd": 1.4,
-          "implied_probability": 0.7142857142857143,
-          "fair_probability": 0.6391752577319588,
-          "edge": 0.05482474226804124,
-          "value_ratio": 0.9716,
+          "odd": 1.39,
+          "implied_probability": 0.7194244604316548,
+          "fair_probability": 0.640826873385013,
+          "edge": 0.053173126614987076,
+          "value_ratio": 0.96466,
           "rank_by_probability": 43
         },
         {
@@ -10624,8 +10624,8 @@
           "probability": 0.685,
           "odd": 1.54,
           "implied_probability": 0.6493506493506493,
-          "fair_probability": 0.5792349726775957,
-          "edge": 0.10576502732240434,
+          "fair_probability": 0.5803814713896457,
+          "edge": 0.10461852861035437,
           "value_ratio": 1.0549000000000002,
           "rank_by_probability": 44
         },
@@ -10646,11 +10646,11 @@
           "outcome": "yes",
           "label": "Ambas Marcam - Sim",
           "probability": 0.669,
-          "odd": 1.51,
-          "implied_probability": 0.6622516556291391,
-          "fair_probability": 0.5817174515235458,
-          "edge": 0.08728254847645422,
-          "value_ratio": 1.0101900000000001,
+          "odd": 1.5,
+          "implied_probability": 0.6666666666666666,
+          "fair_probability": 0.5833333333333334,
+          "edge": 0.08566666666666667,
+          "value_ratio": 1.0035,
           "rank_by_probability": 46
         },
         {
@@ -10660,8 +10660,8 @@
           "probability": 0.669,
           "odd": 1.31,
           "implied_probability": 0.7633587786259541,
-          "fair_probability": 0.6828087167070217,
-          "edge": -0.013808716707021662,
+          "fair_probability": 0.681265206812652,
+          "edge": -0.012265206812651974,
           "value_ratio": 0.8763900000000001,
           "rank_by_probability": 47
         },
@@ -10696,8 +10696,8 @@
           "probability": 0.585,
           "odd": 1.37,
           "implied_probability": 0.7299270072992701,
-          "fair_probability": 0.6522842639593909,
-          "edge": -0.06728426395939091,
+          "fair_probability": 0.6505102040816327,
+          "edge": -0.06551020408163277,
           "value_ratio": 0.80145,
           "rank_by_probability": 50
         },
@@ -10816,8 +10816,8 @@
           "probability": 0.45399999999999996,
           "odd": 2.52,
           "implied_probability": 0.3968253968253968,
-          "fair_probability": 0.18441971383147854,
-          "edge": 0.2695802861685214,
+          "fair_probability": 0.18509941256213283,
+          "edge": 0.26890058743786716,
           "value_ratio": 1.14408,
           "rank_by_probability": 60
         },
@@ -10850,11 +10850,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 1.5 - Menos",
           "probability": 0.415,
-          "odd": 2.57,
-          "implied_probability": 0.38910505836575876,
-          "fair_probability": 0.3477157360406092,
-          "edge": 0.0672842639593908,
-          "value_ratio": 1.0665499999999999,
+          "odd": 2.55,
+          "implied_probability": 0.3921568627450981,
+          "fair_probability": 0.34948979591836743,
+          "edge": 0.06551020408163255,
+          "value_ratio": 1.05825,
           "rank_by_probability": 63
         },
         {
@@ -10888,8 +10888,8 @@
           "probability": 0.331,
           "odd": 2.1,
           "implied_probability": 0.47619047619047616,
-          "fair_probability": 0.4182825484764543,
-          "edge": -0.08728254847645428,
+          "fair_probability": 0.4166666666666667,
+          "edge": -0.08566666666666667,
           "value_ratio": 0.6951,
           "rank_by_probability": 66
         },
@@ -10898,11 +10898,11 @@
           "outcome": "over",
           "label": "Total Fora Mais/Menos de 1.5 - Mais",
           "probability": 0.331,
-          "odd": 2.82,
-          "implied_probability": 0.3546099290780142,
-          "fair_probability": 0.31719128329297824,
-          "edge": 0.013808716707021773,
-          "value_ratio": 0.93342,
+          "odd": 2.8,
+          "implied_probability": 0.35714285714285715,
+          "fair_probability": 0.31873479318734793,
+          "edge": 0.012265206812652085,
+          "value_ratio": 0.9268,
           "rank_by_probability": 67
         },
         {
@@ -10922,11 +10922,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 2.5 - Mais",
           "probability": 0.315,
-          "odd": 2.12,
-          "implied_probability": 0.4716981132075471,
-          "fair_probability": 0.4207650273224044,
-          "edge": -0.10576502732240439,
-          "value_ratio": 0.6678000000000001,
+          "odd": 2.13,
+          "implied_probability": 0.4694835680751174,
+          "fair_probability": 0.4196185286103542,
+          "edge": -0.1046185286103542,
+          "value_ratio": 0.6709499999999999,
           "rank_by_probability": 69
         },
         {
@@ -10936,8 +10936,8 @@
           "probability": 0.306,
           "odd": 2.48,
           "implied_probability": 0.40322580645161293,
-          "fair_probability": 0.3608247422680413,
-          "edge": -0.05482474226804129,
+          "fair_probability": 0.35917312661498707,
+          "edge": -0.053173126614987076,
           "value_ratio": 0.75888,
           "rank_by_probability": 70
         },
@@ -11650,7 +11650,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-20T10:35:33.258814+00:00"
+        "scraped_at": "2026-10-20T13:42:00.106866+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -11732,7 +11732,7 @@
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8/napoles-bod-glimt-m1252857142591488",
-        "scraped_at": "2026-10-20T10:35:48.530964+00:00"
+        "scraped_at": "2026-10-20T13:42:15.011973+00:00"
       },
       "match_confidence": 87.92682926829268,
       "value_bets": [
@@ -13285,7 +13285,7 @@
           }
         },
         "extra_stats": {},
-        "scraped_at": "2026-10-20T10:35:41.207169+00:00"
+        "scraped_at": "2026-10-20T13:42:08.149198+00:00"
       },
       "odds": {
         "bookmaker": "betclic",
@@ -13294,50 +13294,50 @@
         "kickoff": "2026-10-20T19:00:00+00:00",
         "markets": {
           "1x2": {
-            "home": 1.1,
-            "draw": 8.75,
-            "away": 16.75
+            "home": 1.12,
+            "draw": 8.25,
+            "away": 15.5
           },
           "btts": {
             "yes": 1.83,
-            "no": 1.69
+            "no": 1.68
           },
           "double_chance": {
             "1x": 1.02,
-            "12": 1.04,
-            "x2": 6.0
+            "12": 1.05,
+            "x2": 5.6
           },
           "over_under_1.5": {
-            "over": 1.04,
-            "under": 5.5
+            "over": 1.05,
+            "under": 5.4
           },
           "over_under_2.5": {
-            "over": 1.2,
-            "under": 3.23
+            "over": 1.23,
+            "under": 3.07
           },
           "over_under_3.5": {
-            "over": 1.56,
-            "under": 2.0
+            "over": 1.62,
+            "under": 1.91
           },
           "over_under_4.5": {
-            "over": 2.23,
-            "under": 1.45
+            "over": 2.35,
+            "under": 1.4
           },
           "over_under_5.5": {
-            "over": 3.37,
-            "under": 1.19
+            "over": 3.58,
+            "under": 1.16
           },
           "home_total_2.5": {
-            "over": 1.43,
-            "under": 2.38
+            "over": 1.48,
+            "under": 2.25
           },
           "home_total_3.5": {
-            "over": 2.07,
-            "under": 1.57
+            "over": 2.18,
+            "under": 1.51
           },
           "home_total_4.5": {
-            "over": 3.3,
-            "under": 1.22
+            "over": 3.53,
+            "under": 1.2
           },
           "away_total_0.5": {
             "over": 1.8,
@@ -13352,22 +13352,22 @@
             "under": 1.01
           },
           "handicap_home": {
-            "-5.5": 8.75,
-            "-4.5": 4.9,
-            "-3.5": 2.85,
-            "-2.5": 1.83,
-            "-1.5": 1.33
+            "-4.5": 5.4,
+            "-3.5": 3.05,
+            "-2.5": 1.91,
+            "-1.5": 1.36,
+            "0.5": 1.02
           },
           "handicap_away": {
-            "4.5": 1.13,
-            "3.5": 1.35,
-            "2.5": 1.83,
-            "1.5": 2.95,
-            "0.5": 6.0
+            "3.5": 1.31,
+            "2.5": 1.75,
+            "1.5": 2.8,
+            "0.5": 5.6,
+            "-1.5": 29.0
           }
         },
         "url": "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8/manchester-city-aek-atenas-m1252853878370304",
-        "scraped_at": "2026-10-20T10:35:48.530586+00:00"
+        "scraped_at": "2026-10-20T13:42:15.011574+00:00"
       },
       "match_confidence": 100.0,
       "value_bets": [
@@ -13580,11 +13580,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 1.5 Golos - Mais",
           "probability": 0.9359999999999999,
-          "odd": 1.04,
-          "implied_probability": 0.9615384615384615,
-          "fair_probability": 0.8409785932721712,
-          "edge": 0.09502140672782877,
-          "value_ratio": 0.97344,
+          "odd": 1.05,
+          "implied_probability": 0.9523809523809523,
+          "fair_probability": 0.8372093023255814,
+          "edge": 0.0987906976744185,
+          "value_ratio": 0.9828,
           "rank_by_probability": 18
         },
         {
@@ -13628,11 +13628,11 @@
           "outcome": "4.5",
           "label": "Handicap Fora - 4.5",
           "probability": 0.917,
-          "odd": 1.13,
-          "implied_probability": 0.8849557522123894,
-          "fair_probability": 0.8849557522123894,
-          "edge": 0.032044247787610614,
-          "value_ratio": 1.0362099999999999,
+          "odd": null,
+          "implied_probability": null,
+          "fair_probability": null,
+          "edge": null,
+          "value_ratio": null,
           "rank_by_probability": 22
         },
         {
@@ -13678,8 +13678,8 @@
           "probability": 0.883,
           "odd": 1.02,
           "implied_probability": 0.9803921568627451,
-          "fair_probability": 0.46494992846924177,
-          "edge": 0.41805007153075824,
+          "fair_probability": 0.46434494195688225,
+          "edge": 0.41865505804311776,
           "value_ratio": 0.90066,
           "rank_by_probability": 26
         },
@@ -13688,11 +13688,11 @@
           "outcome": "0.5",
           "label": "Handicap Casa - 0.5",
           "probability": 0.882,
-          "odd": null,
-          "implied_probability": null,
-          "fair_probability": null,
-          "edge": null,
-          "value_ratio": null,
+          "odd": 1.02,
+          "implied_probability": 0.9803921568627451,
+          "fair_probability": 0.9803921568627451,
+          "edge": -0.09839215686274505,
+          "value_ratio": 0.89964,
           "rank_by_probability": 27
         },
         {
@@ -13724,11 +13724,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 4.5 - Menos",
           "probability": 0.841,
-          "odd": 1.22,
-          "implied_probability": 0.819672131147541,
-          "fair_probability": 0.7300884955752213,
-          "edge": 0.1109115044247787,
-          "value_ratio": 1.02602,
+          "odd": 1.2,
+          "implied_probability": 0.8333333333333334,
+          "fair_probability": 0.7463002114164905,
+          "edge": 0.09469978858350947,
+          "value_ratio": 1.0091999999999999,
           "rank_by_probability": 30
         },
         {
@@ -13736,11 +13736,11 @@
           "outcome": "12",
           "label": "Dupla Hipótese - Casa ou Fora",
           "probability": 0.8390000000000001,
-          "odd": 1.04,
-          "implied_probability": 0.9615384615384615,
-          "fair_probability": 0.45600858369098707,
-          "edge": 0.382991416309013,
-          "value_ratio": 0.8725600000000001,
+          "odd": 1.05,
+          "implied_probability": 0.9523809523809523,
+          "fair_probability": 0.451077943615257,
+          "edge": 0.3879220563847431,
+          "value_ratio": 0.8809500000000001,
           "rank_by_probability": 31
         },
         {
@@ -13748,11 +13748,11 @@
           "outcome": "3.5",
           "label": "Handicap Fora - 3.5",
           "probability": 0.823,
-          "odd": 1.35,
-          "implied_probability": 0.7407407407407407,
-          "fair_probability": 0.7407407407407407,
-          "edge": 0.08225925925925925,
-          "value_ratio": 1.11105,
+          "odd": 1.31,
+          "implied_probability": 0.7633587786259541,
+          "fair_probability": 0.7633587786259541,
+          "edge": 0.059641221374045816,
+          "value_ratio": 1.07813,
           "rank_by_probability": 32
         },
         {
@@ -13772,11 +13772,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 2.5 Golos - Mais",
           "probability": 0.799,
-          "odd": 1.2,
-          "implied_probability": 0.8333333333333334,
-          "fair_probability": 0.729119638826185,
-          "edge": 0.06988036117381502,
-          "value_ratio": 0.9588,
+          "odd": 1.23,
+          "implied_probability": 0.8130081300813008,
+          "fair_probability": 0.7139534883720929,
+          "edge": 0.0850465116279071,
+          "value_ratio": 0.98277,
           "rank_by_probability": 34
         },
         {
@@ -13796,11 +13796,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 5.5 Golos - Menos",
           "probability": 0.789,
-          "odd": 1.19,
-          "implied_probability": 0.8403361344537815,
-          "fair_probability": 0.7390350877192983,
-          "edge": 0.04996491228070177,
-          "value_ratio": 0.93891,
+          "odd": 1.16,
+          "implied_probability": 0.8620689655172414,
+          "fair_probability": 0.7552742616033756,
+          "edge": 0.033725738396624405,
+          "value_ratio": 0.9152399999999999,
           "rank_by_probability": 36
         },
         {
@@ -13832,11 +13832,11 @@
           "outcome": "home",
           "label": "Resultado Final - Casa",
           "probability": 0.721,
-          "odd": 1.1,
-          "implied_probability": 0.9090909090909091,
-          "fair_probability": 0.8393585797122198,
-          "edge": -0.11835857971221986,
-          "value_ratio": 0.7931,
+          "odd": 1.12,
+          "implied_probability": 0.8928571428571428,
+          "fair_probability": 0.8278038517559475,
+          "edge": -0.10680385175594753,
+          "value_ratio": 0.80752,
           "rank_by_probability": 39
         },
         {
@@ -13858,8 +13858,8 @@
           "probability": 0.71,
           "odd": 1.83,
           "implied_probability": 0.5464480874316939,
-          "fair_probability": 0.4801136363636363,
-          "edge": 0.22988636363636367,
+          "fair_probability": 0.47863247863247865,
+          "edge": 0.2313675213675213,
           "value_ratio": 1.2993,
           "rank_by_probability": 41
         },
@@ -13904,11 +13904,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 3.5 - Menos",
           "probability": 0.682,
-          "odd": 1.57,
-          "implied_probability": 0.6369426751592356,
-          "fair_probability": 0.5686813186813187,
-          "edge": 0.11331868131868139,
-          "value_ratio": 1.07074,
+          "odd": 1.51,
+          "implied_probability": 0.6622516556291391,
+          "fair_probability": 0.5907859078590787,
+          "edge": 0.09121409214092135,
+          "value_ratio": 1.0298200000000002,
           "rank_by_probability": 45
         },
         {
@@ -13928,11 +13928,11 @@
           "outcome": "2.5",
           "label": "Handicap Fora - 2.5",
           "probability": 0.67,
-          "odd": 1.83,
-          "implied_probability": 0.5464480874316939,
-          "fair_probability": 0.5464480874316939,
-          "edge": 0.12355191256830611,
-          "value_ratio": 1.2261000000000002,
+          "odd": 1.75,
+          "implied_probability": 0.5714285714285714,
+          "fair_probability": 0.5714285714285714,
+          "edge": 0.09857142857142864,
+          "value_ratio": 1.1725,
           "rank_by_probability": 47
         },
         {
@@ -13952,11 +13952,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 4.5 Golos - Menos",
           "probability": 0.633,
-          "odd": 1.45,
-          "implied_probability": 0.6896551724137931,
-          "fair_probability": 0.6059782608695653,
-          "edge": 0.027021739130434708,
-          "value_ratio": 0.9178499999999999,
+          "odd": 1.4,
+          "implied_probability": 0.7142857142857143,
+          "fair_probability": 0.6266666666666666,
+          "edge": 0.006333333333333413,
+          "value_ratio": 0.8862,
           "rank_by_probability": 49
         },
         {
@@ -13988,11 +13988,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 3.5 Golos - Mais",
           "probability": 0.574,
-          "odd": 1.56,
-          "implied_probability": 0.641025641025641,
-          "fair_probability": 0.5617977528089887,
-          "edge": 0.012202247191011262,
-          "value_ratio": 0.89544,
+          "odd": 1.62,
+          "implied_probability": 0.6172839506172839,
+          "fair_probability": 0.5410764872521246,
+          "edge": 0.032923512747875305,
+          "value_ratio": 0.92988,
           "rank_by_probability": 52
         },
         {
@@ -14012,11 +14012,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 2.5 - Mais",
           "probability": 0.541,
-          "odd": 1.43,
-          "implied_probability": 0.6993006993006994,
-          "fair_probability": 0.6246719160104987,
-          "edge": -0.08367191601049861,
-          "value_ratio": 0.77363,
+          "odd": 1.48,
+          "implied_probability": 0.6756756756756757,
+          "fair_probability": 0.6032171581769437,
+          "edge": -0.06221715817694362,
+          "value_ratio": 0.8006800000000001,
           "rank_by_probability": 54
         },
         {
@@ -14024,11 +14024,11 @@
           "outcome": "-1.5",
           "label": "Handicap Casa - -1.5",
           "probability": 0.527,
-          "odd": 1.33,
-          "implied_probability": 0.7518796992481203,
-          "fair_probability": 0.7518796992481203,
-          "edge": -0.22487969924812024,
-          "value_ratio": 0.70091,
+          "odd": 1.36,
+          "implied_probability": 0.7352941176470588,
+          "fair_probability": 0.7352941176470588,
+          "edge": -0.20829411764705874,
+          "value_ratio": 0.7167200000000001,
           "rank_by_probability": 55
         },
         {
@@ -14060,11 +14060,11 @@
           "outcome": "1.5",
           "label": "Handicap Fora - 1.5",
           "probability": 0.47200000000000003,
-          "odd": 2.95,
-          "implied_probability": 0.3389830508474576,
-          "fair_probability": 0.3389830508474576,
-          "edge": 0.13301694915254242,
-          "value_ratio": 1.3924,
+          "odd": 2.8,
+          "implied_probability": 0.35714285714285715,
+          "fair_probability": 0.35714285714285715,
+          "edge": 0.11485714285714288,
+          "value_ratio": 1.3216,
           "rank_by_probability": 58
         },
         {
@@ -14072,11 +14072,11 @@
           "outcome": "under",
           "label": "Total Casa Mais/Menos de 2.5 - Menos",
           "probability": 0.45899999999999996,
-          "odd": 2.38,
-          "implied_probability": 0.42016806722689076,
-          "fair_probability": 0.3753280839895013,
-          "edge": 0.08367191601049867,
-          "value_ratio": 1.09242,
+          "odd": 2.25,
+          "implied_probability": 0.4444444444444444,
+          "fair_probability": 0.3967828418230563,
+          "edge": 0.06221715817694368,
+          "value_ratio": 1.0327499999999998,
           "rank_by_probability": 59
         },
         {
@@ -14096,11 +14096,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 3.5 Golos - Menos",
           "probability": 0.426,
-          "odd": 2.0,
-          "implied_probability": 0.5,
-          "fair_probability": 0.43820224719101125,
-          "edge": -0.012202247191011262,
-          "value_ratio": 0.852,
+          "odd": 1.91,
+          "implied_probability": 0.5235602094240838,
+          "fair_probability": 0.45892351274787535,
+          "edge": -0.03292351274787536,
+          "value_ratio": 0.8136599999999999,
           "rank_by_probability": 61
         },
         {
@@ -14132,11 +14132,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 4.5 Golos - Mais",
           "probability": 0.36700000000000005,
-          "odd": 2.23,
-          "implied_probability": 0.4484304932735426,
-          "fair_probability": 0.3940217391304348,
-          "edge": -0.027021739130434763,
-          "value_ratio": 0.8184100000000001,
+          "odd": 2.35,
+          "implied_probability": 0.425531914893617,
+          "fair_probability": 0.3733333333333333,
+          "edge": -0.0063333333333332464,
+          "value_ratio": 0.8624500000000002,
           "rank_by_probability": 64
         },
         {
@@ -14156,11 +14156,11 @@
           "outcome": "-2.5",
           "label": "Handicap Casa - -2.5",
           "probability": 0.32899999999999996,
-          "odd": 1.83,
-          "implied_probability": 0.5464480874316939,
-          "fair_probability": 0.5464480874316939,
-          "edge": -0.21744808743169397,
-          "value_ratio": 0.60207,
+          "odd": 1.91,
+          "implied_probability": 0.5235602094240838,
+          "fair_probability": 0.5235602094240838,
+          "edge": -0.1945602094240838,
+          "value_ratio": 0.6283899999999999,
           "rank_by_probability": 66
         },
         {
@@ -14180,11 +14180,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 3.5 - Mais",
           "probability": 0.318,
-          "odd": 2.07,
-          "implied_probability": 0.48309178743961356,
-          "fair_probability": 0.43131868131868134,
-          "edge": -0.11331868131868134,
-          "value_ratio": 0.65826,
+          "odd": 2.18,
+          "implied_probability": 0.4587155963302752,
+          "fair_probability": 0.4092140921409214,
+          "edge": -0.09121409214092141,
+          "value_ratio": 0.6932400000000001,
           "rank_by_probability": 68
         },
         {
@@ -14228,11 +14228,11 @@
           "outcome": "no",
           "label": "Ambas Marcam - Não",
           "probability": 0.29,
-          "odd": 1.69,
-          "implied_probability": 0.591715976331361,
-          "fair_probability": 0.5198863636363636,
-          "edge": -0.22988636363636367,
-          "value_ratio": 0.4900999999999999,
+          "odd": 1.68,
+          "implied_probability": 0.5952380952380952,
+          "fair_probability": 0.5213675213675214,
+          "edge": -0.23136752136752142,
+          "value_ratio": 0.48719999999999997,
           "rank_by_probability": 72
         },
         {
@@ -14240,11 +14240,11 @@
           "outcome": "x2",
           "label": "Dupla Hipótese - Empate ou Fora",
           "probability": 0.27899999999999997,
-          "odd": 6.0,
-          "implied_probability": 0.16666666666666666,
-          "fair_probability": 0.0790414878397711,
-          "edge": 0.19995851216022886,
-          "value_ratio": 1.674,
+          "odd": 5.6,
+          "implied_probability": 0.17857142857142858,
+          "fair_probability": 0.0845771144278607,
+          "edge": 0.19442288557213927,
+          "value_ratio": 1.5623999999999998,
           "rank_by_probability": 73
         },
         {
@@ -14252,11 +14252,11 @@
           "outcome": "0.5",
           "label": "Handicap Fora - 0.5",
           "probability": 0.278,
-          "odd": 6.0,
-          "implied_probability": 0.16666666666666666,
-          "fair_probability": 0.16666666666666666,
-          "edge": 0.11133333333333337,
-          "value_ratio": 1.6680000000000001,
+          "odd": 5.6,
+          "implied_probability": 0.17857142857142858,
+          "fair_probability": 0.17857142857142858,
+          "edge": 0.09942857142857145,
+          "value_ratio": 1.5568,
           "rank_by_probability": 74
         },
         {
@@ -14288,11 +14288,11 @@
           "outcome": "over",
           "label": "Mais/Menos de 5.5 Golos - Mais",
           "probability": 0.21100000000000002,
-          "odd": 3.37,
-          "implied_probability": 0.29673590504451036,
-          "fair_probability": 0.26096491228070173,
-          "edge": -0.04996491228070171,
-          "value_ratio": 0.7110700000000001,
+          "odd": 3.58,
+          "implied_probability": 0.27932960893854747,
+          "fair_probability": 0.24472573839662445,
+          "edge": -0.03372573839662443,
+          "value_ratio": 0.75538,
           "rank_by_probability": 77
         },
         {
@@ -14312,11 +14312,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 2.5 Golos - Menos",
           "probability": 0.201,
-          "odd": 3.23,
-          "implied_probability": 0.30959752321981426,
-          "fair_probability": 0.27088036117381487,
-          "edge": -0.06988036117381485,
-          "value_ratio": 0.6492300000000001,
+          "odd": 3.07,
+          "implied_probability": 0.32573289902280134,
+          "fair_probability": 0.28604651162790695,
+          "edge": -0.08504651162790694,
+          "value_ratio": 0.61707,
           "rank_by_probability": 79
         },
         {
@@ -14336,11 +14336,11 @@
           "outcome": "-3.5",
           "label": "Handicap Casa - -3.5",
           "probability": 0.177,
-          "odd": 2.85,
-          "implied_probability": 0.3508771929824561,
-          "fair_probability": 0.3508771929824561,
-          "edge": -0.17387719298245613,
-          "value_ratio": 0.50445,
+          "odd": 3.05,
+          "implied_probability": 0.3278688524590164,
+          "fair_probability": 0.3278688524590164,
+          "edge": -0.15086885245901643,
+          "value_ratio": 0.5398499999999999,
           "rank_by_probability": 81
         },
         {
@@ -14348,11 +14348,11 @@
           "outcome": "draw",
           "label": "Resultado Final - Empate",
           "probability": 0.161,
-          "odd": 8.75,
-          "implied_probability": 0.11428571428571428,
-          "fair_probability": 0.10551936430667906,
-          "edge": 0.05548063569332094,
-          "value_ratio": 1.40875,
+          "odd": 8.25,
+          "implied_probability": 0.12121212121212122,
+          "fair_probability": 0.11238064411717107,
+          "edge": 0.04861935588282894,
+          "value_ratio": 1.32825,
           "rank_by_probability": 82
         },
         {
@@ -14360,11 +14360,11 @@
           "outcome": "over",
           "label": "Total Casa Mais/Menos de 4.5 - Mais",
           "probability": 0.159,
-          "odd": 3.3,
-          "implied_probability": 0.30303030303030304,
-          "fair_probability": 0.2699115044247788,
-          "edge": -0.11091150442477879,
-          "value_ratio": 0.5246999999999999,
+          "odd": 3.53,
+          "implied_probability": 0.28328611898017,
+          "fair_probability": 0.2536997885835095,
+          "edge": -0.0946997885835095,
+          "value_ratio": 0.5612699999999999,
           "rank_by_probability": 83
         },
         {
@@ -14396,11 +14396,11 @@
           "outcome": "away",
           "label": "Resultado Final - Fora",
           "probability": 0.11699999999999999,
-          "odd": 16.75,
-          "implied_probability": 0.05970149253731343,
-          "fair_probability": 0.055122055981101,
-          "edge": 0.06187794401889899,
-          "value_ratio": 1.9597499999999999,
+          "odd": 15.5,
+          "implied_probability": 0.06451612903225806,
+          "fair_probability": 0.05981550412688137,
+          "edge": 0.05718449587311862,
+          "value_ratio": 1.8135,
           "rank_by_probability": 86
         },
         {
@@ -14456,11 +14456,11 @@
           "outcome": "-4.5",
           "label": "Handicap Casa - -4.5",
           "probability": 0.08199999999999999,
-          "odd": 4.9,
-          "implied_probability": 0.2040816326530612,
-          "fair_probability": 0.2040816326530612,
-          "edge": -0.12208163265306121,
-          "value_ratio": 0.4018,
+          "odd": 5.4,
+          "implied_probability": 0.18518518518518517,
+          "fair_probability": 0.18518518518518517,
+          "edge": -0.10318518518518519,
+          "value_ratio": 0.44279999999999997,
           "rank_by_probability": 91
         },
         {
@@ -14504,11 +14504,11 @@
           "outcome": "under",
           "label": "Mais/Menos de 1.5 Golos - Menos",
           "probability": 0.064,
-          "odd": 5.5,
-          "implied_probability": 0.18181818181818182,
-          "fair_probability": 0.15902140672782875,
-          "edge": -0.09502140672782874,
-          "value_ratio": 0.352,
+          "odd": 5.4,
+          "implied_probability": 0.18518518518518517,
+          "fair_probability": 0.16279069767441862,
+          "edge": -0.09879069767441861,
+          "value_ratio": 0.3456,
           "rank_by_probability": 95
         },
         {
@@ -14540,11 +14540,11 @@
           "outcome": "-1.5",
           "label": "Handicap Fora - -1.5",
           "probability": 0.044000000000000004,
-          "odd": null,
-          "implied_probability": null,
-          "fair_probability": null,
-          "edge": null,
-          "value_ratio": null,
+          "odd": 29.0,
+          "implied_probability": 0.034482758620689655,
+          "fair_probability": 0.034482758620689655,
+          "edge": 0.00951724137931035,
+          "value_ratio": 1.276,
           "rank_by_probability": 98
         },
         {

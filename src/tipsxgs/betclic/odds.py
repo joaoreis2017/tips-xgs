@@ -96,6 +96,12 @@ def _rows_from_css(page_cfg: PageConfig, html: str) -> list[dict]:
     return extract_by_selectors(html, page_cfg.fields, root_selector=page_cfg.list_item_selector)
 
 
+# See the "Real bug report (2026-10-25)" comment inside _scrape_list
+# below for why a competition page gets a single retry when it comes
+# back with zero matches.
+_LISTING_RETRY_DELAY_SECONDS = 30
+
+
 def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
     page_cfg = cfg.betclic.page("fixtures")
     # `urls` (several competition-specific pages -- more reliable than one
@@ -119,14 +125,8 @@ def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
     # change -- a near-empty HTML/title here (vs. the real page title and
     # a nonzero blob count) would confirm that on the next failure.
     diagnostics: list[tuple[str, int, str | None, int]] = []
-    for i, url in enumerate(urls, start=1):
-        # One line per competition page -- with 17+ of these visited
-        # sequentially (each with its own wait_ms + polite_delay), a run
-        # can easily take several minutes with *zero* log output between
-        # "Scraping Betclic odds..." and the final count otherwise, which
-        # looks indistinguishable from a genuine hang. This is purely
-        # visibility, no behavior change.
-        logger.info("Visiting Betclic competition page %d/%d: %s", i, len(urls), url)
+
+    def _visit(url: str) -> tuple[list[dict], list[dict], tuple[str, int, str | None, int]]:
         html, blobs_captured = session.get_html_and_captured_json(
             url,
             wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000,
@@ -135,13 +135,58 @@ def _scrape_list(cfg: AppConfig, session: BrowserSession) -> list[dict]:
         )
         blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
         title_match = re.search(r"<title[^>]*>([^<]*)</title>", html, re.IGNORECASE)
-        diagnostics.append((url, len(html), title_match.group(1).strip() if title_match else None, len(blobs)))
-
+        diag = (url, len(html), title_match.group(1).strip() if title_match else None, len(blobs))
         items = _items_from_json(page_cfg, blobs, seen_match_ids)
-        if items:
-            all_items.extend(items)
-        else:
-            css_rows.extend(_rows_from_css(page_cfg, html))
+        css = _rows_from_css(page_cfg, html) if not items else []
+        return items, css, diag
+
+    for i, url in enumerate(urls, start=1):
+        # One line per competition page -- with 17+ of these visited
+        # sequentially (each with its own wait_ms + polite_delay), a run
+        # can easily take several minutes with *zero* log output between
+        # "Scraping Betclic odds..." and the final count otherwise, which
+        # looks indistinguishable from a genuine hang. This is purely
+        # visibility, no behavior change.
+        logger.info("Visiting Betclic competition page %d/%d: %s", i, len(urls), url)
+        items, css, diag = _visit(url)
+
+        # Real bug report (2026-10-25): Serie A, Ligue 1 and Argentina's
+        # competition pages each came back with literally zero matches
+        # that day (vs. dozens for every other page visited in the same
+        # run), yet nothing was logged -- the diagnostic below only ever
+        # fired when *every* URL's total came back empty, not any single
+        # one of them. A whole competition silently missing means every
+        # one of its fixtures goes unmatched (and logs a confusing
+        # "closest candidate" from some unrelated league instead), so
+        # this single retry (after a real pause, same reasoning as the
+        # detail-page hop retry below) gives a one-off render/response
+        # glitch a second chance, and the diagnostic now always prints
+        # on a still-empty page so the next failure is actually visible.
+        if not items and not css:
+            logger.warning(
+                "0 matches extracted from %s: html length=%d, <title>=%r, JSON blobs captured=%d "
+                "-- retrying once after %ds...",
+                diag[0],
+                diag[1],
+                diag[2],
+                diag[3],
+                _LISTING_RETRY_DELAY_SECONDS,
+            )
+            time.sleep(_LISTING_RETRY_DELAY_SECONDS)
+            items, css, diag = _visit(url)
+            if not items and not css:
+                logger.warning(
+                    "Still 0 matches extracted from %s after retry: html length=%d, <title>=%r, "
+                    "JSON blobs captured=%d.",
+                    diag[0],
+                    diag[1],
+                    diag[2],
+                    diag[3],
+                )
+
+        diagnostics.append(diag)
+        all_items.extend(items)
+        css_rows.extend(css)
 
         if len(urls) > 1:
             with polite_delay(cfg.betclic.request_delay_seconds):

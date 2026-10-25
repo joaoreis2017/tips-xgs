@@ -281,7 +281,14 @@ class MultiUrlFakeSession:
         return "<html></html>", []
 
 
-def test_scrape_today_odds_visits_every_competition_url_and_merges_results():
+def test_scrape_today_odds_visits_every_competition_url_and_merges_results(monkeypatch):
+    import tipsxgs.betclic.odds as odds_module
+
+    # A URL that comes back with 0 matches now gets retried once (see
+    # _LISTING_RETRY_DELAY_SECONDS) -- drop the pause to 0 so this test
+    # doesn't actually sleep.
+    monkeypatch.setattr(odds_module, "_LISTING_RETRY_DELAY_SECONDS", 0)
+
     cfg = load_config()
     fixtures_page = cfg.betclic.page("fixtures")
     fixtures_page.urls = [
@@ -294,8 +301,57 @@ def test_scrape_today_odds_visits_every_competition_url_and_merges_results():
     session = MultiUrlFakeSession()
     offers = scrape_today_odds(cfg, session=session)
 
-    # Visited every configured URL (not just the first with results).
-    assert len(session.urls_visited) == 3
+    # Visited every configured URL (not just the first with results) --
+    # the empty bundesliga one twice, since it never returns any matches
+    # even on retry.
+    assert len(session.urls_visited) == 4
+    assert session.urls_visited.count("https://www.betclic.pt/futebol-s1/alemanha-bundesliga-c5") == 2
+    by_teams = {(o.home_team, o.away_team) for o in offers}
+    assert by_teams == {("Aali", "Malkiya"), ("Sevilla", "Valencia")}
+
+
+class BlockedThenRecoversListingFakeSession:
+    """Like MultiUrlFakeSession, but the bundesliga URL comes back empty
+    only on its *first* visit and has real matches on the retry --
+    mirrors the real failure (2026-10-25): Serie A, Ligue 1 and
+    Argentina's competition pages each came back with 0 matches that
+    day while every other page worked fine in the same run."""
+
+    def __init__(self):
+        self.urls_visited: list[str] = []
+        self._bundesliga_visits = 0
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, **_kwargs):
+        self.urls_visited.append(url)
+        if "premier-league" in url:
+            return "<html></html>", [PAGE_1_BLOB]
+        if "la-liga" in url:
+            return "<html></html>", [PAGE_2_BLOB]
+        self._bundesliga_visits += 1
+        if self._bundesliga_visits == 1:
+            return "<html></html>", []
+        return "<html></html>", [PAGE_2_BLOB]
+
+
+def test_scrape_today_odds_recovers_a_competition_page_that_was_empty_on_the_first_visit(monkeypatch):
+    import tipsxgs.betclic.odds as odds_module
+
+    monkeypatch.setattr(odds_module, "_LISTING_RETRY_DELAY_SECONDS", 0)
+
+    cfg = load_config()
+    fixtures_page = cfg.betclic.page("fixtures")
+    fixtures_page.urls = [
+        "https://www.betclic.pt/futebol-s1/inglaterra-premier-league-c3",
+        "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-c5",
+    ]
+    cfg.betclic.request_delay_seconds = 0  # skip the real polite_delay sleep in this test
+
+    session = BlockedThenRecoversListingFakeSession()
+    offers = scrape_today_odds(cfg, session=session)
+
+    assert session.urls_visited.count("https://www.betclic.pt/futebol-s1/alemanha-bundesliga-c5") == 2
+    # The retry's matches made it in, same as if the first visit had
+    # succeeded.
     by_teams = {(o.home_team, o.away_team) for o in offers}
     assert by_teams == {("Aali", "Malkiya"), ("Sevilla", "Valencia")}
 

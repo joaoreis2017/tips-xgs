@@ -116,6 +116,12 @@ _CLUB_NAME_ALIASES: dict[str, str] = {
     "psg": "paris sg",
     "ararat a.": "ararat-armenia",
     "gimnasia lp": "gimnasia y esgrima",
+    # Real bug report (2026-10-25): Celta - Real Betis (xGScore, 78.7)
+    # vs Celta Vigo - Bétis (Betclic) -- "Celta" alone vs "Celta Vigo",
+    # plus "Real Betis" vs just "Betis", combined to drop it just under
+    # min_confidence=80.
+    "celta": "celta vigo",
+    "real betis": "betis",
 }
 
 _TEAM_NAME_ALIASES: dict[str, str] = {**_COUNTRY_NAME_ALIASES, **_CLUB_NAME_ALIASES}

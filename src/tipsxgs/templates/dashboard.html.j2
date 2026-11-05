@@ -205,6 +205,24 @@
     <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
     {% endif %}
 
+    <div class="section-title">Combos (dupla hipótese / resultado + total de golos)</div>
+    <p class="game-meta" style="margin:-4px 0 8px;">Probabilidade calculada pelo modelo (dupla hipótese ou resultado × over/under, independentes) — sem odd da Betclic emparelhada; confirma a odd real tu mesmo antes de apostar.</p>
+    {% if game.combo_entries %}
+    <table>
+      <thead><tr><th>Combo</th><th class="num">Prob.</th></tr></thead>
+      <tbody>
+      {% for c in game.combo_entries %}
+        <tr>
+          <td>{{ c.label }}</td>
+          <td class="num">{{ "%.0f"|format(c.probability * 100) }}%</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Sem dados suficientes do xGScore para calcular combos deste jogo.</p>
+    {% endif %}
+
     <p class="game-meta" style="margin-top:14px;"><a href="{{ game.preview_url }}" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
   </div>
 </details>

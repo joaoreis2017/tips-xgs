@@ -7,6 +7,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from .combos import compute_combo_entries
 from .models import MatchedGame
 from .valuebets import (
     BetPick,
@@ -89,6 +90,7 @@ def build_context(
                 "match_confidence": g.match_confidence,
                 "events": events,
                 "value_bets": g.value_bets_ranked,
+                "combo_entries": compute_combo_entries(g),
             }
         )
 

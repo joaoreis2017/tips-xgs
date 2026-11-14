@@ -4,11 +4,16 @@ check how well the model's own probabilities (already saved per day in
 ``data/<day>/games.json``) held up against what actually happened.
 
 Same two extraction paths as ``fixtures.py``, controlled by
-``config.yaml``'s ``xgscore.results`` section -- see
-docs/CALIBRATION.md's "xgscore.results" section for how to fill it in
-after inspecting the live page. Not calibrated yet as of writing (this
-project's build environment has no network access to xgscore.io at
-all -- see docs/CALIBRATION.md's intro).
+``config.yaml``'s ``xgscore.results`` section -- CALIBRATED (2026-11-14)
+against a real capture of the page: a plain JSON array of match objects
+(``played``, ``datetime``, ``tournament.name``, ``teams.h/a.name``,
+``fullTimeGoals.h/a``), no nested "game" wrapper this time.
+
+CONFIRMED LIMITATION: the page's own "Week / Yesterday / Today" toggle
+defaults to *yesterday* and no query param was observed to pick another
+date -- this can only scrape yesterday's results, never an arbitrary
+past day (see ``cli.calibrate``, which only scrapes when the day being
+calibrated actually is yesterday).
 """
 
 from __future__ import annotations
@@ -115,14 +120,21 @@ def _row_to_result(row: dict) -> MatchResult | None:
 
 def scrape_results(cfg: AppConfig, day: date, session: BrowserSession | None = None) -> list[MatchResult]:
     """Return every finished match result found on ``xgscore.results``'s
-    configured page(s) for ``day``. Requires ``config.yaml``'s
-    ``xgscore.results`` section to be calibrated (see
-    docs/CALIBRATION.md) -- until then this logs a clear warning and
-    returns an empty list rather than crashing.
+    configured page(s). Requires ``config.yaml``'s ``xgscore.results``
+    section to be calibrated (see docs/CALIBRATION.md) -- until then
+    this logs a clear warning and returns an empty list rather than
+    crashing.
 
-    ``url``/each entry of ``urls`` may contain a literal ``{date}``
-    placeholder, substituted with ``day`` as ``YYYY-MM-DD`` -- handy if
-    the real page takes the date as a query param/path segment.
+    ``day`` is NOT used to pick a date on the real page as calibrated --
+    its "Week / Yesterday / Today" toggle has no query-param equivalent
+    we've found, so this always returns whatever it currently defaults
+    to (confirmed: yesterday's results). ``day`` only feeds a literal
+    ``{date}`` placeholder in ``url``/``urls`` (substituted as
+    ``YYYY-MM-DD``), kept in case a future recalibration finds a real
+    date param to target -- the currently calibrated ``url`` has no such
+    placeholder, so it's a no-op today. Callers (``cli.calibrate``) are
+    responsible for only calling this when ``day`` actually is
+    yesterday, since that's the only day it can ever return.
     """
     page_cfg = cfg.xgscore.page("results")
     urls = list(page_cfg.urls) or ([page_cfg.url] if page_cfg.url else [])

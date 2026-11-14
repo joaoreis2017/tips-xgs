@@ -88,33 +88,46 @@ de `market_template` de antes.
 
 ## `xgscore.results` — calibrar a análise de acerto
 
-Ainda não calibrado (o ambiente onde este projeto foi construído não
-tem acesso de rede nenhum a `xgscore.io`, por isso esta página nunca
-foi inspecionada aqui). Depois de calibrado, `python -m tipsxgs
-calibrate` compara as probabilidades já guardadas em
-`data/<dia>/games.json` contra o que realmente aconteceu em cada jogo,
-para responder a coisas como "os meus 'over 2.5' previstos a 70-79%
-acertam mesmo perto de 70-79% das vezes, ou o modelo está demasiado
-confiante nesse mercado?" — ver `src/tipsxgs/calibration.py`.
+CALIBRADO (2026-11-14), a partir de uma captura real da página
+(`https://xgscore.io/xg-statistics`): um array JSON simples de jogos,
+cada um com `played`, `datetime`, `tournament.name`, `teams.h/a.name` e
+`fullTimeGoals.h/a` — ver a secção já preenchida em `config.yaml` e o
+módulo `src/tipsxgs/xgscore/results.py`.
+
+`python -m tipsxgs calibrate` usa isto para comparar as probabilidades
+já guardadas em `data/<dia>/games.json` contra o que realmente
+aconteceu em cada jogo, respondendo a coisas como "os meus 'over 2.5'
+previstos a 70-79% acertam mesmo perto de 70-79% das vezes, ou o
+modelo está demasiado confiante nesse mercado?" — ver
+`src/tipsxgs/calibration.py`.
+
+**Limitação confirmada (na própria captura):** a página tem um toggle
+próprio "Week / Yesterday / Today" que por defeito mostra **Yesterday**
+(ontem) — não foi encontrado nenhum parâmetro de URL que escolha outro
+dia. Isto significa que só é possível obter os resultados de **ontem**,
+nunca um dia arbitrário do passado. Por isso, `calibrate` só tenta
+fazer scraping quando o dia em falta é mesmo "ontem" (relativo ao
+momento em que corre) — qualquer outro dia sem `results.json` fica
+simplesmente sem dados até esse dia ser "ontem" numa run futura. Corre
+`python -m tipsxgs calibrate` todos os dias (ex. logo depois de `run`,
+no mesmo cron) para ires acumulando histórico dia a dia; se quiseres
+preencher dias mais antigos em falta, precisas de descobrir que pedido
+os botões "Today"/"Week" disparam (inspecionar com as devtools do
+browser ao clicar neles) e recalibrar esta secção.
 
 ```bash
 python scripts/inspect_site.py https://xgscore.io/xg-statistics
 ```
 
-Procura uma lista de jogos já terminados com o resultado final (ex.
-"2-1"). Tal como `xgscore.fixtures`, pode vir num JSON (`json_list_path`
-+ `fields` com `json_path`) ou só no HTML renderizado
-(`list_item_selector` + `fields` com `selector`/`attr`) — confirma em
-`page.html`/`captured_json/*.json` dentro de `inspect_out/<slug>/`.
-
-Preenche `xgscore.results` em `config.yaml` com:
-- `url` (ou `urls`) — pode conter o literal `{date}`, substituído pelo
-  dia a calibrar em formato `YYYY-MM-DD`, caso a página aceite a data
-  como parâmetro (ex. `"https://xgscore.io/xg-statistics?date={date}"`).
-- `fields`: `league`, `home_team`, `away_team`, `kickoff` (mesmo
-  significado que em `xgscore.fixtures`), e o resultado final — ou dois
-  campos numéricos `score_home`/`score_away`, ou um único campo `score`
-  como texto (ex. `"2-1"`, separado automaticamente).
+Se a estrutura mudar no futuro: tal como `xgscore.fixtures`, pode vir
+num JSON (`json_list_path` + `fields` com `json_path`) ou só no HTML
+renderizado (`list_item_selector` + `fields` com `selector`/`attr`) —
+confirma em `page.html`/`captured_json/*.json` dentro de
+`inspect_out/<slug>/`. `fields` aceita `league`, `home_team`,
+`away_team`, `kickoff` (mesmo significado que em `xgscore.fixtures`), e
+o resultado final — ou dois campos numéricos `score_home`/`score_away`
+(o caso já calibrado), ou um único campo `score` como texto (ex.
+"2-1", separado automaticamente).
 
 Testa com:
 

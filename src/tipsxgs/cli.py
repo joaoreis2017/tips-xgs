@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import click
 
@@ -80,6 +80,14 @@ def calibrate(config_path: str | None, since_str: str | None, scrape_results: bo
     _setup_logging(verbose)
     cfg = load_config(config_path)
     since = datetime.strptime(since_str, "%Y-%m-%d").date() if since_str else None
+    # xgscore.results' real page has no way to request a specific past
+    # date (see config.yaml's comment on it) -- its default view only
+    # ever covers *yesterday*, relative to whenever the scrape actually
+    # runs. So a day missing results.json only gets scraped when it IS
+    # yesterday; any other missing day is simply skipped (no results
+    # available for it until this project gains a way to request an
+    # older date).
+    scrapeable_day = datetime.now().date() - timedelta(days=1)
 
     day_dirs = sorted(p.parent.name for p in cfg.data_dir.glob("*/games.json"))
     paired = []
@@ -92,7 +100,7 @@ def calibrate(config_path: str | None, since_str: str | None, scrape_results: bo
             continue
 
         results = load_results(day, cfg.data_dir)
-        if not results and scrape_results:
+        if not results and scrape_results and day == scrapeable_day:
             try:
                 results = scrape_xgscore_results(cfg, day)
             except RuntimeError as exc:

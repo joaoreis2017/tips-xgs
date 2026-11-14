@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calibração — Tips xGScore + Betclic</title>
+<style>
+  :root{
+    --bg:#f7f7f8; --panel:#ffffff; --border:#e3e3e6; --text:#1b1c1f; --muted:#6b6f76;
+    --accent:#2f6fed; --good:#12805c; --good-bg:#e6f6ef; --bad:#b3261e; --bad-bg:#fbe9e7;
+    --warn:#9a6700; --warn-bg:#fdf3dd;
+    --chip-bg:#eef1f6; --shadow:0 1px 2px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15161a; --panel:#1e2025; --border:#2c2e34; --text:#eef0f3; --muted:#9a9ea7;
+      --accent:#6ea1ff; --good:#3fd68f; --good-bg:#123527; --bad:#ff6b64; --bad-bg:#3a1b19;
+      --warn:#e0b84c; --warn-bg:#3a2f12;
+      --chip-bg:#26282e; --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 10px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15161a; --panel:#1e2025; --border:#2c2e34; --text:#eef0f3; --muted:#9a9ea7;
+    --accent:#6ea1ff; --good:#3fd68f; --good-bg:#123527; --bad:#ff6b64; --bad-bg:#3a1b19;
+    --warn:#e0b84c; --warn-bg:#3a2f12;
+    --chip-bg:#26282e; --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 10px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:20px 16px 64px; max-width:1080px; margin-inline:auto;
+  }
+  h1{font-size:1.4rem; margin:0 0 2px;}
+  .subtitle{color:var(--muted); font-size:.85rem; margin:0 0 22px;}
+  .panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow); padding:18px; margin-bottom:20px;
+  }
+  .panel h2{margin:0 0 4px; font-size:1.05rem;}
+  table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  th{text-align:left; color:var(--muted); font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; padding:6px 8px; border-bottom:1px solid var(--border);}
+  td{padding:8px 8px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:.72rem; font-weight:600; background:var(--chip-bg); color:var(--muted);}
+  .pill-good{background:var(--good-bg); color:var(--good);}
+  .pill-bad{background:var(--bad-bg); color:var(--bad);}
+  .pill-warn{background:var(--warn-bg); color:var(--warn);}
+  details{background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden;}
+  details > summary{list-style:none; padding:14px 18px; cursor:pointer;}
+  details > summary::-webkit-details-marker{display:none;}
+  details[open] > summary{border-bottom:1px solid var(--border);}
+  .details-body{padding:6px 18px 18px;}
+  .section-title{font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700; margin:16px 0 8px;}
+  .empty{color:var(--muted); font-size:.85rem; padding:8px 0;}
+  .market-header{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; cursor:pointer;}
+  .market-header .name{font-weight:600; font-size:1rem; text-transform:capitalize;}
+  .market-meta{color:var(--muted); font-size:.8rem;}
+  a{color:var(--accent); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  @media (max-width:560px){
+    .panel, details{border-radius:10px;}
+    th,td{padding:6px 4px; font-size:.8rem;}
+  }
+</style>
+</head>
+<body>
+
+<p class="subtitle"><a href="index.html">← Voltar ao painel</a></p>
+<h1>📈 Calibração — probabilidade prevista vs. resultado real</h1>
+<p class="subtitle">gerado em {{ generated_at }} · {{ total_games }} jogo(s) terminado(s) com previsão e resultado emparelhados</p>
+
+<div class="panel">
+  <h2>Por tipo de mercado</h2>
+  <p class="subtitle" style="margin:4px 0 12px;">Taxa de acerto real de cada mercado, juntando todas as linhas/escalões — ordenado por quem mais acerta. Abre cada linha para ver a repartição por escalão de probabilidade prevista.</p>
+  {% if summary %}
+  <table>
+    <thead><tr>
+      <th>Mercado</th><th class="num">Acertos</th><th class="num">Taxa de acerto</th><th class="num">Prob. média prevista</th>
+    </tr></thead>
+    <tbody>
+    {% for s in summary %}
+      <tr>
+        <td>{{ s.market_family.replace('_', ' ') }}</td>
+        <td class="num">{{ s.hits }}/{{ s.count }}</td>
+        <td class="num"><strong>{{ "%.0f"|format(s.hit_rate * 100) }}%</strong></td>
+        <td class="num">{{ "%.0f"|format(s.avg_predicted_probability * 100) }}%</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">Ainda sem jogos emparelhados com resultado real (ver docs/CALIBRATION.md's "xgscore.results").</p>
+  {% endif %}
+</div>
+
+{% for s in summary %}
+<details id="market-{{ s.market_family }}">
+  <summary>
+    <div class="market-header">
+      <span class="name">{{ s.market_family.replace('_', ' ') }}</span>
+      <span class="market-meta">{{ s.hits }}/{{ s.count }} acertos ({{ "%.0f"|format(s.hit_rate * 100) }}%)</span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <div class="section-title">Por escalão de probabilidade prevista</div>
+    {% if s.buckets %}
+    <table>
+      <thead><tr>
+        <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+      </tr></thead>
+      <tbody>
+      {% for b in s.buckets %}
+        <tr>
+          <td>{{ b.probability_bucket }}</td>
+          <td class="num">{{ b.hits }}/{{ b.count }}</td>
+          <td class="num"><strong>{{ "%.0f"|format(b.actual_hit_rate * 100) }}%</strong></td>
+          <td class="num">{{ "%.0f"|format(b.avg_predicted_probability * 100) }}%</td>
+          <td class="num">
+            {% if b.verdict == 'good' %}
+              <span class="pill pill-good">bem calibrado</span>
+            {% elif b.verdict == 'over' %}
+              <span class="pill pill-bad">modelo confiante demais</span>
+            {% else %}
+              <span class="pill pill-warn">modelo pouco confiante</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Sem amostra suficiente para este mercado.</p>
+    {% endif %}
+  </div>
+</details>
+{% endfor %}
+
+<p class="subtitle">"Bem calibrado" = a taxa de acerto real fica a 7 pontos percentuais (ou menos) da probabilidade média que o modelo previu nesse escalão. "Confiante demais" = acerta menos do que previu; "pouco confiante" = acerta mais do que previu.</p>
+
+</body>
+</html>

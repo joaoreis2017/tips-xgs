@@ -7,6 +7,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from .calibration import CalibrationBucket, MarketFamilySummary
 from .combos import compute_combo_entries
 from .models import MatchedGame
 from .valuebets import (
@@ -54,6 +55,7 @@ def build_context(
     min_value_ratio: float = 1.0,
     multiple_stake: float = 0.50,
     mid_single_stake: float = 1.00,
+    has_calibration: bool = False,
 ) -> dict:
     game_ctx = []
     for g in games:
@@ -139,6 +141,7 @@ def build_context(
         "mid_probability_max": mid_probability_max,
         "mid_odd_min": mid_odd_min,
         "mid_odd_max": mid_odd_max,
+        "has_calibration": has_calibration,
     }
 
 
@@ -183,6 +186,7 @@ def render_dashboard(
             min_value_ratio=min_value_ratio,
             multiple_stake=multiple_stake,
             mid_single_stake=mid_single_stake,
+            has_calibration=(reports_dir / "calibration.html").exists(),
         )
     )
 
@@ -213,6 +217,11 @@ def render_index(reports_dir: Path) -> Path:
     )
     items = "\n".join(f'<li><a href="{d}/">{d}</a></li>' for d in days) or "<li>Ainda sem dados.</li>"
     redirect = f'<meta http-equiv="refresh" content="0; url={days[0]}/" />' if days else ""
+    calibration_link = (
+        '<p><a href="calibration.html">📈 Calibração do modelo</a></p>'
+        if (reports_dir / "calibration.html").exists()
+        else ""
+    )
     html = f"""<!doctype html>
 <html lang="pt-PT"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -228,8 +237,84 @@ def render_index(reports_dir: Path) -> Path:
   <h1>⚽ Tips xGScore + Betclic</h1>
   <p>{"A redirecionar para o dia mais recente..." if days else ""}</p>
   <ul>{items}</ul>
+  {calibration_link}
 </body></html>"""
     reports_dir.mkdir(parents=True, exist_ok=True)
     out_path = reports_dir / "index.html"
+    out_path.write_text(html, encoding="utf-8")
+    return out_path
+
+
+# "Well calibrated" means the actual hit rate lands close to the
+# probability the model itself predicted -- within this many percentage
+# points either way. Outside it, the bucket is flagged as the model
+# being over- or under-confident for that market/band.
+_CALIBRATION_GOOD_TOLERANCE = 0.07
+
+
+def _calibration_bucket_ctx(bucket: CalibrationBucket) -> dict:
+    gap = bucket.actual_hit_rate - bucket.avg_predicted_probability
+    if abs(gap) <= _CALIBRATION_GOOD_TOLERANCE:
+        verdict = "good"
+    elif gap < 0:
+        verdict = "over"  # model predicted higher than what actually happened
+    else:
+        verdict = "under"  # model predicted lower than what actually happened
+    return {
+        "probability_bucket": bucket.probability_bucket,
+        "count": bucket.count,
+        "hits": bucket.hits,
+        "actual_hit_rate": bucket.actual_hit_rate,
+        "avg_predicted_probability": bucket.avg_predicted_probability,
+        "verdict": verdict,
+    }
+
+
+def build_calibration_context(
+    summary: list[MarketFamilySummary],
+    buckets: list[CalibrationBucket],
+    total_games: int,
+) -> dict:
+    buckets_by_family: dict[str, list[dict]] = {}
+    for b in buckets:
+        buckets_by_family.setdefault(b.market_family, []).append(_calibration_bucket_ctx(b))
+
+    return {
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "total_games": total_games,
+        "summary": [
+            {
+                "market_family": s.market_family,
+                "count": s.count,
+                "hits": s.hits,
+                "hit_rate": s.hit_rate,
+                "avg_predicted_probability": s.avg_predicted_probability,
+                "buckets": buckets_by_family.get(s.market_family, []),
+            }
+            for s in summary
+        ],
+    }
+
+
+def render_calibration_report(
+    summary: list[MarketFamilySummary],
+    buckets: list[CalibrationBucket],
+    total_games: int,
+    reports_dir: Path,
+) -> Path:
+    """Render ``reports_dir/calibration.html`` -- the browser-viewable
+    counterpart of ``python -m tipsxgs calibrate``'s text output (see
+    ``cli.calibrate``), so the same market-family / probability-band
+    hit-rate breakdown is reachable from the dashboard, not just the
+    terminal."""
+    env = Environment(
+        loader=FileSystemLoader(str(TEMPLATE_DIR)),
+        autoescape=select_autoescape(["html"]),
+    )
+    template = env.get_template("calibration.html.j2")
+    html = template.render(**build_calibration_context(summary, buckets, total_games))
+
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    out_path = reports_dir / "calibration.html"
     out_path.write_text(html, encoding="utf-8")
     return out_path

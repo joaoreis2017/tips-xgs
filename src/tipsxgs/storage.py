@@ -16,7 +16,7 @@ import json
 from datetime import date, datetime
 from pathlib import Path
 
-from .models import Fixture, MatchedGame, OddsOffer, Prediction, ValueBetEntry
+from .models import Fixture, MatchedGame, MatchResult, OddsOffer, Prediction, ValueBetEntry
 
 
 def _dt(value: datetime | None) -> str | None:
@@ -159,3 +159,51 @@ def load_day(day: date, data_dir: Path) -> list[MatchedGame]:
         return []
     payload = json.loads(path.read_text(encoding="utf-8"))
     return [game_from_dict(g) for g in payload.get("games", [])]
+
+
+def result_to_dict(result: MatchResult) -> dict:
+    return {
+        "league": result.league,
+        "home_team": result.home_team,
+        "away_team": result.away_team,
+        "kickoff": _dt(result.kickoff),
+        "home_goals": result.home_goals,
+        "away_goals": result.away_goals,
+    }
+
+
+def result_from_dict(raw: dict) -> MatchResult:
+    return MatchResult(
+        league=raw["league"],
+        home_team=raw["home_team"],
+        away_team=raw["away_team"],
+        kickoff=_parse_dt(raw.get("kickoff")),
+        home_goals=int(raw["home_goals"]),
+        away_goals=int(raw["away_goals"]),
+    )
+
+
+def save_results(day: date, results: list[MatchResult], data_dir: Path) -> Path:
+    """Persist ``day``'s actual final results to
+    ``data/<day>/results.json`` -- a separate file from ``games.json``
+    (the predictions saved by ``save_day``) since they're scraped at
+    different times (predictions before kickoff, results only once the
+    match has finished) and from a different source page."""
+    day_dir = data_dir / day.isoformat()
+    day_dir.mkdir(parents=True, exist_ok=True)
+    path = day_dir / "results.json"
+    payload = {
+        "date": day.isoformat(),
+        "generated_at": datetime.now().isoformat(),
+        "results": [result_to_dict(r) for r in results],
+    }
+    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    return path
+
+
+def load_results(day: date, data_dir: Path) -> list[MatchResult]:
+    path = data_dir / day.isoformat() / "results.json"
+    if not path.exists():
+        return []
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return [result_from_dict(r) for r in payload.get("results", [])]

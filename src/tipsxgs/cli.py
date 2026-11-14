@@ -12,10 +12,12 @@ from datetime import date, datetime
 
 import click
 
+from .calibration import compute_calibration, compute_market_family_summary, match_games_to_results
 from .config import load_config
 from .pipeline import run_daily
 from .report import render_dashboard
-from .storage import load_day
+from .storage import load_day, load_results, save_results
+from .xgscore.results import scrape_results as scrape_xgscore_results
 
 
 def _setup_logging(verbose: bool) -> None:
@@ -57,6 +59,74 @@ def report(config_path: str | None, date_str: str) -> None:
         raise click.ClickException(f"No saved data found for {day.isoformat()} in {cfg.data_dir}")
     path = render_dashboard(day, games, cfg.reports_dir, value_bet_threshold=cfg.value_bet_threshold)
     click.echo(f"Re-rendered {path}")
+
+
+@cli.command()
+@click.option("--config", "config_path", default=None, help="Path to config.yaml (default: repo root)")
+@click.option(
+    "--since", "since_str", default=None, help="Only include days >= this date, YYYY-MM-DD (default: every saved day)"
+)
+@click.option(
+    "--scrape-results/--no-scrape-results",
+    default=True,
+    help="Scrape a day's results from xGScore if data/<day>/results.json doesn't exist yet "
+    "(requires xgscore.results to be calibrated -- see docs/CALIBRATION.md)",
+)
+@click.option("-v", "--verbose", is_flag=True, default=False)
+def calibrate(config_path: str | None, since_str: str | None, scrape_results: bool, verbose: bool) -> None:
+    """Compare past predictions (data/<day>/games.json) against actual
+    results and report which markets/probability bands are well
+    calibrated -- see docs/CALIBRATION.md's "xgscore.results" section."""
+    _setup_logging(verbose)
+    cfg = load_config(config_path)
+    since = datetime.strptime(since_str, "%Y-%m-%d").date() if since_str else None
+
+    day_dirs = sorted(p.parent.name for p in cfg.data_dir.glob("*/games.json"))
+    paired = []
+    for day_str in day_dirs:
+        day = datetime.strptime(day_str, "%Y-%m-%d").date()
+        if since and day < since:
+            continue
+        games = load_day(day, cfg.data_dir)
+        if not games:
+            continue
+
+        results = load_results(day, cfg.data_dir)
+        if not results and scrape_results:
+            try:
+                results = scrape_xgscore_results(cfg, day)
+            except RuntimeError as exc:
+                click.echo(f"  {day_str}: {exc}", err=True)
+                continue
+            if results:
+                save_results(day, results, cfg.data_dir)
+        if not results:
+            continue
+
+        paired.extend(match_games_to_results(games, results, min_confidence=cfg.min_match_confidence))
+
+    if not paired:
+        raise click.ClickException(
+            "No (prediction, actual result) pair found yet -- either there's no saved "
+            f"{cfg.data_dir}/<day>/games.json, or xgscore.results isn't calibrated yet "
+            "(see docs/CALIBRATION.md)."
+        )
+
+    click.echo(f"{len(paired)} finished game(s) matched to an actual result.\n")
+
+    click.echo("Por tipo de mercado (ordenado por taxa de acerto):")
+    for s in compute_market_family_summary(paired):
+        click.echo(
+            f"  {s.market_family:<20} {s.hits}/{s.count} acertos ({s.hit_rate * 100:.0f}%)"
+            f" -- prob. média prevista {s.avg_predicted_probability * 100:.0f}%"
+        )
+
+    click.echo("\nPor mercado + escalão de probabilidade prevista:")
+    for b in compute_calibration(paired):
+        click.echo(
+            f"  {b.market_family:<20} {b.probability_bucket:<8} {b.hits}/{b.count}"
+            f" ({b.actual_hit_rate * 100:.0f}% real vs {b.avg_predicted_probability * 100:.0f}% previsto)"
+        )
 
 
 if __name__ == "__main__":

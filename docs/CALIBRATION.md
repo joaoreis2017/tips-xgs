@@ -86,6 +86,46 @@ de `market_template` de antes.
   incluindo o link para a página de odds completas de cada jogo.
 - `betclic.odds` — mercados/odds dentro da página de um jogo específico.
 
+## `xgscore.results` — calibrar a análise de acerto
+
+Ainda não calibrado (o ambiente onde este projeto foi construído não
+tem acesso de rede nenhum a `xgscore.io`, por isso esta página nunca
+foi inspecionada aqui). Depois de calibrado, `python -m tipsxgs
+calibrate` compara as probabilidades já guardadas em
+`data/<dia>/games.json` contra o que realmente aconteceu em cada jogo,
+para responder a coisas como "os meus 'over 2.5' previstos a 70-79%
+acertam mesmo perto de 70-79% das vezes, ou o modelo está demasiado
+confiante nesse mercado?" — ver `src/tipsxgs/calibration.py`.
+
+```bash
+python scripts/inspect_site.py https://xgscore.io/xg-statistics
+```
+
+Procura uma lista de jogos já terminados com o resultado final (ex.
+"2-1"). Tal como `xgscore.fixtures`, pode vir num JSON (`json_list_path`
++ `fields` com `json_path`) ou só no HTML renderizado
+(`list_item_selector` + `fields` com `selector`/`attr`) — confirma em
+`page.html`/`captured_json/*.json` dentro de `inspect_out/<slug>/`.
+
+Preenche `xgscore.results` em `config.yaml` com:
+- `url` (ou `urls`) — pode conter o literal `{date}`, substituído pelo
+  dia a calibrar em formato `YYYY-MM-DD`, caso a página aceite a data
+  como parâmetro (ex. `"https://xgscore.io/xg-statistics?date={date}"`).
+- `fields`: `league`, `home_team`, `away_team`, `kickoff` (mesmo
+  significado que em `xgscore.fixtures`), e o resultado final — ou dois
+  campos numéricos `score_home`/`score_away`, ou um único campo `score`
+  como texto (ex. `"2-1"`, separado automaticamente).
+
+Testa com:
+
+```bash
+python -m tipsxgs calibrate --since 2026-10-01 -v
+```
+
+Se não encontrar nenhum par (previsão, resultado real), o aviso diz
+exatamente o que falta — ou não há `data/<dia>/games.json` guardado
+para nenhum dia, ou `xgscore.results` ainda não está calibrado.
+
 ## Passo 4 — testar
 
 ```bash

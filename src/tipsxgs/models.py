@@ -114,6 +114,23 @@ class MatchedGame:
 
 
 @dataclass
+class MatchResult:
+    """Actual final result of a past fixture, scraped from xGScore's
+    statistics/history page (``xg-statistics``) -- paired against that
+    day's saved predictions (``data/<day>/games.json``) in
+    ``calibration.py`` to check how well the model's own probabilities
+    held up, e.g. whether "over 2.5" predicted at 70-79% actually hit
+    close to 70-79% of the time."""
+
+    league: str
+    home_team: str
+    away_team: str
+    kickoff: Optional[datetime]
+    home_goals: int
+    away_goals: int
+
+
+@dataclass
 class DailyReport:
     day: date
     games: list[MatchedGame] = field(default_factory=list)

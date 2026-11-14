@@ -319,6 +319,30 @@ xgscore:
         market_template: "double_chance"
         outcome_template: "{label}"
 
+  results:
+    # NOT CALIBRATED YET -- see docs/CALIBRATION.md's "xgscore.results"
+    # section for how to fill this in using scripts/inspect_site.py
+    # against https://xgscore.io/xg-statistics (this project's build
+    # environment has no network access to xgscore.io at all, so this
+    # was never inspected). Used by `python -m tipsxgs calibrate` to
+    # compare past predictions against what actually happened -- see
+    # calibration.py.
+    #
+    # `url`/`urls` may contain a literal "{date}" placeholder,
+    # substituted with the day being calibrated as YYYY-MM-DD, e.g.:
+    #   url: "https://xgscore.io/xg-statistics?date={date}"
+    #
+    # Each field below is read directly off one result row (same shape
+    # as xgscore.fixtures' fields above, not a market/probability --
+    # there's no market_aliases here):
+    #   - league, home_team, away_team, kickoff: same meaning as in
+    #     xgscore.fixtures above.
+    #   - EITHER score_home + score_away (two separate numeric fields),
+    #     OR a single `score` field (a string like "2-1", split
+    #     automatically -- see xgscore/results.py's _SCORE_RE).
+    url: null
+    fields: []
+
 betclic:
   base_url: "https://www.betclic.pt"
   # CHANGED (2026-10-14, explicitly requested): raised from 2.0 -- a

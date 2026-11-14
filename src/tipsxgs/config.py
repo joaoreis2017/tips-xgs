@@ -288,7 +288,7 @@ class AppConfig:
         return proxy
 
 
-_KNOWN_SITE_KEYS = {"base_url", "request_delay_seconds", "fixtures", "preview", "odds"}
+_KNOWN_SITE_KEYS = {"base_url", "request_delay_seconds", "fixtures", "preview", "odds", "results"}
 
 
 def _page_config(raw: dict | None) -> PageConfig:
@@ -317,7 +317,7 @@ def _page_config(raw: dict | None) -> PageConfig:
 
 def _site_section(raw: dict) -> SiteSection:
     pages = {}
-    for page_name in ("fixtures", "preview", "odds"):
+    for page_name in ("fixtures", "preview", "odds", "results"):
         if page_name in raw:
             pages[page_name] = _page_config(raw[page_name])
     return SiteSection(

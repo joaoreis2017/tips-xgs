@@ -2,6 +2,7 @@ from datetime import datetime
 
 import pytest
 
+from tipsxgs.calibration import CalibrationBucket
 from tipsxgs.models import Fixture, MatchedGame, OddsOffer, Prediction
 from tipsxgs.valuebets import (
     compute_value_bets,
@@ -438,3 +439,48 @@ def test_pick_band_bets_requires_value_ratio_at_least_one_by_default():
         max_odd=2.2,
     )
     assert [g.fixture.slug for g, _ in picks] == ["above-one"]
+
+
+# --- calibration_buckets (explicitly requested 2026-11-14) ----------------
+
+
+def test_compute_value_bets_uses_calibrated_probability_once_sample_size_is_enough():
+    # Model says 70% for btts.yes, but 45 historical games at that same
+    # band actually hit 85% -- value_ratio/edge should reflect the real
+    # 85%, not the model's own 70%, once the bucket clears the sample
+    # threshold (see calibration.calibrated_probability).
+    game = make_game({"btts": {"yes": 0.70}}, {"btts": {"yes": 2.00}})
+    buckets = [CalibrationBucket(market_family="btts", probability_bucket="70-79%", count=45, hits=38, avg_predicted_probability=0.70)]
+
+    entries = compute_value_bets(game, calibration_buckets=buckets)
+    entry = entries[0]
+
+    assert entry.probability == pytest.approx(0.70)  # raw model number untouched
+    assert entry.calibrated_probability == pytest.approx(38 / 45)
+    assert entry.calibration_sample_size == 45
+    assert entry.effective_probability == pytest.approx(38 / 45)
+    assert entry.value_ratio == pytest.approx((38 / 45) * 2.00)
+    assert entry.value_ratio != pytest.approx(0.70 * 2.00)
+
+
+def test_compute_value_bets_falls_back_to_raw_probability_below_sample_threshold():
+    # Same band, but only 5 games behind it -- too few to trust, so the
+    # model's own raw probability is used, exactly as if no calibration
+    # data had been passed at all.
+    game = make_game({"btts": {"yes": 0.70}}, {"btts": {"yes": 2.00}})
+    buckets = [CalibrationBucket(market_family="btts", probability_bucket="70-79%", count=5, hits=4, avg_predicted_probability=0.70)]
+
+    entries = compute_value_bets(game, calibration_buckets=buckets)
+    entry = entries[0]
+
+    assert entry.calibrated_probability is None
+    assert entry.calibration_sample_size is None
+    assert entry.effective_probability == pytest.approx(0.70)
+    assert entry.value_ratio == pytest.approx(0.70 * 2.00)
+
+
+def test_compute_value_bets_with_no_calibration_buckets_behaves_exactly_as_before():
+    game = make_game({"1x2": {"home": 0.70}}, {"1x2": {"home": 2.00}})
+    entries = compute_value_bets(game)  # no calibration_buckets argument at all
+    assert entries[0].calibrated_probability is None
+    assert entries[0].value_ratio == pytest.approx(1.4)

@@ -35,10 +35,18 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
 
 from .markets import market_family
 from .matching import _score
 from .models import MatchedGame, MatchResult
+
+# Below this many accumulated historical games, a bucket's own
+# actual_hit_rate is considered too noisy to act on -- see
+# calibrated_probability, which falls back to the model's raw
+# probability until a bucket clears this.
+DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE = 30
 
 _OVER_UNDER_LINE_RE = re.compile(r"^over_under_(?P<line>\d+(?:\.\d+)?)$")
 # Per-team total goals -- a *different* market family from over_under
@@ -193,3 +201,52 @@ def compute_calibration(paired: list[tuple[MatchedGame, MatchResult]]) -> list[C
         buckets.append(CalibrationBucket(family, bucket_label, count, hits, avg_prob))
     buckets.sort(key=lambda b: (b.market_family, -int(b.probability_bucket.split("-")[0])))
     return buckets
+
+
+def calibrated_probability(
+    market: str,
+    probability: float,
+    buckets: list[CalibrationBucket],
+    min_sample_size: int = DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE,
+) -> tuple[float | None, int | None]:
+    """Look up ``market``/``probability``'s own (market family,
+    probability band) in the already-computed ``buckets`` and return
+    ``(actual_hit_rate, count)`` -- but only once that band has at
+    least ``min_sample_size`` games behind it; otherwise ``(None,
+    None)``, so a caller falls back to the model's own raw
+    ``probability`` rather than adjusting it on a handful of noisy
+    games. See ``valuebets.compute_value_bets``, the caller that
+    actually uses this to compute ``value_ratio``/``edge``.
+    """
+    family = market_family(market)
+    bucket_label = _bucket_label(probability)
+    for b in buckets:
+        if b.market_family == family and b.probability_bucket == bucket_label:
+            if b.count >= min_sample_size:
+                return b.actual_hit_rate, b.count
+            return None, None
+    return None, None
+
+
+def load_accumulated_calibration(data_dir: Path, min_confidence: float = 80.0) -> list[CalibrationBucket]:
+    """Scan every already-saved ``data/<day>/{games,results}.json`` pair
+    on disk and compute today's calibration buckets from it -- no
+    scraping (see ``cli.calibrate`` for that, which is what actually
+    puts new ``results.json`` files on disk in the first place). This
+    is what lets each new day's own picks automatically benefit from
+    everything accumulated so far, with no manual step: ``pipeline.
+    run_daily`` calls this before computing that day's value bets.
+    """
+    from .storage import load_day, load_results  # local import: avoids a needless import cycle risk
+
+    paired: list[tuple[MatchedGame, MatchResult]] = []
+    for day_str in sorted(p.parent.name for p in data_dir.glob("*/games.json")):
+        day = datetime.strptime(day_str, "%Y-%m-%d").date()
+        games = load_day(day, data_dir)
+        if not games:
+            continue
+        results = load_results(day, data_dir)
+        if not results:
+            continue
+        paired.extend(match_games_to_results(games, results, min_confidence=min_confidence))
+    return compute_calibration(paired)

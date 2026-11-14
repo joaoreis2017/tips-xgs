@@ -36,6 +36,8 @@ def _pick_ctx(pick: BetPick | None) -> dict | None:
         "probability": entry.probability,
         "odd": entry.odd,
         "value_ratio": entry.value_ratio,
+        "calibrated_probability": entry.calibrated_probability,
+        "calibration_sample_size": entry.calibration_sample_size,
     }
 
 

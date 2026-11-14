@@ -7,6 +7,7 @@ import re
 from datetime import date, datetime
 
 from .betclic.odds import scrape_today_odds
+from .calibration import DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE, load_accumulated_calibration
 from .config import AppConfig
 from .markets import market_family
 from .matching import match_fixtures_to_odds
@@ -112,8 +113,18 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
     matched = sum(1 for g in games if g.odds is not None)
     logger.info("Matched %d/%d fixtures to a Betclic offer", matched, len(games))
 
+    logger.info("Loading accumulated calibration (previous days' predictions vs. actual results)...")
+    calibration_buckets = load_accumulated_calibration(cfg.data_dir, min_confidence=cfg.min_match_confidence)
+    calibrated_bands = sum(1 for b in calibration_buckets if b.count >= DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE)
+    logger.info(
+        "%d market+band(s) have enough accumulated history (>=%d games) to override the model's own "
+        "probability in value_ratio/edge -- see calibration.py",
+        calibrated_bands,
+        DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE,
+    )
+
     logger.info("Computing value bets...")
-    compute_all(games, value_bet_threshold=cfg.value_bet_threshold)
+    compute_all(games, value_bet_threshold=cfg.value_bet_threshold, calibration_buckets=calibration_buckets)
 
     logger.info("Saving results...")
     json_path = save_day(today, games, cfg.data_dir)

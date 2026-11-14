@@ -7,12 +7,27 @@ For every outcome the model gave a probability for, we compute:
   bookmaker's overround (margin), *when every outcome of that market has
   an odd* (otherwise we can't compute the market's overround, so we fall
   back to the raw implied probability).
-* ``edge`` = model probability - fair (or implied) probability. Positive
-  means the model thinks the event is more likely than the market does.
-* ``value_ratio`` = model probability * odd. This is the number from the
-  user's own example: probability 0.70 and odd 2.00 -> value_ratio 1.40,
-  i.e. a 40% edge over a fair bet (value_ratio == 1 is break-even; > 1 is
-  a positive-EV / "high value" bet).
+* ``edge`` = effective probability - fair (or implied) probability.
+  Positive means the model thinks the event is more likely than the
+  market does.
+* ``value_ratio`` = effective probability * odd. This is the number
+  from the user's own example: probability 0.70 and odd 2.00 ->
+  value_ratio 1.40, i.e. a 40% edge over a fair bet (value_ratio == 1
+  is break-even; > 1 is a positive-EV / "high value" bet).
+
+"Effective probability" (see ``ValueBetEntry.effective_probability``)
+is ``calibrated_probability`` when ``calibration_buckets`` is given and
+has enough accumulated history for this exact market+band (see
+``calibration.calibrated_probability``), otherwise the model's own raw
+``probability`` -- explicitly requested (2026-11-14): once there's
+enough real-world track record for a market/band, the money math
+(``edge``/``value_ratio``, and therefore which bets clear
+``min_value_ratio`` in the daily bet plan below) should reflect what
+has actually happened, not just what the model itself claims. The raw
+``probability`` field is NEVER overridden by this -- every band/
+threshold filter in this module (``top_probability_bets_today`` and
+everything built on it) keeps reading the model's own stated number,
+unchanged.
 
 Every outcome is also ranked by raw model probability across the whole
 match (1 = most likely single event in the game, regardless of market),
@@ -22,11 +37,16 @@ probabilidade" view requested.
 
 from __future__ import annotations
 
+from .calibration import CalibrationBucket, calibrated_probability
 from .markets import full_label, market_family
 from .models import MatchedGame, ValueBetEntry
 
 
-def compute_value_bets(game: MatchedGame, value_bet_threshold: float = 1.0) -> list[ValueBetEntry]:
+def compute_value_bets(
+    game: MatchedGame,
+    value_bet_threshold: float = 1.0,
+    calibration_buckets: list[CalibrationBucket] | None = None,
+) -> list[ValueBetEntry]:
     """Populate and return ``game.value_bets``."""
     if game.prediction is None or not game.prediction.markets:
         game.value_bets = []
@@ -51,10 +71,19 @@ def compute_value_bets(game: MatchedGame, value_bet_threshold: float = 1.0) -> l
         offered = odds_markets.get(market, {})
         for outcome, probability in outcomes.items():
             odd = offered.get(outcome)
+
+            calib_probability: float | None = None
+            calib_sample_size: int | None = None
+            if calibration_buckets:
+                calib_probability, calib_sample_size = calibrated_probability(
+                    market, probability, calibration_buckets
+                )
+            effective_probability = calib_probability if calib_probability is not None else probability
+
             implied_probability = (1.0 / odd) if odd and odd > 0 else None
             fair_probability = fair_probabilities.get(market, {}).get(outcome, implied_probability)
-            edge = (probability - fair_probability) if fair_probability is not None else None
-            value_ratio = (probability * odd) if odd else None
+            edge = (effective_probability - fair_probability) if fair_probability is not None else None
+            value_ratio = (effective_probability * odd) if odd else None
 
             entries.append(
                 ValueBetEntry(
@@ -67,6 +96,8 @@ def compute_value_bets(game: MatchedGame, value_bet_threshold: float = 1.0) -> l
                     fair_probability=fair_probability,
                     edge=edge,
                     value_ratio=value_ratio,
+                    calibrated_probability=calib_probability,
+                    calibration_sample_size=calib_sample_size,
                 )
             )
 
@@ -78,9 +109,13 @@ def compute_value_bets(game: MatchedGame, value_bet_threshold: float = 1.0) -> l
     return entries
 
 
-def compute_all(games: list[MatchedGame], value_bet_threshold: float = 1.0) -> list[MatchedGame]:
+def compute_all(
+    games: list[MatchedGame],
+    value_bet_threshold: float = 1.0,
+    calibration_buckets: list[CalibrationBucket] | None = None,
+) -> list[MatchedGame]:
     for game in games:
-        compute_value_bets(game, value_bet_threshold=value_bet_threshold)
+        compute_value_bets(game, value_bet_threshold=value_bet_threshold, calibration_buckets=calibration_buckets)
     return games
 
 

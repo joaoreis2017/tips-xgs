@@ -139,6 +139,27 @@ Se não encontrar nenhum par (previsão, resultado real), o aviso diz
 exatamente o que falta — ou não há `data/<dia>/games.json` guardado
 para nenhum dia, ou `xgscore.results` ainda não está calibrado.
 
+## O histórico já alimenta as próprias apostas do dia
+
+Explicitamente pedido (2026-11-14): assim que um mercado + escalão de
+probabilidade acumula **pelo menos 30 jogos** com resultado real
+emparelhado (ver `calibration.DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE`),
+`python -m tipsxgs run` passa a usar essa taxa de acerto real — não a
+probabilidade do modelo — para calcular `valor`/`edge` de cada aposta,
+automaticamente, sem precisares de correr nada à parte nem mudar
+`config.yaml`. Isto acontece em `pipeline.run_daily`, que chama
+`calibration.load_accumulated_calibration` (lê tudo o que já está em
+`data/`, sem scraping) antes de `valuebets.compute_all`.
+
+Quando isto acontece, o painel mostra um selo "real: X% (Nj)" por
+baixo da probabilidade do modelo, nas três tabelas onde isso importa
+(múltipla do dia, apostas de probabilidade média, melhores apostas de
+valor de cada jogo) — a probabilidade do modelo em si nunca é alterada
+(continua a decidir em que "banda" uma aposta entra), só o cálculo de
+valor é que passa a usar o número real uma vez que há amostra
+suficiente. Enquanto não houver 30 jogos nesse escalão específico, o
+comportamento é exatamente o mesmo de antes (probabilidade do modelo).
+
 ## Passo 4 — testar
 
 ```bash

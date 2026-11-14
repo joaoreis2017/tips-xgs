@@ -73,6 +73,8 @@ def game_to_dict(game: MatchedGame) -> dict:
                 "fair_probability": v.fair_probability,
                 "edge": v.edge,
                 "value_ratio": v.value_ratio,
+                "calibrated_probability": v.calibrated_probability,
+                "calibration_sample_size": v.calibration_sample_size,
                 "rank_by_probability": v.rank_by_probability,
             }
             for v in game.value_bets
@@ -126,6 +128,8 @@ def game_from_dict(raw: dict) -> MatchedGame:
             fair_probability=v.get("fair_probability"),
             edge=v.get("edge"),
             value_ratio=v.get("value_ratio"),
+            calibrated_probability=v.get("calibrated_probability"),
+            calibration_sample_size=v.get("calibration_sample_size"),
             rank_by_probability=v.get("rank_by_probability"),
         )
         for v in raw.get("value_bets", [])

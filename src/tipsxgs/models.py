@@ -69,13 +69,34 @@ class ValueBetEntry:
     market: str
     outcome: str
     label: str  # human readable, e.g. "Resultado Final - Casa"
-    probability: float  # model probability, 0..1
+    probability: float  # model probability, 0..1 -- ALWAYS the raw model number, never overridden (see calibrated_probability for the historically-adjusted one)
     odd: Optional[float] = None  # decimal odd offered by the bookmaker
     implied_probability: Optional[float] = None  # 1 / odd
     fair_probability: Optional[float] = None  # overround-adjusted implied prob
-    edge: Optional[float] = None  # probability - fair_probability
-    value_ratio: Optional[float] = None  # probability * odd (>1 == positive EV)
+    edge: Optional[float] = None  # effective_probability - fair_probability
+    value_ratio: Optional[float] = None  # effective_probability * odd (>1 == positive EV)
+    # Explicitly requested (2026-11-14): once enough historical (day,
+    # market+band) games have accumulated (see calibration.py), the
+    # real observed hit rate for this exact market-family + probability
+    # band -- e.g. the model says 70% for "ambas marcam" but history
+    # shows that band actually lands 83% of the time. None when there
+    # isn't a calibrated/accumulated-history run yet, or that band
+    # hasn't reached the minimum sample size (see
+    # calibration.calibrated_probability) -- callers then fall back to
+    # the model's own raw `probability` for `edge`/`value_ratio` below.
+    calibrated_probability: Optional[float] = None
+    # How many historical games back calibrated_probability, when set
+    # (shown alongside it so the dashboard can say e.g. "45 jogos").
+    calibration_sample_size: Optional[int] = None
     rank_by_probability: Optional[int] = None  # 1 = most likely event in match
+
+    @property
+    def effective_probability(self) -> float:
+        """What `edge`/`value_ratio` are actually computed from:
+        `calibrated_probability` once enough history has accumulated
+        for this exact market+band, otherwise the model's own raw
+        `probability` unchanged."""
+        return self.calibrated_probability if self.calibrated_probability is not None else self.probability
 
     @property
     def is_value_bet(self) -> bool:

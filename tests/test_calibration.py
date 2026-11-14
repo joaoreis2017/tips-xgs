@@ -2,8 +2,16 @@ from datetime import datetime
 
 import pytest
 
-from tipsxgs.calibration import actual_outcome_hit, compute_calibration, match_games_to_results
+from tipsxgs.calibration import (
+    CalibrationBucket,
+    actual_outcome_hit,
+    calibrated_probability,
+    compute_calibration,
+    load_accumulated_calibration,
+    match_games_to_results,
+)
 from tipsxgs.models import Fixture, MatchedGame, MatchResult, ValueBetEntry
+from tipsxgs.storage import save_day, save_results
 
 
 def make_game(value_bets, slug="union-berlin-schalke", home="Union Berlin", away="Schalke", kickoff=None):
@@ -200,3 +208,69 @@ def test_compute_calibration_does_not_pool_a_hit_rate_across_bands():
 
 def test_compute_calibration_empty_when_nothing_paired():
     assert compute_calibration([]) == []
+
+
+# --- calibrated_probability -------------------------------------------------
+
+
+def test_calibrated_probability_returns_the_bucket_once_sample_size_is_enough():
+    buckets = [
+        CalibrationBucket(market_family="over_under", probability_bucket="80-89%", count=30, hits=27, avg_predicted_probability=0.83)
+    ]
+    prob, count = calibrated_probability("over_under_1.5", 0.85, buckets, min_sample_size=30)
+    assert prob == pytest.approx(27 / 30)
+    assert count == 30
+
+
+def test_calibrated_probability_none_below_sample_size():
+    buckets = [
+        CalibrationBucket(market_family="over_under", probability_bucket="80-89%", count=29, hits=27, avg_predicted_probability=0.83)
+    ]
+    assert calibrated_probability("over_under_1.5", 0.85, buckets, min_sample_size=30) == (None, None)
+
+
+def test_calibrated_probability_none_when_bucket_missing_entirely():
+    assert calibrated_probability("over_under_1.5", 0.85, [], min_sample_size=30) == (None, None)
+
+
+def test_calibrated_probability_matches_by_family_and_band_not_exact_market():
+    # over_under_1.5 and over_under_2.5 are both family "over_under" --
+    # a bucket computed from one line's history also applies to another
+    # line's prediction, as long as the predicted probability falls in
+    # the same band.
+    buckets = [
+        CalibrationBucket(market_family="over_under", probability_bucket="80-89%", count=30, hits=24, avg_predicted_probability=0.83)
+    ]
+    prob, _ = calibrated_probability("over_under_2.5", 0.81, buckets, min_sample_size=30)
+    assert prob == pytest.approx(24 / 30)
+
+
+# --- load_accumulated_calibration -------------------------------------------
+
+
+def test_load_accumulated_calibration_reads_every_saved_day(tmp_path):
+    day1 = make_game(
+        [ValueBetEntry(market="1x2", outcome="home", label="x", probability=0.75)],
+        slug="game-day1",
+        kickoff=datetime(2026, 9, 10, 18, 0),
+    )
+    result1 = make_result(home_goals=2, away_goals=1, kickoff=datetime(2026, 9, 10, 18, 0))
+    save_day(datetime(2026, 9, 10).date(), [day1], tmp_path)
+    save_results(datetime(2026, 9, 10).date(), [result1], tmp_path)
+
+    day2 = make_game(
+        [ValueBetEntry(market="1x2", outcome="home", label="x", probability=0.78)],
+        slug="game-day2",
+        kickoff=datetime(2026, 9, 11, 18, 0),
+    )
+    result2 = make_result(home_goals=2, away_goals=1, kickoff=datetime(2026, 9, 11, 18, 0))
+    save_day(datetime(2026, 9, 11).date(), [day2], tmp_path)
+    save_results(datetime(2026, 9, 11).date(), [result2], tmp_path)
+
+    buckets = load_accumulated_calibration(tmp_path)
+    by_bucket = {b.probability_bucket: b for b in buckets}
+    assert by_bucket["70-79%"].count == 2  # both days' entries pooled into the same band
+
+
+def test_load_accumulated_calibration_empty_dir_returns_empty(tmp_path):
+    assert load_accumulated_calibration(tmp_path) == []

@@ -31,6 +31,13 @@ from .matching import _score
 from .models import MatchedGame, MatchResult
 
 _OVER_UNDER_LINE_RE = re.compile(r"^over_under_(?P<line>\d+(?:\.\d+)?)$")
+# Per-team total goals -- a *different* market family from over_under
+# above (total goals for the whole match): market_family() already
+# tells these apart on the market key alone ("home_total"/"away_total"
+# vs "over_under"), so once actual_outcome_hit can judge them too, they
+# show up as their own separate rows rather than being silently dropped.
+_HOME_TOTAL_LINE_RE = re.compile(r"^home_total_(?P<line>\d+(?:\.\d+)?)$")
+_AWAY_TOTAL_LINE_RE = re.compile(r"^away_total_(?P<line>\d+(?:\.\d+)?)$")
 
 _DOUBLE_CHANCE_COVERS: dict[str, set[str]] = {
     "1x": {"home", "draw"},
@@ -62,6 +69,24 @@ def actual_outcome_hit(market: str, outcome: str, home_goals: int, away_goals: i
             return total > line
         if outcome == "under":
             return total < line
+        return None
+
+    m = _HOME_TOTAL_LINE_RE.match(market)
+    if m:
+        line = float(m.group("line"))
+        if outcome == "over":
+            return home_goals > line
+        if outcome == "under":
+            return home_goals < line
+        return None
+
+    m = _AWAY_TOTAL_LINE_RE.match(market)
+    if m:
+        line = float(m.group("line"))
+        if outcome == "over":
+            return away_goals > line
+        if outcome == "under":
+            return away_goals < line
         return None
 
     return None

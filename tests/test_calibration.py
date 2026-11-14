@@ -63,6 +63,19 @@ def test_actual_outcome_hit_over_under_respects_the_line():
     assert actual_outcome_hit("over_under_3.5", "under", 2, 1) is True
 
 
+def test_actual_outcome_hit_per_team_totals_are_judged_independently_of_match_total():
+    # home_goals=2, away_goals=1 (total 3) -- home_total/away_total look
+    # only at that one side's own goals, a *different* market family
+    # from over_under (whole-match total) above.
+    assert actual_outcome_hit("home_total_1.5", "over", 2, 1) is True  # 2 > 1.5
+    assert actual_outcome_hit("home_total_1.5", "under", 2, 1) is False
+    assert actual_outcome_hit("away_total_1.5", "over", 2, 1) is False  # 1 < 1.5
+    assert actual_outcome_hit("away_total_1.5", "under", 2, 1) is True
+    # Sanity: the match-total market at the same line still looks at
+    # home+away combined (3), not either side alone.
+    assert actual_outcome_hit("over_under_1.5", "over", 2, 1) is True
+
+
 def test_actual_outcome_hit_unknown_market_returns_none():
     # A handicap/correct-score style market can't be judged from the
     # score alone with the information available here.
@@ -121,6 +134,26 @@ def test_compute_market_family_summary_sorted_by_hit_rate_descending():
     result = make_result(home_goals=2, away_goals=1)
     summary = compute_market_family_summary([(game, result)])
     assert [s.market_family for s in summary] == ["btts", "1x2"]
+
+
+def test_compute_market_family_summary_keeps_per_team_totals_separate_from_match_total():
+    # Explicitly requested: over/under for the whole match must NOT be
+    # pooled together with either team's own individual total.
+    game = make_game(
+        [
+            ValueBetEntry(market="over_under_1.5", outcome="over", label="x", probability=0.9),  # total 3 > 1.5: hit
+            ValueBetEntry(market="home_total_1.5", outcome="under", label="x", probability=0.4),  # home 2, miss
+            ValueBetEntry(market="away_total_0.5", outcome="over", label="x", probability=0.5),  # away 1 > 0.5: hit
+        ]
+    )
+    result = make_result(home_goals=2, away_goals=1)
+    summary = compute_market_family_summary([(game, result)])
+
+    by_family = {s.market_family: s for s in summary}
+    assert set(by_family) == {"over_under", "home_total", "away_total"}
+    assert by_family["over_under"].hits == 1
+    assert by_family["home_total"].hits == 0
+    assert by_family["away_total"].hits == 1
 
 
 def test_compute_market_family_summary_ignores_unjudgeable_markets():

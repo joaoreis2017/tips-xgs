@@ -70,17 +70,17 @@
 <p class="subtitle"><a href="index.html">← Voltar ao painel</a></p>
 <h1>📈 Calibração — probabilidade prevista vs. resultado real</h1>
 <p class="subtitle">gerado em {{ generated_at }} · {{ total_games }} jogo(s) terminado(s) com previsão e resultado emparelhados</p>
-<p class="subtitle">Cada tabela mostra, para esse mercado, com que frequência o resultado real bateu certo quando o modelo previu uma probabilidade dentro de cada escalão — escalão mais alto (mais confiante) primeiro. Não há uma "taxa de acerto geral" por mercado: para mercados como 1x2/btts/dupla hipótese, juntar todos os escalões dá sempre um número fixo (~33%/~50%/~67%) que não diz nada sobre a qualidade do modelo — só faz sentido olhar escalão a escalão.</p>
+<p class="subtitle">Cada tabela é um mercado + resultado específico (ex. "1x2 — Casa" é uma tabela à parte de "1x2 — Fora"), mostrando com que frequência o resultado real bateu certo quando o modelo previu uma probabilidade dentro de cada escalão — escalão mais alto (mais confiante) primeiro. Não há uma "taxa de acerto geral" por mercado: para resultados exaustivos (1x2, btts, dupla hipótese), juntar todos os escalões dá sempre um número fixo que não diz nada sobre a qualidade do modelo — só faz sentido olhar escalão a escalão. A opção "12" da dupla hipótese não é seguida (nunca é apostada).</p>
 
 {% if not markets %}
 <div class="panel"><p class="empty">Ainda sem jogos emparelhados com resultado real (ver docs/CALIBRATION.md's "xgscore.results").</p></div>
 {% endif %}
 
 {% for m in markets %}
-<details id="market-{{ m.market_family }}" open>
+<details id="market-{{ m.market_family }}-{{ m.outcome }}" open>
   <summary>
     <div class="market-header">
-      <span class="name">{{ m.market_family.replace('_', ' ') }}</span>
+      <span class="name">{{ m.label }}</span>
       <span class="market-meta">{{ m.sample_size }} amostra(s)</span>
     </div>
   </summary>

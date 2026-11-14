@@ -76,7 +76,7 @@ class ValueBetEntry:
     edge: Optional[float] = None  # effective_probability - fair_probability
     value_ratio: Optional[float] = None  # effective_probability * odd (>1 == positive EV)
     # Explicitly requested (2026-11-14): once enough historical (day,
-    # market+band) games have accumulated (see calibration.py), the
+    # market+outcome+band) games have accumulated (see calibration.py), the
     # real observed hit rate for this exact market-family + probability
     # band -- e.g. the model says 70% for "ambas marcam" but history
     # shows that band actually lands 83% of the time. None when there
@@ -94,7 +94,7 @@ class ValueBetEntry:
     def effective_probability(self) -> float:
         """What `edge`/`value_ratio` are actually computed from:
         `calibrated_probability` once enough history has accumulated
-        for this exact market+band, otherwise the model's own raw
+        for this exact market+outcome+band, otherwise the model's own raw
         `probability` unchanged."""
         return self.calibrated_probability if self.calibrated_probability is not None else self.probability
 

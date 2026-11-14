@@ -17,7 +17,7 @@ For every outcome the model gave a probability for, we compute:
 
 "Effective probability" (see ``ValueBetEntry.effective_probability``)
 is ``calibrated_probability`` when ``calibration_buckets`` is given and
-has enough accumulated history for this exact market+band (see
+has enough accumulated history for this exact market+outcome+band (see
 ``calibration.calibrated_probability``), otherwise the model's own raw
 ``probability`` -- explicitly requested (2026-11-14): once there's
 enough real-world track record for a market/band, the money math
@@ -76,7 +76,7 @@ def compute_value_bets(
             calib_sample_size: int | None = None
             if calibration_buckets:
                 calib_probability, calib_sample_size = calibrated_probability(
-                    market, probability, calibration_buckets
+                    market, outcome, probability, calibration_buckets
                 )
             effective_probability = calib_probability if calib_probability is not None else probability
 

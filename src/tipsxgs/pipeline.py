@@ -117,7 +117,7 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
     calibration_buckets = load_accumulated_calibration(cfg.data_dir, min_confidence=cfg.min_match_confidence)
     calibrated_bands = sum(1 for b in calibration_buckets if b.count >= DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE)
     logger.info(
-        "%d market+band(s) have enough accumulated history (>=%d games) to override the model's own "
+        "%d market+outcome+band(s) have enough accumulated history (>=%d games) to override the model's own "
         "probability in value_ratio/edge -- see calibration.py",
         calibrated_bands,
         DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE,

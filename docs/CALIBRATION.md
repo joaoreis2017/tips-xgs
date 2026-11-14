@@ -101,6 +101,16 @@ previstos a 70-79% acertam mesmo perto de 70-79% das vezes, ou o
 modelo está demasiado confiante nesse mercado?" — ver
 `src/tipsxgs/calibration.py`.
 
+Explicitamente pedido (2026-11-14): cada **resultado específico** fica
+completamente separado, nunca misturado com outro do mesmo mercado --
+vitórias em casa separadas de vitórias fora (e do empate), "over"
+separado de "under", o over/under de cada equipa (`home_total`/
+`away_total`) separado do over/under do jogo todo e um do outro, e
+"1X" separado de "X2" na dupla hipótese. A opção "12" da dupla hipótese
+é excluída por completo (não é só tratada à parte -- nunca aparece em
+lado nenhum, no relatório nem no ajuste de valor das apostas) porque
+nunca é apostada.
+
 **Limitação confirmada (na própria captura):** a página tem um toggle
 próprio "Week / Yesterday / Today" que por defeito mostra **Yesterday**
 (ontem) — não foi encontrado nenhum parâmetro de URL que escolha outro

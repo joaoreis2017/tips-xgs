@@ -9,6 +9,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .calibration import CalibrationBucket
 from .combos import compute_combo_entries
+from .markets import outcome_label
 from .models import MatchedGame
 from .valuebets import (
     BetPick,
@@ -273,22 +274,33 @@ def _calibration_bucket_ctx(bucket: CalibrationBucket) -> dict:
 
 
 def build_calibration_context(buckets: list[CalibrationBucket], total_games: int) -> dict:
-    # Grouped by market family, preserving compute_calibration's own
-    # order (per family, highest-confidence band first) -- deliberately
-    # NOT also reporting one hit-rate per family pooled across every
-    # band: see calibration.py's module docstring for why that would be
-    # a mathematical constant carrying no real signal for most markets
+    # Grouped by (market family, outcome) -- explicitly requested
+    # (2026-11-14): kept fully separate, e.g. home wins never pooled
+    # with away wins, over never pooled with under, home_total's own
+    # over/under never pooled with away_total's, double_chance's "1x"
+    # never pooled with "x2" (its "12" is excluded entirely upstream,
+    # in calibration.py). Preserves compute_calibration's own order
+    # (per group, highest-confidence band first) -- deliberately NOT
+    # also reporting one hit-rate pooled across every band: see
+    # calibration.py's module docstring for why that would be a
+    # mathematical constant carrying no real signal for most markets
     # here, rather than a measure of the model's skill.
-    markets: dict[str, list[dict]] = {}
+    groups: dict[tuple[str, str], list[dict]] = {}
     for b in buckets:
-        markets.setdefault(b.market_family, []).append(_calibration_bucket_ctx(b))
+        groups.setdefault((b.market_family, b.outcome), []).append(_calibration_bucket_ctx(b))
 
     return {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "total_games": total_games,
         "markets": [
-            {"market_family": family, "sample_size": sum(b["count"] for b in family_buckets), "buckets": family_buckets}
-            for family, family_buckets in markets.items()
+            {
+                "market_family": family,
+                "outcome": outcome,
+                "label": f"{family.replace('_', ' ')} — {outcome_label(family, outcome)}",
+                "sample_size": sum(b["count"] for b in group_buckets),
+                "buckets": group_buckets,
+            }
+            for (family, outcome), group_buckets in groups.items()
         ],
     }
 

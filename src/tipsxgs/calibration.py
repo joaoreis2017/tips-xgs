@@ -3,11 +3,21 @@
 (``MatchResult``, scraped from xGScore's statistics/history page -- see
 ``xgscore/results.py``).
 
-:func:`compute_calibration` -- one row per (market family, predicted-
-probability band, e.g. "70-79%") -- a reliability diagram: compare each
-bucket's ``actual_hit_rate`` against the probability range the model
-itself predicted, to answer "quando o modelo diz 70% para ambas
-marcam, isso acontece mesmo à volta de 70% das vezes?".
+:func:`compute_calibration` -- one row per (market family, outcome,
+predicted-probability band, e.g. "70-79%") -- a reliability diagram:
+compare each bucket's ``actual_hit_rate`` against the probability
+range the model itself predicted, to answer "quando o modelo diz 70%
+para ambas marcam, isso acontece mesmo à volta de 70% das vezes?".
+
+Explicitly requested (2026-11-14): kept fully separate per *outcome*,
+not just per market family -- home wins tracked apart from away wins,
+over apart from under, home_total's own over/under apart from
+away_total's, double_chance's "1x" apart from its "x2" (reported as
+more trustworthy this way: a market family's different outcomes can
+behave very differently, e.g. a model might be well-calibrated on home
+wins but overconfident on away wins, which pooling them would hide).
+``double_chance``'s "12" outcome is excluded entirely (not just split
+out) at the same request -- never bet on, so never tracked.
 
 Deliberately does NOT also report a single hit-rate *per market*
 pooled across every probability level (an earlier version did, and was
@@ -62,6 +72,11 @@ _DOUBLE_CHANCE_COVERS: dict[str, set[str]] = {
     "12": {"home", "away"},
     "x2": {"draw", "away"},
 }
+
+# (market family, outcome) pairs explicitly excluded from calibration
+# entirely -- never bet on, so never tracked, rather than tracked
+# separately like every other outcome. See the module docstring.
+_EXCLUDED_MARKET_OUTCOMES: set[tuple[str, str]] = {("double_chance", "12")}
 
 
 def actual_outcome_hit(market: str, outcome: str, home_goals: int, away_goals: int) -> bool | None:
@@ -144,6 +159,7 @@ def match_games_to_results(
 @dataclass
 class CalibrationBucket:
     market_family: str
+    outcome: str
     probability_bucket: str  # e.g. "70-79%"
     count: int
     hits: int
@@ -162,66 +178,74 @@ def _bucket_label(probability: float) -> str:
 
 def _collect_rows(
     paired: list[tuple[MatchedGame, MatchResult]],
-) -> dict[str, list[tuple[float, bool]]]:
-    """One list of ``(predicted_probability, did_it_hit)`` per market
-    family, pooling every value-bet entry across every paired game whose
-    outcome ``actual_outcome_hit`` can actually judge."""
-    rows: dict[str, list[tuple[float, bool]]] = {}
+) -> dict[tuple[str, str], list[tuple[float, bool]]]:
+    """One list of ``(predicted_probability, did_it_hit)`` per (market
+    family, outcome) -- kept fully separate per outcome (see the module
+    docstring), pooling every value-bet entry across every paired game
+    whose outcome ``actual_outcome_hit`` can actually judge and that
+    isn't in ``_EXCLUDED_MARKET_OUTCOMES``."""
+    rows: dict[tuple[str, str], list[tuple[float, bool]]] = {}
     for game, result in paired:
         for v in game.value_bets:
+            family = market_family(v.market)
+            if (family, v.outcome) in _EXCLUDED_MARKET_OUTCOMES:
+                continue
             hit = actual_outcome_hit(v.market, v.outcome, result.home_goals, result.away_goals)
             if hit is None:
                 continue
-            rows.setdefault(market_family(v.market), []).append((v.probability, hit))
+            rows.setdefault((family, v.outcome), []).append((v.probability, hit))
     return rows
 
 
 def compute_calibration(paired: list[tuple[MatchedGame, MatchResult]]) -> list[CalibrationBucket]:
-    """One row per (market family, predicted-probability decile) -- see
-    the module docstring for why this is the only aggregate reported
-    (a single hit-rate per market, pooled across every probability
-    level, would be mathematically meaningless for most markets here).
+    """One row per (market family, outcome, predicted-probability
+    decile) -- see the module docstring for why this is the only
+    aggregate reported (a single hit-rate pooled across every outcome
+    and/or probability level would be mathematically meaningless for
+    most markets here).
 
-    Sorted by market family, then by probability band descending
-    (highest confidence first within each market) -- that ordering
-    matches what this is actually used for: "é mais seguro apostar
-    quando a probabilidade está acima de X%", read top-down per market.
+    Sorted by market family, then outcome, then by probability band
+    descending (highest confidence first within each market+outcome)
+    -- that ordering matches what this is actually used for: "é mais
+    seguro apostar quando a probabilidade está acima de X%", read
+    top-down per market+outcome.
     """
-    buckets_rows: dict[tuple[str, str], list[tuple[float, bool]]] = {}
-    for family, rows in _collect_rows(paired).items():
+    buckets_rows: dict[tuple[str, str, str], list[tuple[float, bool]]] = {}
+    for (family, outcome), rows in _collect_rows(paired).items():
         for probability, hit in rows:
-            key = (family, _bucket_label(probability))
+            key = (family, outcome, _bucket_label(probability))
             buckets_rows.setdefault(key, []).append((probability, hit))
 
     buckets = []
-    for (family, bucket_label), rows in buckets_rows.items():
+    for (family, outcome, bucket_label), rows in buckets_rows.items():
         count = len(rows)
         hits = sum(1 for _, hit in rows if hit)
         avg_prob = sum(p for p, _ in rows) / count
-        buckets.append(CalibrationBucket(family, bucket_label, count, hits, avg_prob))
-    buckets.sort(key=lambda b: (b.market_family, -int(b.probability_bucket.split("-")[0])))
+        buckets.append(CalibrationBucket(family, outcome, bucket_label, count, hits, avg_prob))
+    buckets.sort(key=lambda b: (b.market_family, b.outcome, -int(b.probability_bucket.split("-")[0])))
     return buckets
 
 
 def calibrated_probability(
     market: str,
+    outcome: str,
     probability: float,
     buckets: list[CalibrationBucket],
     min_sample_size: int = DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE,
 ) -> tuple[float | None, int | None]:
-    """Look up ``market``/``probability``'s own (market family,
-    probability band) in the already-computed ``buckets`` and return
-    ``(actual_hit_rate, count)`` -- but only once that band has at
-    least ``min_sample_size`` games behind it; otherwise ``(None,
-    None)``, so a caller falls back to the model's own raw
-    ``probability`` rather than adjusting it on a handful of noisy
-    games. See ``valuebets.compute_value_bets``, the caller that
+    """Look up ``market``/``outcome``/``probability``'s own (market
+    family, outcome, probability band) in the already-computed
+    ``buckets`` and return ``(actual_hit_rate, count)`` -- but only
+    once that band has at least ``min_sample_size`` games behind it;
+    otherwise ``(None, None)``, so a caller falls back to the model's
+    own raw ``probability`` rather than adjusting it on a handful of
+    noisy games. See ``valuebets.compute_value_bets``, the caller that
     actually uses this to compute ``value_ratio``/``edge``.
     """
     family = market_family(market)
     bucket_label = _bucket_label(probability)
     for b in buckets:
-        if b.market_family == family and b.probability_bucket == bucket_label:
+        if b.market_family == family and b.outcome == outcome and b.probability_bucket == bucket_label:
             if b.count >= min_sample_size:
                 return b.actual_hit_rate, b.count
             return None, None

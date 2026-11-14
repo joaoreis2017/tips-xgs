@@ -68,8 +68,8 @@ def test_actual_outcome_hit_over_under_respects_the_line():
 
 def test_actual_outcome_hit_per_team_totals_are_judged_independently_of_match_total():
     # home_goals=2, away_goals=1 (total 3) -- home_total/away_total look
-    # only at that one side's own goals, a *different* market family
-    # from over_under (whole-match total) above.
+    # only at that one side's own goals, a *different* market from
+    # over_under (whole-match total) above.
     assert actual_outcome_hit("home_total_1.5", "over", 2, 1) is True  # 2 > 1.5
     assert actual_outcome_hit("home_total_1.5", "under", 2, 1) is False
     assert actual_outcome_hit("away_total_1.5", "over", 2, 1) is False  # 1 < 1.5
@@ -108,20 +108,25 @@ def test_match_games_to_results_drops_games_with_no_good_candidate():
 # --- compute_calibration ---------------------------------------------------
 
 
-def test_compute_calibration_pools_across_lines_of_the_same_market_and_outcome():
-    game = make_game(
-        [
-            ValueBetEntry(market="over_under_1.5", outcome="over", label="x", probability=0.9),
-            ValueBetEntry(market="over_under_2.5", outcome="over", label="x", probability=0.91),
-        ]
+def test_compute_calibration_pools_multiple_games_of_the_same_exact_market_and_outcome():
+    game_a = make_game(
+        [ValueBetEntry(market="over_under_2.5", outcome="over", label="x", probability=0.9)],
+        slug="game-a",
     )
-    result = make_result(home_goals=2, away_goals=1)  # total 3 -- both "over" bets hit
-    buckets = compute_calibration([(game, result)])
+    game_b = make_game(
+        [ValueBetEntry(market="over_under_2.5", outcome="over", label="x", probability=0.91)],
+        slug="game-b",
+        home="A",
+        away="B",
+    )
+    result_a = make_result(home_goals=2, away_goals=1)  # total 3 -- hit
+    result_b = make_result(home="A", away="B", home_goals=2, away_goals=1)  # total 3 -- hit
 
-    # Both lines' probabilities round down into the same "90-99%" decile
-    # -- same family, same outcome, same bucket, pooled into one row.
+    buckets = compute_calibration([(game_a, result_a), (game_b, result_b)])
+
+    # Same exact market, same outcome, same decile -- pooled into one row.
     assert len(buckets) == 1
-    assert buckets[0].market_family == "over_under"
+    assert buckets[0].market == "over_under_2.5"
     assert buckets[0].outcome == "over"
     assert buckets[0].probability_bucket == "90-99%"
     assert buckets[0].count == 2
@@ -129,10 +134,32 @@ def test_compute_calibration_pools_across_lines_of_the_same_market_and_outcome()
     assert buckets[0].avg_predicted_probability == pytest.approx((0.9 + 0.91) / 2)
 
 
-def test_compute_calibration_keeps_over_separate_from_under():
-    # Explicitly requested (2026-11-14): over and under for the SAME
-    # market+line must never be pooled into one row, even when their
-    # probabilities happen to land in the same decile.
+def test_compute_calibration_keeps_different_lines_of_over_under_fully_separate():
+    # Explicitly requested (2026-11-14, taken further): over_under_1.5
+    # must NEVER be pooled with over_under_2.5, even for the same
+    # outcome word and even if both probabilities land in the same
+    # decile -- each exact line is tracked on its own.
+    game = make_game(
+        [
+            ValueBetEntry(market="over_under_1.5", outcome="over", label="x", probability=0.85),  # hit
+            ValueBetEntry(market="over_under_2.5", outcome="over", label="y", probability=0.82),  # hit
+            ValueBetEntry(market="over_under_3.5", outcome="over", label="z", probability=0.05),  # miss, total 3 < 3.5
+        ]
+    )
+    result = make_result(home_goals=2, away_goals=1)  # total 3
+    buckets = compute_calibration([(game, result)])
+
+    by_market = {b.market: b for b in buckets}
+    assert set(by_market) == {"over_under_1.5", "over_under_2.5", "over_under_3.5"}
+    assert by_market["over_under_1.5"].count == 1
+    assert by_market["over_under_2.5"].count == 1
+    assert by_market["over_under_3.5"].count == 1
+    assert by_market["over_under_1.5"].hits == 1
+    assert by_market["over_under_2.5"].hits == 1
+    assert by_market["over_under_3.5"].hits == 0
+
+
+def test_compute_calibration_keeps_over_separate_from_under_at_the_same_line():
     game = make_game(
         [
             ValueBetEntry(market="over_under_2.5", outcome="over", label="x", probability=0.55),
@@ -145,9 +172,7 @@ def test_compute_calibration_keeps_over_separate_from_under():
     by_outcome = {b.outcome: b for b in buckets}
     assert set(by_outcome) == {"over", "under"}
     assert by_outcome["over"].hits == 1
-    assert by_outcome["over"].count == 1
     assert by_outcome["under"].hits == 0
-    assert by_outcome["under"].count == 1
 
 
 def test_compute_calibration_keeps_home_wins_separate_from_away_wins():
@@ -170,29 +195,30 @@ def test_compute_calibration_keeps_home_wins_separate_from_away_wins():
     assert by_outcome["away"].hits == 0
 
 
-def test_compute_calibration_keeps_home_total_over_separate_from_away_total_over():
-    # Explicitly requested: home_total's own over/under must never be
-    # pooled with away_total's, even for the same outcome word ("over").
+def test_compute_calibration_keeps_home_total_separate_from_away_total_per_line():
+    # Explicitly requested: each team's own total, at each line, is its
+    # own row -- home_total_1.5.over never pooled with
+    # away_total_1.5.over, nor with home_total_0.5.over.
     game = make_game(
         [
-            ValueBetEntry(market="home_total_1.5", outcome="over", label="x", probability=0.6),  # home 2 > 1.5: hit
-            ValueBetEntry(market="away_total_1.5", outcome="over", label="y", probability=0.6),  # away 1 < 1.5: miss
+            ValueBetEntry(market="home_total_0.5", outcome="over", label="x", probability=0.95),  # home 2 > 0.5: hit
+            ValueBetEntry(market="home_total_1.5", outcome="over", label="y", probability=0.6),  # home 2 > 1.5: hit
+            ValueBetEntry(market="away_total_1.5", outcome="over", label="z", probability=0.6),  # away 1 < 1.5: miss
         ]
     )
     result = make_result(home_goals=2, away_goals=1)
     buckets = compute_calibration([(game, result)])
 
-    by_family = {b.market_family: b for b in buckets}
-    assert set(by_family) == {"home_total", "away_total"}
-    assert by_family["home_total"].outcome == "over"
-    assert by_family["home_total"].hits == 1
-    assert by_family["away_total"].outcome == "over"
-    assert by_family["away_total"].hits == 0
+    by_market = {b.market: b for b in buckets}
+    assert set(by_market) == {"home_total_0.5", "home_total_1.5", "away_total_1.5"}
+    assert by_market["home_total_0.5"].hits == 1
+    assert by_market["home_total_1.5"].hits == 1
+    assert by_market["away_total_1.5"].hits == 0
 
 
 def test_compute_calibration_keeps_1x_separate_from_x2_and_excludes_12():
-    # Explicitly requested (2026-11-14): double_chance's "1x" and "x2"
-    # tracked separately, and "12" dropped entirely (never bet on it).
+    # Explicitly requested: double_chance's "1x" and "x2" tracked
+    # separately, and "12" dropped entirely (never bet on it).
     game = make_game(
         [
             ValueBetEntry(market="double_chance", outcome="1x", label="x", probability=0.85),  # covers home: hit
@@ -222,11 +248,11 @@ def test_compute_calibration_keeps_per_team_totals_separate_from_match_total():
     result = make_result(home_goals=2, away_goals=1)
     buckets = compute_calibration([(game, result)])
 
-    by_family = {b.market_family: b for b in buckets}
-    assert set(by_family) == {"over_under", "home_total", "away_total"}
-    assert by_family["over_under"].hits == 1
-    assert by_family["home_total"].hits == 0
-    assert by_family["away_total"].hits == 1
+    by_market = {b.market: b for b in buckets}
+    assert set(by_market) == {"over_under_1.5", "home_total_1.5", "away_total_0.5"}
+    assert by_market["over_under_1.5"].hits == 1
+    assert by_market["home_total_1.5"].hits == 0
+    assert by_market["away_total_0.5"].hits == 1
 
 
 def test_compute_calibration_ignores_unjudgeable_markets():
@@ -252,15 +278,19 @@ def test_compute_calibration_buckets_by_probability_decile():
     assert by_bucket["10-19%"].count == 1
 
 
-def test_compute_calibration_sorted_by_family_outcome_then_probability_descending():
+def test_compute_calibration_sorted_by_market_outcome_then_probability_descending():
     # Explicitly requested: within a market+outcome, the highest-
     # confidence band should read first ("é mais seguro apostar quando
-    # a prob está acima de X%" is read top-down).
+    # a prob está acima de X%" is read top-down). Same exact
+    # market+outcome ("over_under_1.5"/"over") across three entries at
+    # three different probabilities, to check the ordering within one
+    # group (a real game only ever has one such entry; using three
+    # here is purely to exercise the sort).
     game = make_game(
         [
             ValueBetEntry(market="over_under_1.5", outcome="over", label="x", probability=0.85),
-            ValueBetEntry(market="over_under_2.5", outcome="over", label="y", probability=0.15),
-            ValueBetEntry(market="over_under_3.5", outcome="over", label="z", probability=0.05),
+            ValueBetEntry(market="over_under_1.5", outcome="over", label="y", probability=0.15),
+            ValueBetEntry(market="over_under_1.5", outcome="over", label="z", probability=0.05),
         ]
     )
     result = make_result(home_goals=2, away_goals=1)
@@ -301,9 +331,7 @@ def test_compute_calibration_empty_when_nothing_paired():
 
 def test_calibrated_probability_returns_the_bucket_once_sample_size_is_enough():
     buckets = [
-        CalibrationBucket(
-            market_family="over_under", outcome="over", probability_bucket="80-89%", count=30, hits=27, avg_predicted_probability=0.83
-        )
+        CalibrationBucket(market="over_under_1.5", outcome="over", probability_bucket="80-89%", count=30, hits=27, avg_predicted_probability=0.83)
     ]
     prob, count = calibrated_probability("over_under_1.5", "over", 0.85, buckets, min_sample_size=30)
     assert prob == pytest.approx(27 / 30)
@@ -312,9 +340,7 @@ def test_calibrated_probability_returns_the_bucket_once_sample_size_is_enough():
 
 def test_calibrated_probability_none_below_sample_size():
     buckets = [
-        CalibrationBucket(
-            market_family="over_under", outcome="over", probability_bucket="80-89%", count=29, hits=27, avg_predicted_probability=0.83
-        )
+        CalibrationBucket(market="over_under_1.5", outcome="over", probability_bucket="80-89%", count=29, hits=27, avg_predicted_probability=0.83)
     ]
     assert calibrated_probability("over_under_1.5", "over", 0.85, buckets, min_sample_size=30) == (None, None)
 
@@ -327,25 +353,19 @@ def test_calibrated_probability_does_not_match_a_different_outcome():
     # A bucket computed for "over" must never answer a lookup for
     # "under", even at the exact same market+band.
     buckets = [
-        CalibrationBucket(
-            market_family="over_under", outcome="over", probability_bucket="80-89%", count=30, hits=24, avg_predicted_probability=0.83
-        )
+        CalibrationBucket(market="over_under_1.5", outcome="over", probability_bucket="80-89%", count=30, hits=24, avg_predicted_probability=0.83)
     ]
     assert calibrated_probability("over_under_1.5", "under", 0.85, buckets, min_sample_size=30) == (None, None)
 
 
-def test_calibrated_probability_matches_by_family_and_band_not_exact_market():
-    # over_under_1.5 and over_under_2.5 are both family "over_under" --
-    # a bucket computed from one line's history also applies to another
-    # line's prediction, as long as the predicted probability falls in
-    # the same band AND it's the same outcome.
+def test_calibrated_probability_does_not_match_a_different_line():
+    # Explicitly requested: a bucket computed for over_under_1.5 must
+    # NEVER answer a lookup for over_under_2.5, even same outcome/band
+    # -- each line is tracked (and looked up) completely separately now.
     buckets = [
-        CalibrationBucket(
-            market_family="over_under", outcome="over", probability_bucket="80-89%", count=30, hits=24, avg_predicted_probability=0.83
-        )
+        CalibrationBucket(market="over_under_1.5", outcome="over", probability_bucket="80-89%", count=30, hits=24, avg_predicted_probability=0.83)
     ]
-    prob, _ = calibrated_probability("over_under_2.5", "over", 0.81, buckets, min_sample_size=30)
-    assert prob == pytest.approx(24 / 30)
+    assert calibrated_probability("over_under_2.5", "over", 0.81, buckets, min_sample_size=30) == (None, None)
 
 
 # --- load_accumulated_calibration -------------------------------------------

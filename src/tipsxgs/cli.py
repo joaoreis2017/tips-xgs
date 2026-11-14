@@ -14,7 +14,7 @@ import click
 
 from .calibration import compute_calibration, match_games_to_results
 from .config import load_config
-from .markets import outcome_label
+from .markets import full_label
 from .pipeline import run_daily
 from .report import render_calibration_report, render_dashboard, render_index
 from .storage import load_day, load_results, save_results
@@ -127,9 +127,9 @@ def calibrate(config_path: str | None, since_str: str | None, scrape_results: bo
     click.echo("Por mercado + resultado + escalão de probabilidade prevista (mais confiante primeiro):")
     last_group = None
     for b in buckets:
-        group = (b.market_family, b.outcome)
+        group = (b.market, b.outcome)
         if group != last_group:
-            click.echo(f"\n{b.market_family} — {outcome_label(b.market_family, b.outcome)}:")
+            click.echo(f"\n{full_label(b.market, b.outcome)}:")
             last_group = group
         click.echo(
             f"  {b.probability_bucket:<8} {b.hits}/{b.count}"

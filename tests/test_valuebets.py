@@ -451,7 +451,7 @@ def test_compute_value_bets_uses_calibrated_probability_once_sample_size_is_enou
     # threshold (see calibration.calibrated_probability).
     game = make_game({"btts": {"yes": 0.70}}, {"btts": {"yes": 2.00}})
     buckets = [
-        CalibrationBucket(market_family="btts", outcome="yes", probability_bucket="70-79%", count=45, hits=38, avg_predicted_probability=0.70)
+        CalibrationBucket(market="btts", outcome="yes", probability_bucket="70-79%", count=45, hits=38, avg_predicted_probability=0.70)
     ]
 
     entries = compute_value_bets(game, calibration_buckets=buckets)
@@ -471,7 +471,7 @@ def test_compute_value_bets_falls_back_to_raw_probability_below_sample_threshold
     # data had been passed at all.
     game = make_game({"btts": {"yes": 0.70}}, {"btts": {"yes": 2.00}})
     buckets = [
-        CalibrationBucket(market_family="btts", outcome="yes", probability_bucket="70-79%", count=5, hits=4, avg_predicted_probability=0.70)
+        CalibrationBucket(market="btts", outcome="yes", probability_bucket="70-79%", count=5, hits=4, avg_predicted_probability=0.70)
     ]
 
     entries = compute_value_bets(game, calibration_buckets=buckets)

@@ -2,12 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from tipsxgs.calibration import (
-    actual_outcome_hit,
-    compute_calibration,
-    compute_market_family_summary,
-    match_games_to_results,
-)
+from tipsxgs.calibration import actual_outcome_hit, compute_calibration, match_games_to_results
 from tipsxgs.models import Fixture, MatchedGame, MatchResult, ValueBetEntry
 
 
@@ -102,41 +97,30 @@ def test_match_games_to_results_drops_games_with_no_good_candidate():
     assert match_games_to_results([game], [unrelated_result]) == []
 
 
-# --- compute_market_family_summary / compute_calibration ------------------
+# --- compute_calibration ---------------------------------------------------
 
 
-def test_compute_market_family_summary_pools_across_lines_into_one_family():
+def test_compute_calibration_pools_across_lines_of_the_same_market_family():
     game = make_game(
         [
             ValueBetEntry(market="over_under_1.5", outcome="over", label="x", probability=0.9),
-            ValueBetEntry(market="over_under_2.5", outcome="over", label="x", probability=0.6),
+            ValueBetEntry(market="over_under_2.5", outcome="over", label="x", probability=0.91),
         ]
     )
     result = make_result(home_goals=2, away_goals=1)  # total 3 -- both "over" bets hit
-    paired = [(game, result)]
+    buckets = compute_calibration([(game, result)])
 
-    summary = compute_market_family_summary(paired)
-    assert len(summary) == 1
-    assert summary[0].market_family == "over_under"
-    assert summary[0].count == 2
-    assert summary[0].hits == 2
-    assert summary[0].hit_rate == pytest.approx(1.0)
-    assert summary[0].avg_predicted_probability == pytest.approx((0.9 + 0.6) / 2)
-
-
-def test_compute_market_family_summary_sorted_by_hit_rate_descending():
-    game = make_game(
-        [
-            ValueBetEntry(market="1x2", outcome="away", label="x", probability=0.3),  # miss (actual: home)
-            ValueBetEntry(market="btts", outcome="yes", label="x", probability=0.5),  # hit
-        ]
-    )
-    result = make_result(home_goals=2, away_goals=1)
-    summary = compute_market_family_summary([(game, result)])
-    assert [s.market_family for s in summary] == ["btts", "1x2"]
+    # Both lines' probabilities round down into the same "90-99%" decile
+    # -- same family, same bucket, pooled into one row.
+    assert len(buckets) == 1
+    assert buckets[0].market_family == "over_under"
+    assert buckets[0].probability_bucket == "90-99%"
+    assert buckets[0].count == 2
+    assert buckets[0].hits == 2
+    assert buckets[0].avg_predicted_probability == pytest.approx((0.9 + 0.91) / 2)
 
 
-def test_compute_market_family_summary_keeps_per_team_totals_separate_from_match_total():
+def test_compute_calibration_keeps_per_team_totals_separate_from_match_total():
     # Explicitly requested: over/under for the whole match must NOT be
     # pooled together with either team's own individual total.
     game = make_game(
@@ -147,19 +131,19 @@ def test_compute_market_family_summary_keeps_per_team_totals_separate_from_match
         ]
     )
     result = make_result(home_goals=2, away_goals=1)
-    summary = compute_market_family_summary([(game, result)])
+    buckets = compute_calibration([(game, result)])
 
-    by_family = {s.market_family: s for s in summary}
+    by_family = {b.market_family: b for b in buckets}
     assert set(by_family) == {"over_under", "home_total", "away_total"}
     assert by_family["over_under"].hits == 1
     assert by_family["home_total"].hits == 0
     assert by_family["away_total"].hits == 1
 
 
-def test_compute_market_family_summary_ignores_unjudgeable_markets():
+def test_compute_calibration_ignores_unjudgeable_markets():
     game = make_game([ValueBetEntry(market="handicap_home", outcome="-1.5", label="x", probability=0.7)])
     result = make_result()
-    assert compute_market_family_summary([(game, result)]) == []
+    assert compute_calibration([(game, result)]) == []
 
 
 def test_compute_calibration_buckets_by_market_and_probability_decile():
@@ -179,6 +163,40 @@ def test_compute_calibration_buckets_by_market_and_probability_decile():
     assert by_bucket["10-19%"].count == 1
 
 
+def test_compute_calibration_sorted_by_family_then_probability_descending():
+    # Explicitly requested: within a market, the highest-confidence band
+    # should read first ("é mais seguro apostar quando a prob está
+    # acima de X%" is read top-down).
+    game = make_game(
+        [
+            ValueBetEntry(market="1x2", outcome="home", label="x", probability=0.85),
+            ValueBetEntry(market="1x2", outcome="draw", label="y", probability=0.10),
+            ValueBetEntry(market="1x2", outcome="away", label="z", probability=0.05),
+        ]
+    )
+    result = make_result(home_goals=2, away_goals=1)
+    buckets = compute_calibration([(game, result)])
+    assert [b.probability_bucket for b in buckets] == ["80-89%", "10-19%", "00-09%"]
+
+
+def test_compute_calibration_does_not_pool_a_hit_rate_across_bands():
+    # The whole point of this redesign (explicitly reported as the
+    # earlier compute_market_family_summary not making sense): no
+    # single aggregate hit-rate across every band is returned anywhere
+    # -- only per-band rows, so nothing here can be pooled back into a
+    # tautological ~1/n-outcomes constant by a caller.
+    game = make_game(
+        [
+            ValueBetEntry(market="btts", outcome="yes", label="x", probability=0.5),
+            ValueBetEntry(market="btts", outcome="no", label="y", probability=0.5),
+        ]
+    )
+    result = make_result(home_goals=1, away_goals=1)  # btts yes
+    buckets = compute_calibration([(game, result)])
+    assert len(buckets) == 1  # both land in the same "50-59%" band
+    assert buckets[0].count == 2
+    assert buckets[0].hits == 1  # exactly the "yes" entry
+
+
 def test_compute_calibration_empty_when_nothing_paired():
     assert compute_calibration([]) == []
-    assert compute_market_family_summary([]) == []

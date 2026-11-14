@@ -7,7 +7,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from .calibration import CalibrationBucket, MarketFamilySummary
+from .calibration import CalibrationBucket
 from .combos import compute_combo_entries
 from .models import MatchedGame
 from .valuebets import (
@@ -270,41 +270,31 @@ def _calibration_bucket_ctx(bucket: CalibrationBucket) -> dict:
     }
 
 
-def build_calibration_context(
-    summary: list[MarketFamilySummary],
-    buckets: list[CalibrationBucket],
-    total_games: int,
-) -> dict:
-    buckets_by_family: dict[str, list[dict]] = {}
+def build_calibration_context(buckets: list[CalibrationBucket], total_games: int) -> dict:
+    # Grouped by market family, preserving compute_calibration's own
+    # order (per family, highest-confidence band first) -- deliberately
+    # NOT also reporting one hit-rate per family pooled across every
+    # band: see calibration.py's module docstring for why that would be
+    # a mathematical constant carrying no real signal for most markets
+    # here, rather than a measure of the model's skill.
+    markets: dict[str, list[dict]] = {}
     for b in buckets:
-        buckets_by_family.setdefault(b.market_family, []).append(_calibration_bucket_ctx(b))
+        markets.setdefault(b.market_family, []).append(_calibration_bucket_ctx(b))
 
     return {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "total_games": total_games,
-        "summary": [
-            {
-                "market_family": s.market_family,
-                "count": s.count,
-                "hits": s.hits,
-                "hit_rate": s.hit_rate,
-                "avg_predicted_probability": s.avg_predicted_probability,
-                "buckets": buckets_by_family.get(s.market_family, []),
-            }
-            for s in summary
+        "markets": [
+            {"market_family": family, "sample_size": sum(b["count"] for b in family_buckets), "buckets": family_buckets}
+            for family, family_buckets in markets.items()
         ],
     }
 
 
-def render_calibration_report(
-    summary: list[MarketFamilySummary],
-    buckets: list[CalibrationBucket],
-    total_games: int,
-    reports_dir: Path,
-) -> Path:
+def render_calibration_report(buckets: list[CalibrationBucket], total_games: int, reports_dir: Path) -> Path:
     """Render ``reports_dir/calibration.html`` -- the browser-viewable
     counterpart of ``python -m tipsxgs calibrate``'s text output (see
-    ``cli.calibrate``), so the same market-family / probability-band
+    ``cli.calibrate``), so the same per-market, per-probability-band
     hit-rate breakdown is reachable from the dashboard, not just the
     terminal."""
     env = Environment(
@@ -312,7 +302,7 @@ def render_calibration_report(
         autoescape=select_autoescape(["html"]),
     )
     template = env.get_template("calibration.html.j2")
-    html = template.render(**build_calibration_context(summary, buckets, total_games))
+    html = template.render(**build_calibration_context(buckets, total_games))
 
     reports_dir.mkdir(parents=True, exist_ok=True)
     out_path = reports_dir / "calibration.html"

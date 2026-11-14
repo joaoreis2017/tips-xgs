@@ -70,48 +70,27 @@
 <p class="subtitle"><a href="index.html">← Voltar ao painel</a></p>
 <h1>📈 Calibração — probabilidade prevista vs. resultado real</h1>
 <p class="subtitle">gerado em {{ generated_at }} · {{ total_games }} jogo(s) terminado(s) com previsão e resultado emparelhados</p>
+<p class="subtitle">Cada tabela mostra, para esse mercado, com que frequência o resultado real bateu certo quando o modelo previu uma probabilidade dentro de cada escalão — escalão mais alto (mais confiante) primeiro. Não há uma "taxa de acerto geral" por mercado: para mercados como 1x2/btts/dupla hipótese, juntar todos os escalões dá sempre um número fixo (~33%/~50%/~67%) que não diz nada sobre a qualidade do modelo — só faz sentido olhar escalão a escalão.</p>
 
-<div class="panel">
-  <h2>Por tipo de mercado</h2>
-  <p class="subtitle" style="margin:4px 0 12px;">Taxa de acerto real de cada mercado, juntando todas as linhas/escalões — ordenado por quem mais acerta. Abre cada linha para ver a repartição por escalão de probabilidade prevista.</p>
-  {% if summary %}
-  <table>
-    <thead><tr>
-      <th>Mercado</th><th class="num">Acertos</th><th class="num">Taxa de acerto</th><th class="num">Prob. média prevista</th>
-    </tr></thead>
-    <tbody>
-    {% for s in summary %}
-      <tr>
-        <td>{{ s.market_family.replace('_', ' ') }}</td>
-        <td class="num">{{ s.hits }}/{{ s.count }}</td>
-        <td class="num"><strong>{{ "%.0f"|format(s.hit_rate * 100) }}%</strong></td>
-        <td class="num">{{ "%.0f"|format(s.avg_predicted_probability * 100) }}%</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p class="empty">Ainda sem jogos emparelhados com resultado real (ver docs/CALIBRATION.md's "xgscore.results").</p>
-  {% endif %}
-</div>
+{% if not markets %}
+<div class="panel"><p class="empty">Ainda sem jogos emparelhados com resultado real (ver docs/CALIBRATION.md's "xgscore.results").</p></div>
+{% endif %}
 
-{% for s in summary %}
-<details id="market-{{ s.market_family }}">
+{% for m in markets %}
+<details id="market-{{ m.market_family }}" open>
   <summary>
     <div class="market-header">
-      <span class="name">{{ s.market_family.replace('_', ' ') }}</span>
-      <span class="market-meta">{{ s.hits }}/{{ s.count }} acertos ({{ "%.0f"|format(s.hit_rate * 100) }}%)</span>
+      <span class="name">{{ m.market_family.replace('_', ' ') }}</span>
+      <span class="market-meta">{{ m.sample_size }} amostra(s)</span>
     </div>
   </summary>
   <div class="details-body">
-    <div class="section-title">Por escalão de probabilidade prevista</div>
-    {% if s.buckets %}
     <table>
       <thead><tr>
         <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
       </tr></thead>
       <tbody>
-      {% for b in s.buckets %}
+      {% for b in m.buckets %}
         <tr>
           <td>{{ b.probability_bucket }}</td>
           <td class="num">{{ b.hits }}/{{ b.count }}</td>
@@ -130,9 +109,6 @@
       {% endfor %}
       </tbody>
     </table>
-    {% else %}
-    <p class="empty">Sem amostra suficiente para este mercado.</p>
-    {% endif %}
   </div>
 </details>
 {% endfor %}

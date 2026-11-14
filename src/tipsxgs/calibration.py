@@ -3,22 +3,32 @@
 (``MatchResult``, scraped from xGScore's statistics/history page -- see
 ``xgscore/results.py``).
 
-Two views, both built from the same (prediction, actual result) pairs:
+:func:`compute_calibration` -- one row per (market family, predicted-
+probability band, e.g. "70-79%") -- a reliability diagram: compare each
+bucket's ``actual_hit_rate`` against the probability range the model
+itself predicted, to answer "quando o modelo diz 70% para ambas
+marcam, isso acontece mesmo à volta de 70% das vezes?".
 
-- :func:`compute_market_family_summary` -- one row per market *family*
-  (``1x2``, ``over_under``, ``btts``, ...): how often it actually hit,
-  overall. Answers "que tipos de aposta mais são ganhos".
-- :func:`compute_calibration` -- the same, but also split by the
-  probability band the model itself predicted (e.g. "70-79%"). A
-  well-calibrated market/band hits close to its own band's percentage;
-  a lower actual rate means the model is overconfident there, a higher
-  one means it's underselling itself. Answers "quais percentagens
-  normalmente resultam mais".
+Deliberately does NOT also report a single hit-rate *per market*
+pooled across every probability level (an earlier version did, and was
+removed -- explicitly reported as not making sense, 2026-11-14): for
+any market whose outcomes are exhaustive and always sum to 1 (btts
+yes/no, 1x2 home/draw/away, double_chance 1x/12/x2, over/under at one
+line), pooling every outcome of every game is mathematically forced to
+hover around a fixed 1/n-ish constant (~50% for a 2-way market, ~33%
+for 3-way, ~67% for double_chance, which always covers exactly 2 of 3
+possible results) *regardless of how good or bad the model actually
+is* -- it carries zero information about skill. Splitting by
+probability band removes this degeneracy: a high band (e.g. 80-89%)
+can only ever be reached by a game's one favored side (its
+complementary side is necessarily below 50%, landing in a low band
+instead), so that band's hit rate is a genuine, non-tautological
+measure of "when the model is this confident, how often is it right".
 
-Both only cover markets whose actual outcome can be derived purely from
+Only covers markets whose actual outcome can be derived purely from
 the final score (:func:`actual_outcome_hit`) -- a market this can't
-judge (e.g. a handicap line, correct score) is silently excluded rather
-than guessed at.
+judge (e.g. a handicap line, correct score) is silently excluded
+rather than guessed at.
 """
 
 from __future__ import annotations
@@ -124,18 +134,6 @@ def match_games_to_results(
 
 
 @dataclass
-class MarketFamilySummary:
-    market_family: str
-    count: int
-    hits: int
-    avg_predicted_probability: float
-
-    @property
-    def hit_rate(self) -> float:
-        return self.hits / self.count if self.count else 0.0
-
-
-@dataclass
 class CalibrationBucket:
     market_family: str
     probability_bucket: str  # e.g. "70-79%"
@@ -170,26 +168,17 @@ def _collect_rows(
     return rows
 
 
-def compute_market_family_summary(
-    paired: list[tuple[MatchedGame, MatchResult]],
-) -> list[MarketFamilySummary]:
-    """One row per market family, sorted by actual hit rate descending
-    -- "que tipos de aposta mais são ganhos"."""
-    summaries = []
-    for family, rows in _collect_rows(paired).items():
-        count = len(rows)
-        hits = sum(1 for _, hit in rows if hit)
-        avg_prob = sum(p for p, _ in rows) / count
-        summaries.append(MarketFamilySummary(family, count, hits, avg_prob))
-    summaries.sort(key=lambda s: s.hit_rate, reverse=True)
-    return summaries
-
-
 def compute_calibration(paired: list[tuple[MatchedGame, MatchResult]]) -> list[CalibrationBucket]:
-    """One row per (market family, predicted-probability decile), sorted
-    by market family then bucket -- a reliability diagram: compare each
-    bucket's ``actual_hit_rate`` against its own probability range to
-    see which markets/bands the model over- or under-estimates."""
+    """One row per (market family, predicted-probability decile) -- see
+    the module docstring for why this is the only aggregate reported
+    (a single hit-rate per market, pooled across every probability
+    level, would be mathematically meaningless for most markets here).
+
+    Sorted by market family, then by probability band descending
+    (highest confidence first within each market) -- that ordering
+    matches what this is actually used for: "é mais seguro apostar
+    quando a probabilidade está acima de X%", read top-down per market.
+    """
     buckets_rows: dict[tuple[str, str], list[tuple[float, bool]]] = {}
     for family, rows in _collect_rows(paired).items():
         for probability, hit in rows:
@@ -202,5 +191,5 @@ def compute_calibration(paired: list[tuple[MatchedGame, MatchResult]]) -> list[C
         hits = sum(1 for _, hit in rows if hit)
         avg_prob = sum(p for p, _ in rows) / count
         buckets.append(CalibrationBucket(family, bucket_label, count, hits, avg_prob))
-    buckets.sort(key=lambda b: (b.market_family, b.probability_bucket))
+    buckets.sort(key=lambda b: (b.market_family, -int(b.probability_bucket.split("-")[0])))
     return buckets

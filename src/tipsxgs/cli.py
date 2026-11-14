@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta
 
 import click
 
-from .calibration import compute_calibration, compute_market_family_summary, match_games_to_results
+from .calibration import compute_calibration, match_games_to_results
 from .config import load_config
 from .pipeline import run_daily
 from .report import render_calibration_report, render_dashboard, render_index
@@ -120,29 +120,24 @@ def calibrate(config_path: str | None, since_str: str | None, scrape_results: bo
             "(see docs/CALIBRATION.md)."
         )
 
-    summary = compute_market_family_summary(paired)
     buckets = compute_calibration(paired)
 
     click.echo(f"{len(paired)} finished game(s) matched to an actual result.\n")
-
-    click.echo("Por tipo de mercado (ordenado por taxa de acerto):")
-    for s in summary:
-        click.echo(
-            f"  {s.market_family:<20} {s.hits}/{s.count} acertos ({s.hit_rate * 100:.0f}%)"
-            f" -- prob. média prevista {s.avg_predicted_probability * 100:.0f}%"
-        )
-
-    click.echo("\nPor mercado + escalão de probabilidade prevista:")
+    click.echo("Por mercado + escalão de probabilidade prevista (mais confiante primeiro):")
+    last_family = None
     for b in buckets:
+        if b.market_family != last_family:
+            click.echo(f"\n{b.market_family}:")
+            last_family = b.market_family
         click.echo(
-            f"  {b.market_family:<20} {b.probability_bucket:<8} {b.hits}/{b.count}"
+            f"  {b.probability_bucket:<8} {b.hits}/{b.count}"
             f" ({b.actual_hit_rate * 100:.0f}% real vs {b.avg_predicted_probability * 100:.0f}% previsto)"
         )
 
     # Also render the same breakdown as a page under cfg.reports_dir, so
     # it's reachable from a browser (linked from every day's dashboard
     # and the landing page) -- not just this command's text output.
-    html_path = render_calibration_report(summary, buckets, len(paired), cfg.reports_dir)
+    html_path = render_calibration_report(buckets, len(paired), cfg.reports_dir)
     render_index(cfg.reports_dir)
     click.echo(f"\nRelatório HTML: {html_path}")
 

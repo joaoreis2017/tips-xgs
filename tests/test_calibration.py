@@ -79,10 +79,23 @@ def test_actual_outcome_hit_per_team_totals_are_judged_independently_of_match_to
     assert actual_outcome_hit("over_under_1.5", "over", 2, 1) is True
 
 
+def test_actual_outcome_hit_handicap_covers_from_the_adjusted_score():
+    # home_goals=2, away_goals=1 -- home wins by 1.
+    assert actual_outcome_hit("handicap_home", "-0.5", 2, 1) is True  # still wins after -0.5
+    assert actual_outcome_hit("handicap_home", "-1.5", 2, 1) is False  # 2-1.5=0.5, not > 1
+    assert actual_outcome_hit("handicap_home", "0.5", 2, 1) is True  # already winning anyway
+    # Away's own line is judged from away_goals, not mirrored from home's.
+    assert actual_outcome_hit("handicap_away", "1.5", 2, 1) is True  # 1+1.5=2.5 > 2
+    assert actual_outcome_hit("handicap_away", "0.5", 2, 1) is False  # 1+0.5=1.5, not > 2
+
+
+def test_actual_outcome_hit_handicap_malformed_outcome_returns_none():
+    assert actual_outcome_hit("handicap_home", "not-a-number", 2, 1) is None
+
+
 def test_actual_outcome_hit_unknown_market_returns_none():
-    # A handicap/correct-score style market can't be judged from the
-    # score alone with the information available here.
-    assert actual_outcome_hit("handicap_home", "-1.5", 2, 1) is None
+    # A correct-score style market can't be judged from the score alone
+    # with the information available here.
     assert actual_outcome_hit("correct_score", "2-1", 2, 1) is None
 
 
@@ -256,7 +269,7 @@ def test_compute_calibration_keeps_per_team_totals_separate_from_match_total():
 
 
 def test_compute_calibration_ignores_unjudgeable_markets():
-    game = make_game([ValueBetEntry(market="handicap_home", outcome="-1.5", label="x", probability=0.7)])
+    game = make_game([ValueBetEntry(market="correct_score", outcome="2-1", label="x", probability=0.7)])
     result = make_result()
     assert compute_calibration([(game, result)]) == []
 
@@ -277,6 +290,28 @@ def test_compute_calibration_excludes_whole_number_lines():
     result = make_result(home_goals=2, away_goals=1)
     buckets = compute_calibration([(game, result)])
     assert {b.market for b in buckets} == {"over_under_2.5", "home_total_1.5"}
+
+
+def test_compute_calibration_includes_handicap_and_excludes_its_whole_number_lines():
+    # Explicitly requested (2026-11-17): handicap wasn't being analyzed
+    # at all before -- now it is, but (same rule as over/under) only
+    # half-integer lines; a whole-number handicap line ("0", "1", ...)
+    # can push and is dropped entirely.
+    game = make_game(
+        [
+            ValueBetEntry(market="handicap_home", outcome="-1", label="x", probability=0.6),  # whole number: excluded
+            ValueBetEntry(market="handicap_home", outcome="-1.5", label="y", probability=0.55),  # half-integer: kept
+            ValueBetEntry(market="handicap_away", outcome="0", label="z", probability=0.3),  # whole number: excluded
+            ValueBetEntry(market="handicap_away", outcome="1.5", label="w", probability=0.65),  # half-integer: kept
+        ]
+    )
+    result = make_result(home_goals=2, away_goals=1)
+    buckets = compute_calibration([(game, result)])
+
+    by_outcome = {(b.market, b.outcome): b for b in buckets}
+    assert set(by_outcome) == {("handicap_home", "-1.5"), ("handicap_away", "1.5")}
+    assert by_outcome[("handicap_home", "-1.5")].hits == 0  # 2-1.5=0.5, not > 1
+    assert by_outcome[("handicap_away", "1.5")].hits == 1  # 1+1.5=2.5 > 2
 
 
 def test_compute_calibration_buckets_by_probability_decile():

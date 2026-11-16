@@ -117,7 +117,12 @@ forma muito diferente (over 1.5 é quase certo, over 4.5 é um "longshot"
 -- misturá-los esconderia isso). Linhas de número inteiro (over/under
 1, 2, 3, ...) são excluídas por completo (2026-11-16) -- só as de
 meio-número (0.5, 1.5, 2.5, ...) são seguidas, por serem as únicas
-realmente apostadas.
+realmente apostadas. O handicap (`handicap_home`/`handicap_away`)
+também entrou na calibração (2026-11-17) -- a linha, nestes dois
+mercados, vem no `outcome` em vez de no nome do mercado (ex.
+`handicap_home` com outcome `"-1.5"`), mas segue a mesma regra: uma
+linha de número inteiro ("0", "1", ...) pode empatar exatamente e é
+excluída, só as de meio-número ficam.
 
 **Limitação confirmada (na própria captura):** a página tem um toggle
 próprio "Week / Yesterday / Today" que por defeito mostra **Yesterday**

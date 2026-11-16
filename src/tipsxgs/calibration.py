@@ -51,9 +51,11 @@ instead), so that band's hit rate is a genuine, non-tautological
 measure of "when the model is this confident, how often is it right".
 
 Only covers markets whose actual outcome can be derived purely from
-the final score (:func:`actual_outcome_hit`) -- a market this can't
-judge (e.g. a handicap line, correct score) is silently excluded
-rather than guessed at.
+the final score (:func:`actual_outcome_hit`) -- a market this still
+can't judge (e.g. correct score, half-time result) is silently
+excluded rather than guessed at. ``handicap_home``/``handicap_away``
+(2026-11-17) ARE covered: a team covers its own Asian-handicap line L
+if its score, with L added, still beats the other side's.
 """
 
 from __future__ import annotations
@@ -91,6 +93,23 @@ def _is_whole_number_line(market: str) -> bool:
     m = _LINE_MARKET_RE.match(market)
     return bool(m) and float(m.group("line")).is_integer()
 
+
+# Same rule as above (2026-11-17, explicitly requested), but for
+# handicap_home/handicap_away -- there the line is the *outcome*
+# string (e.g. "-1.5", "0", "1"), not part of the market key, since
+# xGScore's own h1/h2 report one outcome per line it covers (see
+# actual_outcome_hit). A whole-number handicap line (0, 1, -1, ...) can
+# push (the adjusted scores land exactly level) the same way a
+# whole-number over/under line can -- excluded entirely, same as above.
+def _is_whole_number_handicap(market: str, outcome: str) -> bool:
+    if market not in ("handicap_home", "handicap_away"):
+        return False
+    try:
+        return float(outcome).is_integer()
+    except (TypeError, ValueError):
+        return False
+
+
 _DOUBLE_CHANCE_COVERS: dict[str, set[str]] = {
     "1x": {"home", "draw"},
     "12": {"home", "away"},
@@ -106,7 +125,7 @@ _EXCLUDED_MARKET_OUTCOMES: set[tuple[str, str]] = {("double_chance", "12")}
 def actual_outcome_hit(market: str, outcome: str, home_goals: int, away_goals: int) -> bool | None:
     """Whether ``market``/``outcome`` actually happened, given the final
     score -- or ``None`` when that market can't be judged from the score
-    alone (e.g. a handicap line, correct score, half-time result)."""
+    alone (e.g. correct score, half-time result)."""
     total = home_goals + away_goals
     actual_1x2 = "home" if home_goals > away_goals else "away" if away_goals > home_goals else "draw"
 
@@ -145,6 +164,21 @@ def actual_outcome_hit(market: str, outcome: str, home_goals: int, away_goals: i
         if outcome == "under":
             return away_goals < line
         return None
+
+    # handicap_home/handicap_away: unlike every market above, the line
+    # lives in the *outcome* (e.g. market="handicap_home",
+    # outcome="-1.5"), not the market key -- xGScore's own h1/h2 report
+    # one outcome per Asian-handicap line it covers. A team covers its
+    # own line L if its score, with L added, still beats the other
+    # side's -- e.g. home covers -1.5 only by winning by 2+ goals.
+    if market in ("handicap_home", "handicap_away"):
+        try:
+            line = float(outcome)
+        except (TypeError, ValueError):
+            return None
+        if market == "handicap_home":
+            return (home_goals + line) > away_goals
+        return (away_goals + line) > home_goals
 
     return None
 
@@ -208,15 +242,15 @@ def _collect_rows(
     market/line (see the module docstring), pooling every value-bet
     entry across every paired game whose outcome ``actual_outcome_hit``
     can actually judge, that isn't in ``_EXCLUDED_MARKET_OUTCOMES``, and
-    that isn't a whole-number over/under line (see
-    ``_is_whole_number_line``).
+    that isn't a whole-number over/under or handicap line (see
+    ``_is_whole_number_line``/``_is_whole_number_handicap``).
     """
     rows: dict[tuple[str, str], list[tuple[float, bool]]] = {}
     for game, result in paired:
         for v in game.value_bets:
             if (v.market, v.outcome) in _EXCLUDED_MARKET_OUTCOMES:
                 continue
-            if _is_whole_number_line(v.market):
+            if _is_whole_number_line(v.market) or _is_whole_number_handicap(v.market, v.outcome):
                 continue
             hit = actual_outcome_hit(v.market, v.outcome, result.home_goals, result.away_goals)
             if hit is None:

@@ -293,20 +293,50 @@ def build_calibration_context(buckets: list[CalibrationBucket], total_games: int
     for b in buckets:
         groups.setdefault((b.market, b.outcome), []).append(_calibration_bucket_ctx(b))
 
+    markets = [
+        {
+            "market": market,
+            "outcome": outcome,
+            "family": market_family(market),
+            "label": full_label(market, outcome),
+            "sample_size": sum(b["count"] for b in group_buckets),
+            "buckets": group_buckets,
+        }
+        for (market, outcome), group_buckets in groups.items()
+    ]
+
+    # Explicitly requested (2026-11-17): the page was "muito desorganizada"
+    # with dozens of always-open per-(market,outcome) tables and no way to
+    # see the big picture. Regrouped here into a two-level structure --
+    # one entry per market *family* (over_under, handicap_home, 1x2, ...),
+    # each holding its own member markets/outcomes plus a verdict tally
+    # across every one of its bands -- so the template can show a compact
+    # summary table first and push the full detail into closed-by-default
+    # sections instead of a wall of open tables.
+    families: dict[str, list[dict]] = {}
+    for m in markets:
+        families.setdefault(m["family"], []).append(m)
+
+    family_list = []
+    for family, members in families.items():
+        verdict_counts = {"good": 0, "over": 0, "under": 0}
+        for m in members:
+            for b in m["buckets"]:
+                verdict_counts[b["verdict"]] += 1
+        family_list.append(
+            {
+                "name": family,
+                "sample_size": sum(m["sample_size"] for m in members),
+                "band_count": sum(len(m["buckets"]) for m in members),
+                "verdict_counts": verdict_counts,
+                "markets": members,
+            }
+        )
+
     return {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "total_games": total_games,
-        "markets": [
-            {
-                "market": market,
-                "outcome": outcome,
-                "family": market_family(market),
-                "label": full_label(market, outcome),
-                "sample_size": sum(b["count"] for b in group_buckets),
-                "buckets": group_buckets,
-            }
-            for (market, outcome), group_buckets in groups.items()
-        ],
+        "families": family_list,
     }
 
 

@@ -75,59 +75,87 @@
 <p class="subtitle"><a href="index.html">← Voltar ao painel</a></p>
 <h1>📈 Calibração — probabilidade prevista vs. resultado real</h1>
 <p class="subtitle">gerado em {{ generated_at }} · {{ total_games }} jogo(s) terminado(s) com previsão e resultado emparelhados</p>
-<p class="subtitle">Cada tabela é um mercado + resultado específico (ex. "1x2 — Casa" é uma tabela à parte de "1x2 — Fora"), mostrando com que frequência o resultado real bateu certo quando o modelo previu uma probabilidade dentro de cada escalão — escalão mais alto (mais confiante) primeiro. Não há uma "taxa de acerto geral" por mercado: para resultados exaustivos (1x2, btts, dupla hipótese), juntar todos os escalões dá sempre um número fixo que não diz nada sobre a qualidade do modelo — só faz sentido olhar escalão a escalão. A opção "12" da dupla hipótese não é seguida (nunca é apostada).</p>
+<p class="subtitle">Cada tabela é um mercado + resultado específico (ex. "1x2 — Casa" é uma tabela à parte de "1x2 — Fora"), mostrando com que frequência o resultado real bateu certo quando o modelo previu uma probabilidade dentro de cada escalão — escalão mais alto (mais confiante) primeiro. Não há uma "taxa de acerto geral" por mercado: para resultados exaustivos (1x2, btts, dupla hipótese), juntar todos os escalões dá sempre um número fixo que não diz nada sobre a qualidade do modelo — só faz sentido olhar escalão a escalão. A opção "12" da dupla hipótese não é seguida (nunca é apostada). Os detalhes estão agrupados por família de mercado e fechados por omissão — usa o resumo ou o seletor abaixo para abrir só o que te interessa.</p>
 
-{% if not markets %}
+{% if not families %}
 <div class="panel"><p class="empty">Ainda sem jogos emparelhados com resultado real (ver docs/CALIBRATION.md's "xgscore.results").</p></div>
 {% else %}
 <div class="panel">
-  <label class="filter-label" for="market-filter">Ir para / filtrar mercado</label>
+  <label class="filter-label" for="market-filter">Ir para / abrir mercado</label>
   <select id="market-filter" class="filter-select">
-    <option value="all">Todos os mercados ({{ markets|length }})</option>
-    {% for family, group in markets|groupby('family') %}
-    <optgroup label="{{ family.replace('_', ' ') }}">
-      {% for m in group %}
-      <option value="market-{{ m.market }}-{{ m.outcome }}">{{ m.label }} ({{ m.sample_size }} amostra(s))</option>
+    <option value="all">— escolhe um mercado —</option>
+    {% for fam in families %}
+    <optgroup label="{{ fam.name.replace('_', ' ') }}">
+      {% for m in fam.markets %}
+      <option value="outcome-{{ m.market }}-{{ m.outcome }}">{{ m.label }} ({{ m.sample_size }} amostra(s))</option>
       {% endfor %}
     </optgroup>
     {% endfor %}
   </select>
 </div>
+
+<div class="panel">
+  <h2>Resumo por família de mercado</h2>
+  <p class="subtitle" style="margin:4px 0 14px;">Clica no nome para abrir os detalhes.</p>
+  <table>
+    <thead><tr>
+      <th>Mercado</th><th class="num">Amostra</th><th class="num">Escalões</th>
+      <th class="num">Bem calibrado</th><th class="num">Confiante demais</th><th class="num">Pouco confiante</th>
+    </tr></thead>
+    <tbody>
+    {% for fam in families %}
+      <tr>
+        <td><a href="#family-{{ fam.name }}" class="summary-link" data-family="family-{{ fam.name }}">{{ fam.name.replace('_', ' ') }}</a></td>
+        <td class="num">{{ fam.sample_size }}</td>
+        <td class="num">{{ fam.band_count }}</td>
+        <td class="num"><span class="pill pill-good">{{ fam.verdict_counts.good }}</span></td>
+        <td class="num"><span class="pill pill-bad">{{ fam.verdict_counts.over }}</span></td>
+        <td class="num"><span class="pill pill-warn">{{ fam.verdict_counts.under }}</span></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endif %}
 
-{% for m in markets %}
-<details id="market-{{ m.market }}-{{ m.outcome }}" open>
+{% for fam in families %}
+<details id="family-{{ fam.name }}">
   <summary>
     <div class="market-header">
-      <span class="name">{{ m.label }}</span>
-      <span class="market-meta">{{ m.sample_size }} amostra(s)</span>
+      <span class="name">{{ fam.name.replace('_', ' ') }}</span>
+      <span class="market-meta">{{ fam.sample_size }} amostra(s) · {{ fam.band_count }} escalão(ões)</span>
     </div>
   </summary>
   <div class="details-body">
-    <table>
-      <thead><tr>
-        <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
-      </tr></thead>
-      <tbody>
-      {% for b in m.buckets %}
-        <tr>
-          <td>{{ b.probability_bucket }}</td>
-          <td class="num">{{ b.hits }}/{{ b.count }}</td>
-          <td class="num"><strong>{{ "%.0f"|format(b.actual_hit_rate * 100) }}%</strong></td>
-          <td class="num">{{ "%.0f"|format(b.avg_predicted_probability * 100) }}%</td>
-          <td class="num">
-            {% if b.verdict == 'good' %}
-              <span class="pill pill-good">bem calibrado</span>
-            {% elif b.verdict == 'over' %}
-              <span class="pill pill-bad">modelo confiante demais</span>
-            {% else %}
-              <span class="pill pill-warn">modelo pouco confiante</span>
-            {% endif %}
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+    {% for m in fam.markets %}
+    <div id="outcome-{{ m.market }}-{{ m.outcome }}" class="outcome-block">
+      <div class="section-title">{{ m.label }} · {{ m.sample_size }} amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        {% for b in m.buckets %}
+          <tr>
+            <td>{{ b.probability_bucket }}</td>
+            <td class="num">{{ b.hits }}/{{ b.count }}</td>
+            <td class="num"><strong>{{ "%.0f"|format(b.actual_hit_rate * 100) }}%</strong></td>
+            <td class="num">{{ "%.0f"|format(b.avg_predicted_probability * 100) }}%</td>
+            <td class="num">
+              {% if b.verdict == 'good' %}
+                <span class="pill pill-good">bem calibrado</span>
+              {% elif b.verdict == 'over' %}
+                <span class="pill pill-bad">modelo confiante demais</span>
+              {% else %}
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
   </div>
 </details>
 {% endfor %}
@@ -136,18 +164,29 @@
 
 <script>
 (function () {
+  function openAndScroll(detailsId, scrollToId) {
+    var details = document.getElementById(detailsId);
+    if (details) details.open = true;
+    var target = document.getElementById(scrollToId || detailsId);
+    if (target) target.scrollIntoView({behavior: "smooth", block: "start"});
+  }
+
   var select = document.getElementById("market-filter");
-  if (!select) return;
-  select.addEventListener("change", function () {
-    var target = select.value;
-    var sections = document.querySelectorAll('details[id^="market-"]');
-    sections.forEach(function (section) {
-      section.style.display = (target === "all" || section.id === target) ? "" : "none";
+  if (select) {
+    select.addEventListener("change", function () {
+      if (select.value === "all") return;
+      var outcomeEl = document.getElementById(select.value);
+      if (!outcomeEl) return;
+      var details = outcomeEl.closest("details");
+      if (details) details.open = true;
+      outcomeEl.scrollIntoView({behavior: "smooth", block: "start"});
     });
-    if (target !== "all") {
-      var el = document.getElementById(target);
-      if (el) el.scrollIntoView({behavior: "smooth", block: "start"});
-    }
+  }
+
+  document.querySelectorAll(".summary-link").forEach(function (link) {
+    link.addEventListener("click", function () {
+      openAndScroll(link.dataset.family);
+    });
   });
 })();
 </script>

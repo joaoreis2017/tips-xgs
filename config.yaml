@@ -470,9 +470,9 @@ betclic:
       #- "https://www.betclic.pt/futebol-s1/mexico-liga-mx-c432"
       #- "https://www.betclic.pt/futebol-s1/eua-mls-c504"
       #- "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8"
-      - "https://www.betclic.pt/futebol-s1/liga-europa-c3453"
-      - "https://www.betclic.pt/futebol-s1/liga-conferencia-c28946"
-      #- "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676"
+      #- "https://www.betclic.pt/futebol-s1/liga-europa-c3453"
+      #- "https://www.betclic.pt/futebol-s1/liga-conferencia-c28946"
+      - "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676"
       #- "https://www.betclic.pt/futebol-sfootball/brasil-serie-a-c187"
       #- "https://www.betclic.pt/futebol-sfootball/noruega-eliteserien-c156"
     # Each competition page is much lighter than the old generic page --

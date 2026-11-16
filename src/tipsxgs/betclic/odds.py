@@ -265,6 +265,83 @@ def _expand_selection_matrix_markets(
     return out
 
 
+# Real bug report (2026-11-16): Betclic's two per-team "<Team> - Total
+# de golos" markets were picked out by *array position* within
+# subCategories[].markets[] ([0] assumed home, [1] assumed away -- see
+# config.yaml's git history), confirmed against one real dump (Inter -
+# Udinese) where the home team's market genuinely came first. A second
+# real match (Greece - Serbia) proved that assumption wrong: Greece's
+# (home) market came *second*, so the dashboard showed Greece's real
+# odds labelled as Serbia's "away_total" and vice-versa -- a silent,
+# plausible-looking swap (both are real, well-formed goals-total
+# markets, just for the wrong team), not an extraction failure that
+# would have been caught by "0 markets found".
+#
+# Fixed by matching each market to its team by NAME instead of
+# position: the market's own name is "<team> - Total de golos", and
+# home_team/away_team are already known (same contestants[].name the
+# fixtures-list page already gave us) by the time this runs -- no
+# array-order assumption needed at all.
+_PER_TEAM_TOTAL_GOALS_SUFFIX = " - Total de golos"
+_PER_TEAM_TOTAL_GOALS_SELECTION_RE = re.compile(r"^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$")
+_PER_TEAM_TOTAL_GOALS_DIRECTION_MAP = {"Acima": "over", "Abaixo": "under"}
+
+
+def _expand_per_team_total_markets(
+    blobs: list[dict], home_team: str | None, away_team: str | None
+) -> dict[str, dict[str, float]]:
+    """Expand Betclic's two "<Team> - Total de golos" markets into
+    ``home_total_<line>``/``away_total_<line>`` odds, matching each one
+    to ``home_team``/``away_team`` by name -- see the real-bug comment
+    above for why this can't be done by array position. A market whose
+    name matches neither team (or ``home_team``/``away_team`` not
+    given at all) is skipped rather than guessed at.
+    """
+    out: dict[str, dict[str, float]] = {}
+    if not home_team or not away_team:
+        return out
+    home_key, away_key = str(home_team).strip().casefold(), str(away_team).strip().casefold()
+
+    markets = extract_json_path(blobs, "*.response.payload.match.subCategories[].markets[]")
+    if not isinstance(markets, list):
+        return out
+
+    for market in markets:
+        if not isinstance(market, dict):
+            continue
+        name = market.get("name") or ""
+        if not name.endswith(_PER_TEAM_TOTAL_GOALS_SUFFIX):
+            continue
+        team_name = name[: -len(_PER_TEAM_TOTAL_GOALS_SUFFIX)].strip().casefold()
+        if team_name == home_key:
+            market_prefix = "home_total"
+        elif team_name == away_key:
+            market_prefix = "away_total"
+        else:
+            continue  # neither team matched -- skip rather than guess
+
+        for row in market.get("selectionMatrix") or []:
+            selections = row.get("selections") if isinstance(row, dict) else None
+            if not isinstance(selections, list):
+                continue
+            for selection in selections:
+                sel_name, odd = _selection_name_and_odds(selection)
+                if not sel_name or odd is None:
+                    continue
+                m = _PER_TEAM_TOTAL_GOALS_SELECTION_RE.match(sel_name)
+                if not m:
+                    continue
+                outcome = _PER_TEAM_TOTAL_GOALS_DIRECTION_MAP.get(m.group("direction"))
+                if not outcome:
+                    continue
+                line = m.group("line").replace(",", ".")
+                try:
+                    out.setdefault(f"{market_prefix}_{line}", {})[outcome] = float(odd)
+                except (TypeError, ValueError):
+                    continue
+    return out
+
+
 def _asian_line(sign: str, magnitude: float) -> float:
     """Convert one Betclic 3-way handicap selection's own sign+magnitude
     (e.g. ``"+", 2.0`` from ``"Udinese (+2)"``) into the equivalent
@@ -318,7 +395,13 @@ def _expand_handicap_matrix_markets(
     return out
 
 
-def _scrape_detail_markets(cfg: AppConfig, match_url: str, session: BrowserSession) -> dict[str, dict[str, float]]:
+def _scrape_detail_markets(
+    cfg: AppConfig,
+    match_url: str,
+    session: BrowserSession,
+    home_team: str | None = None,
+    away_team: str | None = None,
+) -> dict[str, dict[str, float]]:
     page_cfg = cfg.betclic.page("odds")
     if (
         not page_cfg.url
@@ -352,6 +435,7 @@ def _scrape_detail_markets(cfg: AppConfig, match_url: str, session: BrowserSessi
         markets = merge_markets(markets, _expand_selection_matrix_markets(blobs, page_cfg.selection_matrix_markets))
     if page_cfg.handicap_matrix_markets:
         markets = merge_markets(markets, _expand_handicap_matrix_markets(blobs, page_cfg.handicap_matrix_markets))
+    markets = merge_markets(markets, _expand_per_team_total_markets(blobs, home_team, away_team))
 
     if not markets:
         # Real bug report (2026-10-11): every match that day got full
@@ -514,7 +598,7 @@ def scrape_today_odds(
 
         def _hop(offer: OddsOffer, match_url: str) -> dict[str, dict[str, float]]:
             try:
-                return _scrape_detail_markets(cfg, match_url, session)
+                return _scrape_detail_markets(cfg, match_url, session, offer.home_team, offer.away_team)
             except Exception:
                 logger.exception("failed to scrape betclic odds detail for %s", match_url)
                 return {}

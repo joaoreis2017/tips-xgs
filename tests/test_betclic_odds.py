@@ -8,6 +8,7 @@ from datetime import date, datetime, timezone
 
 from tipsxgs.betclic.odds import (
     _build_match_url,
+    _expand_per_team_total_markets,
     _expand_selection_matrix_markets,
     _scrape_detail_markets,
     scrape_today_odds,
@@ -970,18 +971,86 @@ INTER_UDINESE_MATCH_DETAIL_BLOB = {
 }
 
 
-def test_expand_selection_matrix_markets_covers_home_and_away_team_totals():
+def test_expand_selection_matrix_markets_covers_the_combined_over_under_market():
+    # The per-team totals are no longer part of this generic,
+    # config-driven rule -- see _expand_per_team_total_markets below
+    # for why (real bug: array position isn't a reliable home/away
+    # signal), tested separately.
     cfg = load_config()
     rules = cfg.betclic.page("odds").selection_matrix_markets
     result = _expand_selection_matrix_markets([INTER_UDINESE_MATCH_DETAIL_BLOB], rules)
+    assert result == {"over_under_2.5": {"over": 1.35, "under": 2.52}}
 
+
+def test_expand_per_team_total_markets_matches_by_team_name():
+    result = _expand_per_team_total_markets([INTER_UDINESE_MATCH_DETAIL_BLOB], "Inter", "Udinese")
     assert result == {
-        "over_under_2.5": {"over": 1.35, "under": 2.52},
-        # Inter (home) listed first among the two per-team markets.
         "home_total_1.5": {"over": 1.2, "under": 3.23},
-        # Udinese (away) listed second.
         "away_total_0.5": {"over": 1.76, "under": 1.75},
     }
+
+
+def test_expand_per_team_total_markets_is_not_fooled_by_array_order():
+    # Real bug report (2026-11-16): a second real match (Greece - Serbia)
+    # had the home team's "<Team> - Total de golos" market listed
+    # *second*, not first like the Inter - Udinese dump above --
+    # matching by team name (not array position) must get this right
+    # regardless of which one comes first in the JSON.
+    swapped_blob = {
+        "grpc:1": {
+            "response": {
+                "payload": {
+                    "match": {
+                        "subCategories": [
+                            {
+                                "markets": [
+                                    {
+                                        # away team's market listed FIRST this time
+                                        "name": "Udinese - Total de golos",
+                                        "selectionMatrix": [
+                                            {
+                                                "selections": [
+                                                    {"selectionOneof": {"selection": {"name": "Acima de 0,5", "odds": 1.76}}},
+                                                    {"selectionOneof": {"selection": {"name": "Abaixo de 0,5", "odds": 1.75}}},
+                                                ]
+                                            }
+                                        ],
+                                    },
+                                    {
+                                        # home team's market listed SECOND
+                                        "name": "Inter - Total de golos",
+                                        "selectionMatrix": [
+                                            {
+                                                "selections": [
+                                                    {"selectionOneof": {"selection": {"name": "Acima de 1,5", "odds": 1.2}}},
+                                                    {"selectionOneof": {"selection": {"name": "Abaixo de 1,5", "odds": 3.23}}},
+                                                ]
+                                            }
+                                        ],
+                                    },
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+    result = _expand_per_team_total_markets([swapped_blob], "Inter", "Udinese")
+    assert result == {
+        "home_total_1.5": {"over": 1.2, "under": 3.23},  # still Inter's own, despite coming 2nd
+        "away_total_0.5": {"over": 1.76, "under": 1.75},  # still Udinese's own, despite coming 1st
+    }
+
+
+def test_expand_per_team_total_markets_skips_a_market_matching_neither_team():
+    result = _expand_per_team_total_markets([INTER_UDINESE_MATCH_DETAIL_BLOB], "Real Madrid", "Barcelona")
+    assert result == {}
+
+
+def test_expand_per_team_total_markets_empty_without_both_team_names():
+    assert _expand_per_team_total_markets([INTER_UDINESE_MATCH_DETAIL_BLOB], None, "Udinese") == {}
+    assert _expand_per_team_total_markets([INTER_UDINESE_MATCH_DETAIL_BLOB], "Inter", None) == {}
 
 
 class _SingleBlobFakeSession:
@@ -1010,10 +1079,15 @@ def test_scrape_detail_markets_covers_btts_double_chance_and_handicap_from_real_
     # fails a test immediately.
     cfg = load_config()
     session = _SingleBlobFakeSession(INTER_UDINESE_MATCH_DETAIL_BLOB)
-    result = _scrape_detail_markets(cfg, "https://example.invalid/inter-udinese", session)
+    result = _scrape_detail_markets(cfg, "https://example.invalid/inter-udinese", session, "Inter", "Udinese")
 
     assert result["btts"] == {"yes": 1.85, "no": 1.66}
     assert result["double_chance"] == {"1x": 1.04, "12": 1.08, "x2": 4.35}
+    # Per-team totals, matched by name (home_team="Inter" passed above)
+    # -- see _expand_per_team_total_markets's own tests for the real
+    # bug (array position) this replaced.
+    assert result["home_total_1.5"] == {"over": 1.2, "under": 3.23}
+    assert result["away_total_0.5"] == {"over": 1.76, "under": 1.75}
     # Betclic's own 3-way integer handicap lines (-4..+1, from Inter's
     # side) shifted to their xGScore Asian-half-line equivalent -- see
     # HandicapMatrixRule's docstring for the derivation. The 2nd-to-last

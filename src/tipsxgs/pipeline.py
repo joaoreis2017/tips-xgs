@@ -45,7 +45,7 @@ def _betclic_coverable_markets(cfg: AppConfig) -> set[str]:
     real odd no matter how good the fixture<->offer matching is -- see
     valuebets.top_probability_bets_today's ``coverable_markets`` param.
 
-    Two sources, both reduced to a *family* via ``markets.market_family``
+    Three sources, all reduced to a *family* via ``markets.market_family``
     rather than an exact market string, since a family can cover many
     concrete lines without config.yaml needing to spell out every one:
     - ``market_aliases`` (fixtures' inline odds + the match-detail
@@ -54,6 +54,13 @@ def _betclic_coverable_markets(cfg: AppConfig) -> set[str]:
       line, e.g. ``market_template: "over_under_{line}"`` -> family
       ``over_under``, covering every line that rule expands into without
       needing to enumerate them here).
+    - ``home_total``/``away_total``: unconditionally coverable, since
+      ``betclic/odds.py``'s ``_expand_per_team_total_markets`` extracts
+      these by matching each "<Team> - Total de golos" market to
+      home_team/away_team *by name* in code, not via a config.yaml
+      selection_matrix_markets rule (see its own real-bug comment for
+      why: array position wasn't a reliable home/away signal) -- so
+      there's no config-side rule to detect here, unlike the others.
     """
     aliases = {**cfg.betclic.page("fixtures").market_aliases, **cfg.betclic.page("odds").market_aliases}
     families = {market_family(canonical.rsplit(".", 1)[0]) for canonical in aliases.values()}
@@ -66,6 +73,13 @@ def _betclic_coverable_markets(cfg: AppConfig) -> set[str]:
     if cfg.betclic.page("odds").handicap_matrix_markets:
         families.add("handicap_home")
         families.add("handicap_away")
+    # Same "is the detail page even configured at all" guard
+    # _scrape_detail_markets itself uses before it would ever reach
+    # _expand_per_team_total_markets.
+    odds_page = cfg.betclic.page("odds")
+    if odds_page.url or odds_page.fields or odds_page.selection_matrix_markets or odds_page.handicap_matrix_markets:
+        families.add("home_total")
+        families.add("away_total")
     return families
 
 

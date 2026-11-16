@@ -625,39 +625,22 @@ betclic:
           Abaixo: under
         market_template: "over_under_{line}"
 
-      # CALIBRATED (2026-09-14), from a real match page dump (Inter -
-      # Udinese): Betclic *does* offer a per-team goals total market,
-      # one for each team -- "Inter - Total de golos" and "Udinese -
-      # Total de golos", each with its own selectionMatrix in the exact
-      # same {name: "Acima de X,Y"/"Abaixo de X,Y", odds} shape as the
-      # combined over/under market above. Since the team name is baked
-      # into the market's own `name` (it isn't a fixed string we can
-      # write into config.yaml -- every match has different teams),
-      # `ends_with(name, ' - Total de golos')` matches *both* of them
-      # generically regardless of which two teams are playing, and
-      # `[0]`/`[1]` picks out which one is which -- home team's market
-      # listed first, matching this same page's `contestants[0]` /
-      # `mainSelections[0]` order (Inter, the home team, always comes
-      # first) everywhere else on the page. Unverified for the (probably
-      # rare) case where a match's board only has one of the two markets
-      # open -- if home/away totals ever come back swapped, this
-      # ordering assumption is the first thing to check.
-      - json_path: >-
-          *.response.payload.match.subCategories[].markets[] |
-          [?ends_with(name, ' - Total de golos')] | [0].selectionMatrix
-        name_pattern: '^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$'
-        direction_map:
-          Acima: over
-          Abaixo: under
-        market_template: "home_total_{line}"
-      - json_path: >-
-          *.response.payload.match.subCategories[].markets[] |
-          [?ends_with(name, ' - Total de golos')] | [1].selectionMatrix
-        name_pattern: '^(?P<direction>Acima|Abaixo) de (?P<line>[\d,]+)$'
-        direction_map:
-          Acima: over
-          Abaixo: under
-        market_template: "away_total_{line}"
+      # Betclic's per-team goals total markets ("<Team> - Total de
+      # golos", one per team) are NOT handled by a SelectionMatrixRule
+      # here -- they used to be, picked out by array position ([0] =
+      # home, [1] = away) within subCategories[].markets[]. REAL BUG
+      # (2026-11-16): that ordering assumption, originally confirmed
+      # against one real dump (Inter - Udinese, where home genuinely
+      # came first), turned out to be wrong for a second real match
+      # (Greece - Serbia, where home came second) -- the dashboard
+      # showed Greece's real odds mislabelled as Serbia's "away_total"
+      # and vice-versa, a silent, plausible-looking swap since both are
+      # real, well-formed markets, just for the wrong team. Fixed in
+      # code instead: betclic/odds.py's _expand_per_team_total_markets
+      # matches each "<Team> - Total de golos" market to home_team/
+      # away_team *by name* (already known from the fixtures-list page
+      # by the time this runs), not by position -- no config.yaml rule
+      # needed for this one.
 
     # CALIBRATED (2026-09-14), from the same real Inter - Udinese match
     # page dump: Betclic's "Resultado handicap" market is a *3-way*

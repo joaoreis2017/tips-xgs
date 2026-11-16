@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-15",
+  "generated_at": "2026-11-16T10:09:56.059909",
+  "results": [
+    {
+      "league": "League of Nations",
+      "home_team": "Latvia",
+      "away_team": "Armenia",
+      "kickoff": "2026-11-15T14:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Finland",
+      "away_team": "San Marino",
+      "kickoff": "2026-11-15T17:00:00+00:00",
+      "home_goals": 7,
+      "away_goals": 2
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Spain",
+      "away_team": "England",
+      "kickoff": "2026-11-15T19:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 3
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Croatia",
+      "away_team": "Czech",
+      "kickoff": "2026-11-15T19:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Belarus",
+      "away_team": "Albania",
+      "kickoff": "2026-11-15T17:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 2
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "France",
+      "away_team": "Turkey",
+      "kickoff": "2026-11-15T19:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Belgium",
+      "away_team": "Italy",
+      "kickoff": "2026-11-15T19:45:00+00:00",
+      "home_goals": 4,
+      "away_goals": 1
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Cyprus",
+      "away_team": "Montenegro",
+      "kickoff": "2026-11-15T14:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 4
+    }
+  ]
+}

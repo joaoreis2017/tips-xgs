@@ -59,6 +59,11 @@
   .market-meta{color:var(--muted); font-size:.8rem;}
   a{color:var(--accent); text-decoration:none;}
   a:hover{text-decoration:underline;}
+  .filter-label{display:block; margin-bottom:6px; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:700;}
+  .filter-select{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+    background:var(--panel); color:var(--text); font-size:.92rem; font-family:inherit;
+  }
   @media (max-width:560px){
     .panel, details{border-radius:10px;}
     th,td{padding:6px 4px; font-size:.8rem;}
@@ -74,6 +79,20 @@
 
 {% if not markets %}
 <div class="panel"><p class="empty">Ainda sem jogos emparelhados com resultado real (ver docs/CALIBRATION.md's "xgscore.results").</p></div>
+{% else %}
+<div class="panel">
+  <label class="filter-label" for="market-filter">Ir para / filtrar mercado</label>
+  <select id="market-filter" class="filter-select">
+    <option value="all">Todos os mercados ({{ markets|length }})</option>
+    {% for family, group in markets|groupby('family') %}
+    <optgroup label="{{ family.replace('_', ' ') }}">
+      {% for m in group %}
+      <option value="market-{{ m.market }}-{{ m.outcome }}">{{ m.label }} ({{ m.sample_size }} amostra(s))</option>
+      {% endfor %}
+    </optgroup>
+    {% endfor %}
+  </select>
+</div>
 {% endif %}
 
 {% for m in markets %}
@@ -114,6 +133,24 @@
 {% endfor %}
 
 <p class="subtitle">"Bem calibrado" = a taxa de acerto real fica a 7 pontos percentuais (ou menos) da probabilidade média que o modelo previu nesse escalão. "Confiante demais" = acerta menos do que previu; "pouco confiante" = acerta mais do que previu.</p>
+
+<script>
+(function () {
+  var select = document.getElementById("market-filter");
+  if (!select) return;
+  select.addEventListener("change", function () {
+    var target = select.value;
+    var sections = document.querySelectorAll('details[id^="market-"]');
+    sections.forEach(function (section) {
+      section.style.display = (target === "all" || section.id === target) ? "" : "none";
+    });
+    if (target !== "all") {
+      var el = document.getElementById(target);
+      if (el) el.scrollIntoView({behavior: "smooth", block: "start"});
+    }
+  });
+})();
+</script>
 
 </body>
 </html>

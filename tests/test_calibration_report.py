@@ -29,6 +29,23 @@ def test_build_calibration_context_label_combines_market_and_outcome():
     assert ctx["markets"][0]["label"] == "Resultado Final - Casa"
 
 
+def test_build_calibration_context_family_groups_different_lines_of_the_same_market():
+    # Explicitly requested (2026-11-17): the filter dropdown groups by
+    # market *family* (over_under_1.5 and over_under_2.5 under the same
+    # "over_under" optgroup), not by the exact market -- `family` is
+    # what the template groups by.
+    buckets = [
+        CalibrationBucket(market="over_under_1.5", outcome="over", probability_bucket="80-89%", count=30, hits=27, avg_predicted_probability=0.83),
+        CalibrationBucket(market="over_under_2.5", outcome="over", probability_bucket="50-59%", count=10, hits=6, avg_predicted_probability=0.55),
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="70-79%", count=10, hits=7, avg_predicted_probability=0.72),
+    ]
+    ctx = build_calibration_context(buckets, total_games=30)
+    by_market = {m["market"]: m["family"] for m in ctx["markets"]}
+    assert by_market["over_under_1.5"] == "over_under"
+    assert by_market["over_under_2.5"] == "over_under"
+    assert by_market["1x2"] == "1x2"
+
+
 def test_build_calibration_context_label_includes_the_exact_line():
     # Explicitly requested: over_under_1.5 must read differently from
     # over_under_2.5 in the rendered label, not just internally.

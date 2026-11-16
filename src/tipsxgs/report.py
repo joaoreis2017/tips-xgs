@@ -9,7 +9,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .calibration import CalibrationBucket
 from .combos import compute_combo_entries
-from .markets import full_label
+from .markets import full_label, market_family
 from .models import MatchedGame
 from .valuebets import (
     BetPick,
@@ -300,6 +300,7 @@ def build_calibration_context(buckets: list[CalibrationBucket], total_games: int
             {
                 "market": market,
                 "outcome": outcome,
+                "family": market_family(market),
                 "label": full_label(market, outcome),
                 "sample_size": sum(b["count"] for b in group_buckets),
                 "buckets": group_buckets,

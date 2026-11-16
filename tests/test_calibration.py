@@ -261,6 +261,24 @@ def test_compute_calibration_ignores_unjudgeable_markets():
     assert compute_calibration([(game, result)]) == []
 
 
+def test_compute_calibration_excludes_whole_number_lines():
+    # Explicitly requested (2026-11-16): only half-integer lines (0.5,
+    # 1.5, 2.5, ...) are tracked -- a whole-number line (1, 2, 3, ...)
+    # is never bet on and is dropped entirely, same treatment as
+    # double_chance's "12".
+    game = make_game(
+        [
+            ValueBetEntry(market="over_under_2", outcome="over", label="x", probability=0.7),  # whole number: excluded
+            ValueBetEntry(market="over_under_2.5", outcome="over", label="y", probability=0.6),  # half-integer: kept
+            ValueBetEntry(market="home_total_1", outcome="over", label="z", probability=0.8),  # whole number: excluded
+            ValueBetEntry(market="home_total_1.5", outcome="over", label="w", probability=0.55),  # half-integer: kept
+        ]
+    )
+    result = make_result(home_goals=2, away_goals=1)
+    buckets = compute_calibration([(game, result)])
+    assert {b.market for b in buckets} == {"over_under_2.5", "home_total_1.5"}
+
+
 def test_compute_calibration_buckets_by_probability_decile():
     game = make_game(
         [

@@ -114,7 +114,10 @@ mesmo para o total de cada equipa (`home_total_0.5`, `home_total_1.5`,
 de mercado + linha + resultado tem a sua própria tabela/escalão,
 porque linhas diferentes do mesmo mercado podem estar calibradas de
 forma muito diferente (over 1.5 é quase certo, over 4.5 é um "longshot"
--- misturá-los esconderia isso).
+-- misturá-los esconderia isso). Linhas de número inteiro (over/under
+1, 2, 3, ...) são excluídas por completo (2026-11-16) -- só as de
+meio-número (0.5, 1.5, 2.5, ...) são seguidas, por serem as únicas
+realmente apostadas.
 
 **Limitação confirmada (na própria captura):** a página tem um toggle
 próprio "Week / Yesterday / Today" que por defeito mostra **Yesterday**

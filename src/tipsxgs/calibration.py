@@ -29,7 +29,10 @@ certain bet that may be well-calibrated, over 4.5 is a long shot that
 may not be), and pooling them the way an earlier version of this
 module did would hide that.
 ``double_chance``'s "12" outcome is excluded entirely (not just split
-out) at the same request -- never bet on, so never tracked.
+out) at the same request -- never bet on, so never tracked. Likewise
+(2026-11-16): a whole-number over/under line (1, 2, 3, ...) is excluded
+entirely -- only half-integer lines (0.5, 1.5, 2.5, ...) are ever bet
+on, so only those are tracked.
 
 Deliberately does NOT also report a single hit-rate *per market*
 pooled across every probability level (an earlier version did, and was
@@ -75,6 +78,18 @@ _OVER_UNDER_LINE_RE = re.compile(r"^over_under_(?P<line>\d+(?:\.\d+)?)$")
 # goals rather than the combined total.
 _HOME_TOTAL_LINE_RE = re.compile(r"^home_total_(?P<line>\d+(?:\.\d+)?)$")
 _AWAY_TOTAL_LINE_RE = re.compile(r"^away_total_(?P<line>\d+(?:\.\d+)?)$")
+
+# Explicitly requested (2026-11-16): whole-number lines (over/under 1,
+# 2, 3, ...) are never tracked at all -- only half-integer lines (0.5,
+# 1.5, 2.5, ...), the only ones actually bet on (a whole-number line
+# can push -- the total lands exactly on it -- which isn't a market
+# this project places).
+_LINE_MARKET_RE = re.compile(r"^(?:over_under|home_total|away_total)_(?P<line>\d+(?:\.\d+)?)$")
+
+
+def _is_whole_number_line(market: str) -> bool:
+    m = _LINE_MARKET_RE.match(market)
+    return bool(m) and float(m.group("line")).is_integer()
 
 _DOUBLE_CHANCE_COVERS: dict[str, set[str]] = {
     "1x": {"home", "draw"},
@@ -192,12 +207,16 @@ def _collect_rows(
     market, outcome) -- kept fully separate per outcome AND per exact
     market/line (see the module docstring), pooling every value-bet
     entry across every paired game whose outcome ``actual_outcome_hit``
-    can actually judge and that isn't in ``_EXCLUDED_MARKET_OUTCOMES``.
+    can actually judge, that isn't in ``_EXCLUDED_MARKET_OUTCOMES``, and
+    that isn't a whole-number over/under line (see
+    ``_is_whole_number_line``).
     """
     rows: dict[tuple[str, str], list[tuple[float, bool]]] = {}
     for game, result in paired:
         for v in game.value_bets:
             if (v.market, v.outcome) in _EXCLUDED_MARKET_OUTCOMES:
+                continue
+            if _is_whole_number_line(v.market):
                 continue
             hit = actual_outcome_hit(v.market, v.outcome, result.home_goals, result.away_goals)
             if hit is None:

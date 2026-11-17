@@ -179,6 +179,7 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
         games,
         calibration_buckets,
         cfg.reports_dir,
+        min_probability=cfg.report_min_probability,
         betclic_markets=_betclic_coverable_markets(cfg),
         high_probability_min=cfg.report_high_probability_min,
         mid_probability_min=cfg.report_mid_probability_min,

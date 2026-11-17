@@ -274,6 +274,7 @@ def build_real_context(
     day: date,
     games: list[MatchedGame],
     calibration_buckets: list,
+    min_probability: float = 0.5,
     betclic_markets: set[str] | None = None,
     high_probability_min: float = 0.80,
     high_odd_min: float = 1.20,
@@ -300,7 +301,17 @@ def build_real_context(
     reached ``DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE`` -- so this page
     naturally grows in coverage over time as more bands accumulate
     history, rather than waiting for everything to clear 30 games at
-    once."""
+    once.
+
+    Also builds ``game_breakdown`` (explicitly requested, 2026-11-17,
+    "tal como no outro" -- mirroring the dashboard's own per-game
+    "Acontecimentos por probabilidade" table): one entry per game that
+    has at least one outcome whose REAL rate clears ``min_probability``
+    AND has a matched Betclic odd (same odds-required rule
+    ``build_context`` already applies there), sorted by real rate
+    descending within each game -- not just the two already-configured
+    bet-plan bands above, every qualifying outcome of every game.
+    """
     real_entries_by_fixture = {
         g.fixture.id: compute_real_rate_value_bets(g, calibration_buckets) for g in games
     }
@@ -334,10 +345,30 @@ def build_real_context(
         entries_of=entries_of,
     )
 
+    game_breakdown = []
+    for g in games:
+        qualifying = [
+            e
+            for e in real_entries_by_fixture[g.fixture.id]
+            if e.calibrated_probability is not None and e.calibrated_probability > min_probability and e.odd is not None
+        ]
+        if not qualifying:
+            continue
+        qualifying.sort(key=lambda e: e.calibrated_probability, reverse=True)
+        game_breakdown.append(
+            {
+                "slug": g.fixture.slug,
+                "label": g.fixture.label,
+                "events": [_real_pick_ctx((g, e)) for e in qualifying],
+            }
+        )
+
     return {
         "date_str": day.isoformat(),
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "min_sample_size": DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE,
+        "min_probability": min_probability,
+        "game_breakdown": game_breakdown,
         "multiple_legs": [_real_pick_ctx(leg) for leg in multiple_legs],
         "multiple_combined_odd": multiple_combined_odd(multiple_legs),
         "multiple_combined_probability": multiple_combined_probability(multiple_legs, probability_of=probability_of),
@@ -361,6 +392,7 @@ def render_real_report(
     games: list[MatchedGame],
     calibration_buckets: list,
     reports_dir: Path,
+    min_probability: float = 0.5,
     betclic_markets: set[str] | None = None,
     high_probability_min: float = 0.80,
     high_odd_min: float = 1.20,
@@ -386,6 +418,7 @@ def render_real_report(
             day,
             games,
             calibration_buckets,
+            min_probability=min_probability,
             betclic_markets=betclic_markets,
             high_probability_min=high_probability_min,
             high_odd_min=high_odd_min,

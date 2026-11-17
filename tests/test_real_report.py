@@ -88,6 +88,60 @@ def test_build_real_context_does_not_mutate_the_games_own_value_bets():
     assert game.value_bets[0].calibrated_probability == original_calibrated  # still None, untouched
 
 
+def test_build_real_context_game_breakdown_lists_every_qualifying_event_per_game():
+    # Explicitly requested (2026-11-17): besides the two bet-plan bands,
+    # a per-game breakdown of EVERY event whose real rate clears
+    # min_probability (default 50%) and has a matched odd -- not just
+    # the ones that also happen to fall in the multiple/mid-band ranges.
+    game = make_game(
+        {"1x2": {"home": 0.85, "away": 0.10}, "btts": {"yes": 0.60}},
+        {"1x2": {"home": 1.30, "away": 9.0}, "btts": {"yes": 1.80}},
+    )
+    buckets = [
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="80-89%", count=6, hits=5, avg_predicted_probability=0.85),  # real 83%
+        CalibrationBucket(market="btts", outcome="yes", probability_bucket="60-69%", count=4, hits=3, avg_predicted_probability=0.60),  # real 75%
+        CalibrationBucket(market="1x2", outcome="away", probability_bucket="10-19%", count=10, hits=1, avg_predicted_probability=0.10),  # real 10%, below 50%
+    ]
+
+    ctx = build_real_context(date(2026, 11, 17), [game], buckets)
+
+    assert len(ctx["game_breakdown"]) == 1
+    block = ctx["game_breakdown"][0]
+    assert block["slug"] == game.fixture.slug
+    # 1x2 home (real 5/6 = 83%) ranked above btts yes (real 3/4 = 75%) --
+    # sorted by real rate descending, not by market/model probability.
+    assert [e["label"] for e in block["events"]] == ["Resultado Final - Casa", "Ambas Marcam - Sim"]
+    real_rates = [e["real_probability"] for e in block["events"]]
+    assert real_rates == sorted(real_rates, reverse=True)
+    # away (10% real) excluded -- below the 50% min_probability floor
+    assert not any("Fora" in e["label"] for e in block["events"])
+
+
+def test_build_real_context_game_breakdown_requires_a_matched_odd():
+    # Mirrors build_context's own per-game events table: an outcome
+    # clearing the real-rate floor but with no matched Betclic odd is
+    # dropped, not shown with odd/value as "--".
+    game = make_game({"1x2": {"home": 0.85}}, {})  # no odds at all
+    buckets = [
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="80-89%", count=6, hits=5, avg_predicted_probability=0.85)
+    ]
+    ctx = build_real_context(date(2026, 11, 17), [game], buckets)
+    assert ctx["game_breakdown"] == []
+
+
+def test_build_real_context_game_breakdown_respects_custom_min_probability():
+    game = make_game({"1x2": {"home": 0.60}}, {"1x2": {"home": 1.5}})
+    buckets = [
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="60-69%", count=6, hits=4, avg_predicted_probability=0.60)
+    ]  # real rate 4/6 = 67%
+
+    below = build_real_context(date(2026, 11, 17), [game], buckets, min_probability=0.70)
+    assert below["game_breakdown"] == []
+
+    above = build_real_context(date(2026, 11, 17), [game], buckets, min_probability=0.50)
+    assert len(above["game_breakdown"]) == 1
+
+
 def test_build_real_context_ranks_multiple_legs_by_real_rate_not_model_probability():
     # game_a has the higher MODEL probability but a lower REAL rate;
     # game_b is the other way round -- sorting must follow the real rate.

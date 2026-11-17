@@ -51,6 +51,14 @@
   .empty{color:var(--muted); font-size:.85rem; padding:8px 0;}
   a{color:var(--accent); text-decoration:none;}
   a:hover{text-decoration:underline;}
+  details{background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden;}
+  details > summary{list-style:none; padding:14px 18px; cursor:pointer;}
+  details > summary::-webkit-details-marker{display:none;}
+  details[open] > summary{border-bottom:1px solid var(--border);}
+  .details-body{padding:6px 18px 18px;}
+  .game-header{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; cursor:pointer;}
+  .game-header .teams{font-weight:600; font-size:1rem;}
+  .rank{color:var(--muted); width:1.6em; display:inline-block;}
   @media (max-width:560px){
     .panel{border-radius:10px;}
     th,td{padding:6px 4px; font-size:.8rem;}
@@ -144,6 +152,41 @@
   mid_single_stake,
   "Ainda sem jogadas com histórico suficiente nesta banda."
 ) }}
+
+<h2 style="font-size:1.05rem; margin:28px 0 6px;">📋 Todos os jogos com taxa real acima de {{ "%.0f"|format(min_probability * 100) }}%</h2>
+<p class="subtitle" style="margin:0 0 12px;">Tal como na página principal, mas por taxa real em vez da probabilidade do modelo -- todo o acontecimento de cada jogo com taxa real &gt; {{ "%.0f"|format(min_probability * 100) }}% e uma odd Betclic emparelhada, não só os que entram na múltipla ou na banda de probabilidade média acima.</p>
+{% if game_breakdown %}
+{% for g in game_breakdown %}
+<details id="game-real-{{ g.slug }}" {% if loop.index <= 3 %}open{% endif %}>
+  <summary>
+    <div class="game-header">
+      <span class="teams">{{ g.label }}</span>
+      <span class="model-note"><a href="index.html#game-{{ g.slug }}">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      {% for e in g.events %}
+        <tr>
+          <td class="rank">{{ loop.index }}</td>
+          <td>{{ e.label }}</td>
+          <td class="num">{{ real_prob_cell(e.real_probability, e.model_probability, e.sample_size, e.is_confirmed) }}</td>
+          <td class="num">{{ "%.2f"|format(e.odd) }}</td>
+          <td class="num"><span class="pill value-pill">{{ "%.2f"|format(e.value_ratio) }}×</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</details>
+{% endfor %}
+{% else %}
+<div class="panel"><p class="empty">Ainda sem nenhum jogo com histórico suficiente acima de {{ "%.0f"|format(min_probability * 100) }}% de taxa real.</p></div>
+{% endif %}
 
 <p class="model-note">Valor = taxa de acerto real × odd da Betclic (não a probabilidade do modelo). "✓ confirmado" = esse mercado+resultado+escalão já tem {{ min_sample_size }} jogos ou mais de histórico; "⚠" = ainda tem menos, por isso trata como um indício, não uma certeza. Esta página só mostra o que já tem pelo menos 1 jogo de histórico -- cresce sozinha à medida que <code>python -m tipsxgs calibrate</code> acumula mais dias.</p>
 

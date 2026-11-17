@@ -37,20 +37,26 @@ probabilidade" view requested.
 
 from __future__ import annotations
 
-from .calibration import CalibrationBucket, calibrated_probability
+from typing import Callable
+
+from .calibration import CalibrationBucket, DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE, calibrated_probability
 from .markets import full_label, market_family
 from .models import MatchedGame, ValueBetEntry
 
 
-def compute_value_bets(
+def _build_value_bet_entries(
     game: MatchedGame,
-    value_bet_threshold: float = 1.0,
-    calibration_buckets: list[CalibrationBucket] | None = None,
+    calibration_buckets: list[CalibrationBucket] | None,
+    min_sample_size: int,
 ) -> list[ValueBetEntry]:
-    """Populate and return ``game.value_bets``."""
+    """Shared body behind both ``compute_value_bets`` (gated at
+    ``DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE``, the production threshold)
+    and ``compute_real_rate_value_bets`` (gated at 1, i.e. any amount of
+    history at all) -- everything is identical except which
+    ``min_sample_size`` gets passed down to ``calibrated_probability``.
+    """
     if game.prediction is None or not game.prediction.markets:
-        game.value_bets = []
-        return game.value_bets
+        return []
 
     odds_markets = game.odds.markets if game.odds else {}
 
@@ -76,7 +82,7 @@ def compute_value_bets(
             calib_sample_size: int | None = None
             if calibration_buckets:
                 calib_probability, calib_sample_size = calibrated_probability(
-                    market, outcome, probability, calibration_buckets
+                    market, outcome, probability, calibration_buckets, min_sample_size=min_sample_size
                 )
             effective_probability = calib_probability if calib_probability is not None else probability
 
@@ -104,9 +110,39 @@ def compute_value_bets(
     entries.sort(key=lambda e: e.probability, reverse=True)
     for rank, entry in enumerate(entries, start=1):
         entry.rank_by_probability = rank
-
-    game.value_bets = entries
     return entries
+
+
+def compute_value_bets(
+    game: MatchedGame,
+    value_bet_threshold: float = 1.0,
+    calibration_buckets: list[CalibrationBucket] | None = None,
+) -> list[ValueBetEntry]:
+    """Populate and return ``game.value_bets`` -- ``calibrated_probability``
+    only kicks in once a market+outcome+band has the full
+    ``DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE`` (the production threshold:
+    see calibration.py's module docstring)."""
+    game.value_bets = _build_value_bet_entries(game, calibration_buckets, DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE)
+    return game.value_bets
+
+
+def compute_real_rate_value_bets(
+    game: MatchedGame,
+    calibration_buckets: list[CalibrationBucket] | None,
+) -> list[ValueBetEntry]:
+    """Same per-entry computation as ``compute_value_bets``, but
+    ``calibrated_probability``/``calibration_sample_size`` get populated
+    as soon as there is ANY historical sample for that exact
+    market+outcome+band (``min_sample_size=1``), not only once it clears
+    the 30-game production threshold. Explicitly requested (2026-11-17):
+    a second, parallel view ("apostas por taxa real") that selects and
+    ranks bets by the real observed hit rate instead of the model's own
+    probability, showing every band that has at least some track record
+    -- flagged as still-provisional below 30 games, confirmed at or
+    above it -- rather than only the production-ready ones. Returns a
+    fresh list; does NOT touch ``game.value_bets`` (the model-probability
+    page keeps working exactly as before)."""
+    return _build_value_bet_entries(game, calibration_buckets, min_sample_size=1)
 
 
 def compute_all(
@@ -156,6 +192,8 @@ def top_probability_bets_today(
     odd_bounds_inclusive: bool = False,
     limit: int | None = None,
     coverable_markets: set[str] | None = None,
+    probability_of: Callable[[ValueBetEntry], float | None] | None = None,
+    entries_of: Callable[[MatchedGame], list[ValueBetEntry]] | None = None,
 ) -> list[tuple[MatchedGame, ValueBetEntry]]:
     """Flatten every game's events into one list of model-probability
     "high confidence" picks, sorted by probability descending.
@@ -218,7 +256,23 @@ def top_probability_bets_today(
     once there are dozens of them each with several qualifying markets.
     Pass a number to cap it if the list ever needs trimming for display
     reasons.
+
+    ``probability_of``/``entries_of`` (explicitly requested, 2026-11-17,
+    for the "apostas por taxa real" page) let a caller swap in a
+    different probability to filter/sort by -- e.g. ``lambda e:
+    e.calibrated_probability`` to rank by the real observed hit rate
+    instead of the model's own number -- and/or a different per-game
+    entry list -- e.g. one built by ``compute_real_rate_value_bets``,
+    which populates ``calibrated_probability`` for any band with at
+    least one historical game, not just the production-ready ones.
+    Default to the model's raw ``probability`` and ``game.value_bets``,
+    i.e. today's existing behaviour, when omitted. An entry whose
+    ``probability_of`` comes back ``None`` (no historical data at all,
+    when using the calibrated one) is skipped outright, never silently
+    falling back to another number.
     """
+    get_probability = probability_of or (lambda e: e.probability)
+    get_entries = entries_of or (lambda g: g.value_bets)
     min_pct = _rounded_percent(min_probability)
     max_pct = _rounded_percent(max_probability) if max_probability is not None else None
 
@@ -231,20 +285,21 @@ def top_probability_bets_today(
             return (min_odd is None or entry.odd >= min_odd) and (max_odd is None or entry.odd <= max_odd)
         return (min_odd is None or entry.odd > min_odd) and (max_odd is None or entry.odd < max_odd)
 
-    pairs = [
-        (game, entry)
-        for game in games
-        for entry in game.value_bets
-        if _rounded_percent(entry.probability) >= min_pct
-        and (max_pct is None or _rounded_percent(entry.probability) <= max_pct)
-        and _odd_in_range(entry)
-        and (
-            entry.odd is not None
-            or coverable_markets is None
-            or market_family(entry.market) in coverable_markets
-        )
-    ]
-    pairs.sort(key=lambda p: p[1].probability, reverse=True)
+    pairs = []
+    for game in games:
+        for entry in get_entries(game):
+            probability = get_probability(entry)
+            if probability is None:
+                continue
+            pct = _rounded_percent(probability)
+            if pct < min_pct or (max_pct is not None and pct > max_pct):
+                continue
+            if not _odd_in_range(entry):
+                continue
+            if entry.odd is None and coverable_markets is not None and market_family(entry.market) not in coverable_markets:
+                continue
+            pairs.append((game, entry))
+    pairs.sort(key=lambda p: get_probability(p[1]), reverse=True)
     return pairs if limit is None else pairs[:limit]
 
 
@@ -285,6 +340,8 @@ def pick_multiple_legs(
     max_odd: float,
     min_value_ratio: float = 1.0,
     coverable_markets: set[str] | None = None,
+    probability_of: Callable[[ValueBetEntry], float | None] | None = None,
+    entries_of: Callable[[MatchedGame], list[ValueBetEntry]] | None = None,
 ) -> list[BetPick]:
     """Every candidate leg for the daily multiple/parlay: entries
     clearing ``min_probability`` with a matched odd between
@@ -299,6 +356,10 @@ def pick_multiple_legs(
     ``multiple_combined_odd``/``multiple_combined_probability`` below) --
     when a fixture has more than one qualifying outcome, the one with
     the higher ``value_ratio`` wins that fixture's slot.
+
+    ``probability_of``/``entries_of`` pass straight through to
+    ``top_probability_bets_today`` -- see there (used by the "apostas por
+    taxa real" page to rank by the real observed hit rate instead).
     """
     candidates = top_probability_bets_today(
         games,
@@ -307,6 +368,8 @@ def pick_multiple_legs(
         max_odd=max_odd,
         odd_bounds_inclusive=True,
         coverable_markets=coverable_markets,
+        probability_of=probability_of,
+        entries_of=entries_of,
     )
     candidates = [
         (game, entry)
@@ -320,8 +383,9 @@ def pick_multiple_legs(
         if current is None or (entry.value_ratio or 0.0) > (current[1].value_ratio or 0.0):
             best_per_fixture[game.fixture.id] = (game, entry)
 
+    get_probability = probability_of or (lambda e: e.probability)
     legs = list(best_per_fixture.values())
-    legs.sort(key=lambda pair: pair[1].probability, reverse=True)
+    legs.sort(key=lambda pair: get_probability(pair[1]), reverse=True)
     return legs
 
 
@@ -337,17 +401,24 @@ def multiple_combined_odd(legs: list[BetPick]) -> float | None:
     return odd
 
 
-def multiple_combined_probability(legs: list[BetPick]) -> float | None:
-    """Product of every leg's own model probability -- the model's own
+def multiple_combined_probability(
+    legs: list[BetPick],
+    probability_of: Callable[[ValueBetEntry], float | None] | None = None,
+) -> float | None:
+    """Product of every leg's own probability -- the model's own
     estimate of the whole multiple landing, *assuming the legs are
     independent* (picking at most one leg per fixture, enforced by
     ``pick_multiple_legs``, is what makes that assumption reasonable --
-    two outcomes of the same match are never independent)."""
+    two outcomes of the same match are never independent). Pass
+    ``probability_of`` (e.g. ``lambda e: e.calibrated_probability``) to
+    get the combined REAL probability instead -- used by the "apostas
+    por taxa real" page."""
     if not legs:
         return None
+    get_probability = probability_of or (lambda e: e.probability)
     probability = 1.0
     for _, entry in legs:
-        probability *= entry.probability
+        probability *= get_probability(entry)
     return probability
 
 
@@ -360,6 +431,8 @@ def pick_band_bets(
     odd_bounds_inclusive: bool = True,
     min_value_ratio: float = 1.0,
     coverable_markets: set[str] | None = None,
+    probability_of: Callable[[ValueBetEntry], float | None] | None = None,
+    entries_of: Callable[[MatchedGame], list[ValueBetEntry]] | None = None,
 ) -> list[BetPick]:
     """Every entry within one probability/odd band (see
     ``top_probability_bets_today``, which already sorts by probability
@@ -367,7 +440,8 @@ def pick_band_bets(
     (explicitly requested: "nestas duas secções apenas quero as apostas
     de valor maior ou igual a 1.00x") -- used for a section that should
     only show bets from a specific confidence band (e.g. "60%-69%, odd
-    1.5-2.2").
+    1.5-2.2"). ``probability_of``/``entries_of`` pass straight through
+    to ``top_probability_bets_today`` -- see there.
     """
     candidates = top_probability_bets_today(
         games,
@@ -377,6 +451,8 @@ def pick_band_bets(
         max_odd=max_odd,
         odd_bounds_inclusive=odd_bounds_inclusive,
         coverable_markets=coverable_markets,
+        probability_of=probability_of,
+        entries_of=entries_of,
     )
     return [
         (game, entry)

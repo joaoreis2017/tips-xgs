@@ -12,11 +12,11 @@ from datetime import date, datetime, timedelta
 
 import click
 
-from .calibration import compute_calibration, match_games_to_results
+from .calibration import compute_calibration, load_accumulated_calibration, match_games_to_results
 from .config import load_config
 from .markets import full_label
 from .pipeline import run_daily
-from .report import render_calibration_report, render_dashboard, render_index
+from .report import render_calibration_report, render_dashboard, render_index, render_real_report
 from .storage import load_day, load_results, save_results
 from .xgscore.results import scrape_results as scrape_xgscore_results
 
@@ -58,8 +58,12 @@ def report(config_path: str | None, date_str: str) -> None:
     games = load_day(day, cfg.data_dir)
     if not games:
         raise click.ClickException(f"No saved data found for {day.isoformat()} in {cfg.data_dir}")
-    path = render_dashboard(day, games, cfg.reports_dir, value_bet_threshold=cfg.value_bet_threshold)
-    click.echo(f"Re-rendered {path}")
+    calibration_buckets = load_accumulated_calibration(cfg.data_dir, min_confidence=cfg.min_match_confidence)
+    path = render_dashboard(
+        day, games, cfg.reports_dir, value_bet_threshold=cfg.value_bet_threshold, has_real_report=True
+    )
+    real_path = render_real_report(day, games, calibration_buckets, cfg.reports_dir)
+    click.echo(f"Re-rendered {path} and {real_path}")
 
 
 @cli.command()

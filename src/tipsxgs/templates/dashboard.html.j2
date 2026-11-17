@@ -68,7 +68,7 @@
 {% macro prob_cell(probability, calibrated_probability, calibration_sample_size) %}{{ "%.0f"|format(probability * 100) }}%{% if calibrated_probability is not none %}<br><span class="pill" title="Taxa de acerto real já observada para este mercado/escalão de probabilidade, em {{ calibration_sample_size }} jogo(s) -- ver a página de calibração">real: {{ "%.0f"|format(calibrated_probability * 100) }}% ({{ calibration_sample_size }}j)</span>{% endif %}{% endmacro %}
 
 <h1>⚽ Tips do dia — xGScore × Betclic</h1>
-<p class="subtitle">{{ date_str }} · gerado em {{ generated_at }} · {{ games|length }} jogo(s){% if demo %} · <strong>DADOS DE DEMONSTRAÇÃO</strong> (ver README){% endif %}{% if has_calibration %} · <a href="../calibration.html">📈 ver calibração do modelo</a>{% endif %}</p>
+<p class="subtitle">{{ date_str }} · gerado em {{ generated_at }} · {{ games|length }} jogo(s){% if demo %} · <strong>DADOS DE DEMONSTRAÇÃO</strong> (ver README){% endif %}{% if has_real_report %} · <a href="real.html">📈 ver apostas por taxa real</a>{% endif %}{% if has_calibration %} · <a href="../calibration.html">ver calibração do modelo</a>{% endif %}</p>
 
 <div class="panel">
   <h2>🎫 Múltipla do dia · {{ "%.2f"|format(multiple_stake) }}€</h2>

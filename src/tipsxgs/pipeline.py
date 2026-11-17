@@ -12,7 +12,7 @@ from .config import AppConfig
 from .markets import market_family
 from .matching import match_fixtures_to_odds
 from .models import MatchedGame
-from .report import render_dashboard, render_index
+from .report import render_dashboard, render_index, render_real_report
 from .storage import save_day
 from .valuebets import compute_all
 from .xgscore.fixtures import filter_today, scrape_today_fixtures
@@ -171,8 +171,27 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
         min_value_ratio=cfg.report_min_value_ratio,
         multiple_stake=cfg.report_multiple_stake,
         mid_single_stake=cfg.report_mid_single_stake,
+        has_real_report=True,
+    )
+    logger.info("Rendering 'apostas por taxa real' page...")
+    real_path = render_real_report(
+        today,
+        games,
+        calibration_buckets,
+        cfg.reports_dir,
+        betclic_markets=_betclic_coverable_markets(cfg),
+        high_probability_min=cfg.report_high_probability_min,
+        mid_probability_min=cfg.report_mid_probability_min,
+        mid_probability_max=cfg.report_mid_probability_max,
+        high_odd_min=cfg.report_high_odd_min,
+        high_odd_max=cfg.report_high_odd_max,
+        mid_odd_min=cfg.report_mid_odd_min,
+        mid_odd_max=cfg.report_mid_odd_max,
+        min_value_ratio=cfg.report_min_value_ratio,
+        multiple_stake=cfg.report_multiple_stake,
+        mid_single_stake=cfg.report_mid_single_stake,
     )
     render_index(cfg.reports_dir)
-    logger.info("Rendered %s", html_path)
+    logger.info("Rendered %s and %s", html_path, real_path)
 
     return games

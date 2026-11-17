@@ -5,6 +5,7 @@ import pytest
 from tipsxgs.calibration import CalibrationBucket
 from tipsxgs.models import Fixture, MatchedGame, OddsOffer, Prediction
 from tipsxgs.valuebets import (
+    compute_real_rate_value_bets,
     compute_value_bets,
     multiple_combined_odd,
     multiple_combined_probability,
@@ -488,3 +489,113 @@ def test_compute_value_bets_with_no_calibration_buckets_behaves_exactly_as_befor
     entries = compute_value_bets(game)  # no calibration_buckets argument at all
     assert entries[0].calibrated_probability is None
     assert entries[0].value_ratio == pytest.approx(1.4)
+
+
+# --- compute_real_rate_value_bets / "apostas por taxa real" (2026-11-17) --
+
+
+def test_compute_real_rate_value_bets_uses_a_band_below_the_30_game_production_threshold():
+    # Same band as test_compute_value_bets_falls_back_to_raw_probability_below_sample_threshold
+    # (only 5 games) -- compute_value_bets leaves calibrated_probability
+    # None there, but compute_real_rate_value_bets (no minimum sample
+    # size at all) should surface it anyway, for the "apostas por taxa
+    # real" page which explicitly wants to show provisional bands too.
+    game = make_game({"btts": {"yes": 0.70}}, {"btts": {"yes": 2.00}})
+    buckets = [
+        CalibrationBucket(market="btts", outcome="yes", probability_bucket="70-79%", count=5, hits=4, avg_predicted_probability=0.70)
+    ]
+
+    entries = compute_real_rate_value_bets(game, buckets)
+    entry = entries[0]
+
+    assert entry.probability == pytest.approx(0.70)  # raw model number untouched
+    assert entry.calibrated_probability == pytest.approx(4 / 5)
+    assert entry.calibration_sample_size == 5
+    assert entry.value_ratio == pytest.approx((4 / 5) * 2.00)
+
+    # game.value_bets (the model-probability page) is untouched -- still
+    # has calibrated_probability=None, since compute_value_bets was never
+    # called on this game at all.
+    assert game.value_bets == []
+
+
+def test_compute_real_rate_value_bets_has_none_for_a_band_with_no_history_at_all():
+    game = make_game({"1x2": {"home": 0.70}}, {"1x2": {"home": 2.00}})
+    entries = compute_real_rate_value_bets(game, calibration_buckets=[])
+    assert entries[0].calibrated_probability is None
+    assert entries[0].calibration_sample_size is None
+
+
+def test_top_probability_bets_today_probability_of_ranks_by_a_different_field():
+    # home has the higher model probability (0.9) but a lower
+    # "calibrated_probability" (0.3) stashed on the entry -- probability_of
+    # lets a caller rank/filter by that instead.
+    game = make_game({"1x2": {"home": 0.9, "away": 0.2}}, {"1x2": {"home": 1.5, "away": 3.0}})
+    entries = compute_value_bets(game)
+    home = next(e for e in entries if e.outcome == "home")
+    away = next(e for e in entries if e.outcome == "away")
+    home.calibrated_probability = 0.3
+    away.calibrated_probability = 0.8
+
+    by_model = top_probability_bets_today([game], min_probability=0.0)
+    assert by_model[0][1].outcome == "home"  # default: ranks by raw probability
+
+    by_calibrated = top_probability_bets_today(
+        [game], min_probability=0.0, probability_of=lambda e: e.calibrated_probability
+    )
+    assert by_calibrated[0][1].outcome == "away"  # ranks by calibrated_probability instead
+
+
+def test_top_probability_bets_today_probability_of_skips_entries_with_none():
+    # An entry whose probability_of comes back None (no historical band
+    # at all) is dropped outright, never silently falling back to
+    # another number.
+    game = make_game({"1x2": {"home": 0.9, "away": 0.8}}, {"1x2": {"home": 1.5, "away": 3.0}})
+    entries = compute_value_bets(game)
+    next(e for e in entries if e.outcome == "home").calibrated_probability = 0.5
+    # "away" keeps calibrated_probability=None (never calibrated)
+
+    picks = top_probability_bets_today(
+        [game], min_probability=0.0, probability_of=lambda e: e.calibrated_probability
+    )
+    assert [e.outcome for _, e in picks] == ["home"]
+
+
+def test_pick_multiple_legs_entries_of_uses_a_different_per_game_entry_list():
+    # entries_of lets a caller supply an entirely different list of
+    # entries per game (e.g. compute_real_rate_value_bets's output)
+    # instead of game.value_bets.
+    game = make_game({"1x2": {"home": 0.9}}, {"1x2": {"home": 1.3}}, slug="g")
+    model_entries = compute_value_bets(game)
+    real_entries = compute_real_rate_value_bets(game, calibration_buckets=[])
+    # Mutate the "real" entries' calibrated_probability directly, as if a
+    # calibration bucket had set it, to make the two entry lists diverge.
+    real_entries[0].calibrated_probability = 0.95
+    real_entries[0].value_ratio = 0.95 * 1.3
+
+    legs = pick_multiple_legs(
+        [game],
+        min_probability=0.9,
+        min_odd=1.25,
+        max_odd=1.45,
+        probability_of=lambda e: e.calibrated_probability,
+        entries_of=lambda g: real_entries,
+    )
+    assert len(legs) == 1
+    assert legs[0][1] is real_entries[0]
+    assert legs[0][1] not in model_entries
+
+
+def test_multiple_combined_probability_with_probability_of_override():
+    a = make_game({"1x2": {"home": 0.8}}, {"1x2": {"home": 1.3}}, slug="a", home="A1", away="A2")
+    b = make_game({"1x2": {"home": 0.75}}, {"1x2": {"home": 1.4}}, slug="b", home="B1", away="B2")
+    compute_value_bets(a)
+    compute_value_bets(b)
+    a.value_bets[0].calibrated_probability = 0.9
+    b.value_bets[0].calibrated_probability = 0.6
+    legs = [(a, a.value_bets[0]), (b, b.value_bets[0])]
+
+    assert multiple_combined_probability(legs) == pytest.approx(0.8 * 0.75)  # default: raw probability
+    assert multiple_combined_probability(
+        legs, probability_of=lambda e: e.calibrated_probability
+    ) == pytest.approx(0.9 * 0.6)

@@ -7,12 +7,13 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from .calibration import CalibrationBucket
+from .calibration import DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE, CalibrationBucket
 from .combos import compute_combo_entries
 from .markets import full_label, market_family
 from .models import MatchedGame
 from .valuebets import (
     BetPick,
+    compute_real_rate_value_bets,
     multiple_combined_odd,
     multiple_combined_probability,
     pick_band_bets,
@@ -59,6 +60,7 @@ def build_context(
     multiple_stake: float = 0.50,
     mid_single_stake: float = 1.00,
     has_calibration: bool = False,
+    has_real_report: bool = False,
 ) -> dict:
     game_ctx = []
     for g in games:
@@ -145,6 +147,7 @@ def build_context(
         "mid_odd_min": mid_odd_min,
         "mid_odd_max": mid_odd_max,
         "has_calibration": has_calibration,
+        "has_real_report": has_real_report,
     }
 
 
@@ -166,6 +169,7 @@ def render_dashboard(
     min_value_ratio: float = 1.0,
     multiple_stake: float = 0.50,
     mid_single_stake: float = 1.00,
+    has_real_report: bool = False,
 ) -> Path:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
@@ -190,6 +194,7 @@ def render_dashboard(
             multiple_stake=multiple_stake,
             mid_single_stake=mid_single_stake,
             has_calibration=(reports_dir / "calibration.html").exists(),
+            has_real_report=has_real_report,
         )
     )
 
@@ -244,6 +249,161 @@ def render_index(reports_dir: Path) -> Path:
 </body></html>"""
     reports_dir.mkdir(parents=True, exist_ok=True)
     out_path = reports_dir / "index.html"
+    out_path.write_text(html, encoding="utf-8")
+    return out_path
+
+
+def _real_pick_ctx(pick: BetPick | None) -> dict | None:
+    if pick is None:
+        return None
+    game, entry = pick
+    return {
+        "game_slug": game.fixture.slug,
+        "game_label": game.fixture.label,
+        "label": entry.label,
+        "real_probability": entry.calibrated_probability,
+        "model_probability": entry.probability,
+        "sample_size": entry.calibration_sample_size,
+        "is_confirmed": (entry.calibration_sample_size or 0) >= DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE,
+        "odd": entry.odd,
+        "value_ratio": entry.value_ratio,
+    }
+
+
+def build_real_context(
+    day: date,
+    games: list[MatchedGame],
+    calibration_buckets: list,
+    betclic_markets: set[str] | None = None,
+    high_probability_min: float = 0.80,
+    high_odd_min: float = 1.20,
+    high_odd_max: float = 1.49,
+    mid_probability_min: float = 0.70,
+    mid_probability_max: float | None = None,
+    mid_odd_min: float = 1.5,
+    mid_odd_max: float = 2.2,
+    min_value_ratio: float = 1.0,
+    multiple_stake: float = 0.50,
+    mid_single_stake: float = 1.00,
+    has_calibration: bool = False,
+) -> dict:
+    """Same two daily-bet-plan sections as ``build_context`` (same
+    configured probability/odd bands, so the two pages are an apples-to-
+    apples comparison), but every selection/ranking criterion is the
+    REAL observed hit rate (``ValueBetEntry.calibrated_probability``,
+    computed here with NO minimum sample size -- see
+    ``compute_real_rate_value_bets``) instead of the model's own
+    probability. Explicitly requested (2026-11-17): an entry with no
+    historical sample at all for its exact market+outcome+band is
+    skipped outright (there's no real rate to rank it by yet), while one
+    with *any* sample is kept and flagged ``is_confirmed`` once it's
+    reached ``DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE`` -- so this page
+    naturally grows in coverage over time as more bands accumulate
+    history, rather than waiting for everything to clear 30 games at
+    once."""
+    real_entries_by_fixture = {
+        g.fixture.id: compute_real_rate_value_bets(g, calibration_buckets) for g in games
+    }
+
+    def entries_of(g: MatchedGame) -> list:
+        return real_entries_by_fixture[g.fixture.id]
+
+    def probability_of(e) -> float | None:
+        return e.calibrated_probability
+
+    multiple_legs = pick_multiple_legs(
+        games,
+        min_probability=high_probability_min,
+        min_odd=high_odd_min,
+        max_odd=high_odd_max,
+        min_value_ratio=min_value_ratio,
+        coverable_markets=betclic_markets,
+        probability_of=probability_of,
+        entries_of=entries_of,
+    )
+    mid_bets = pick_band_bets(
+        games,
+        min_probability=mid_probability_min,
+        max_probability=mid_probability_max,
+        min_odd=mid_odd_min,
+        max_odd=mid_odd_max,
+        odd_bounds_inclusive=True,
+        min_value_ratio=min_value_ratio,
+        coverable_markets=betclic_markets,
+        probability_of=probability_of,
+        entries_of=entries_of,
+    )
+
+    return {
+        "date_str": day.isoformat(),
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "min_sample_size": DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE,
+        "multiple_legs": [_real_pick_ctx(leg) for leg in multiple_legs],
+        "multiple_combined_odd": multiple_combined_odd(multiple_legs),
+        "multiple_combined_probability": multiple_combined_probability(multiple_legs, probability_of=probability_of),
+        "multiple_stake": multiple_stake,
+        "high_probability_min": high_probability_min,
+        "high_odd_min": high_odd_min,
+        "high_odd_max": high_odd_max,
+        "min_value_ratio": min_value_ratio,
+        "mid_bets": [_real_pick_ctx(m) for m in mid_bets],
+        "mid_single_stake": mid_single_stake,
+        "mid_probability_min": mid_probability_min,
+        "mid_probability_max": mid_probability_max,
+        "mid_odd_min": mid_odd_min,
+        "mid_odd_max": mid_odd_max,
+        "has_calibration": has_calibration,
+    }
+
+
+def render_real_report(
+    day: date,
+    games: list[MatchedGame],
+    calibration_buckets: list,
+    reports_dir: Path,
+    betclic_markets: set[str] | None = None,
+    high_probability_min: float = 0.80,
+    high_odd_min: float = 1.20,
+    high_odd_max: float = 1.49,
+    mid_probability_min: float = 0.70,
+    mid_probability_max: float | None = None,
+    mid_odd_min: float = 1.5,
+    mid_odd_max: float = 2.2,
+    min_value_ratio: float = 1.0,
+    multiple_stake: float = 0.50,
+    mid_single_stake: float = 1.00,
+) -> Path:
+    """Render ``reports_dir/<day>/real.html`` -- the "apostas por taxa
+    real" counterpart of that day's dashboard (see ``build_real_context``
+    for what's different)."""
+    env = Environment(
+        loader=FileSystemLoader(str(TEMPLATE_DIR)),
+        autoescape=select_autoescape(["html"]),
+    )
+    template = env.get_template("real.html.j2")
+    html = template.render(
+        **build_real_context(
+            day,
+            games,
+            calibration_buckets,
+            betclic_markets=betclic_markets,
+            high_probability_min=high_probability_min,
+            high_odd_min=high_odd_min,
+            high_odd_max=high_odd_max,
+            mid_probability_min=mid_probability_min,
+            mid_probability_max=mid_probability_max,
+            mid_odd_min=mid_odd_min,
+            mid_odd_max=mid_odd_max,
+            min_value_ratio=min_value_ratio,
+            multiple_stake=multiple_stake,
+            mid_single_stake=mid_single_stake,
+            has_calibration=(reports_dir / "calibration.html").exists(),
+        )
+    )
+
+    day_dir = reports_dir / day.isoformat()
+    day_dir.mkdir(parents=True, exist_ok=True)
+    out_path = day_dir / "real.html"
     out_path.write_text(html, encoding="utf-8")
     return out_path
 

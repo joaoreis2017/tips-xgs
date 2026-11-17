@@ -183,6 +183,25 @@ valor é que passa a usar o número real uma vez que há amostra
 suficiente. Enquanto não houver 30 jogos nesse escalão específico, o
 comportamento é exatamente o mesmo de antes (probabilidade do modelo).
 
+## Uma segunda página, selecionada pela taxa real em vez do modelo
+
+Explicitamente pedido (2026-11-17): além do painel principal (que segue
+sempre a probabilidade do próprio modelo), `python -m tipsxgs run`
+também gera `data/<dia>/real.html` -- a mesma "múltipla do dia" e
+"apostas de probabilidade média", com exatamente as mesmas bandas de
+probabilidade/odd/valor já configuradas, mas a seleção e a ordenação
+passam a usar a **taxa de acerto real** já observada (ver acima) em vez
+da probabilidade do modelo. Ao contrário do ajuste automático de
+`valor`/`edge` (que só usa a taxa real a partir de 30 jogos), esta
+página mostra qualquer mercado+resultado+escalão com **pelo menos 1
+jogo** de histórico, marcado "⚠ ainda não atingiu os 30 jogos (Nj)"
+enquanto a amostra for pequena, e "✓ confirmado (Nj)" a partir de 30 --
+a ideia é poder acompanhar o sinal a formar-se, não só ver o resultado
+já maduro. Uma jogada sem nenhum histórico simplesmente não aparece
+nesta página (não há taxa real nenhuma para a ordenar), ao contrário do
+painel principal que mostra tudo. Ver `report.build_real_context` /
+`valuebets.compute_real_rate_value_bets`.
+
 ## Passo 4 — testar
 
 ```bash

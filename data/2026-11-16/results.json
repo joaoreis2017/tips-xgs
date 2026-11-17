@@ -1,0 +1,86 @@
+{
+  "date": "2026-11-16",
+  "generated_at": "2026-11-17T09:33:29.197614",
+  "results": [
+    {
+      "league": "League of Nations",
+      "home_team": "Estonia",
+      "away_team": "Bulgaria",
+      "kickoff": "2026-11-16T17:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Iceland",
+      "away_team": "Luxembourg",
+      "kickoff": "2026-11-16T17:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 0
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Gibraltar",
+      "away_team": "Malta",
+      "kickoff": "2026-11-16T19:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Switzerland",
+      "away_team": "Scotland",
+      "kickoff": "2026-11-16T19:45:00+00:00",
+      "home_goals": 4,
+      "away_goals": 0
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Faroe Islands",
+      "away_team": "Moldova",
+      "kickoff": "2026-11-16T15:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Germany",
+      "away_team": "Netherlands",
+      "kickoff": "2026-11-16T19:45:00+00:00",
+      "home_goals": 5,
+      "away_goals": 0
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Greece",
+      "away_team": "Serbia",
+      "kickoff": "2026-11-16T19:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Lithuania",
+      "away_team": "Liechtenstein",
+      "kickoff": "2026-11-16T17:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Macedonia",
+      "away_team": "Slovenia",
+      "kickoff": "2026-11-16T19:45:00+00:00",
+      "home_goals": 0,
+      "away_goals": 3
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Kazakhstan",
+      "away_team": "Slovakia",
+      "kickoff": "2026-11-16T15:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 2
+    }
+  ]
+}

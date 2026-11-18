@@ -81,11 +81,38 @@ def market_label(market: str) -> str:
     return market.replace("_", " ").title()
 
 
+_HANDICAP_MARKETS = {"handicap_home", "handicap_away"}
+
+
 def outcome_label(market: str, outcome: str) -> str:
+    # Explicitly requested (2026-11-18): a handicap's own outcome *is*
+    # its signed line (e.g. "1.5" meaning +1.5, "-1.5" meaning -1.5 --
+    # see calibration.actual_outcome_hit) -- the generic fallback below
+    # left a positive line with no visible sign at all ("1.5") and a
+    # negative one looking like a stray double dash once full_label's
+    # own " - " separator was added ("Handicap Casa - -1.5"), a real
+    # mix-up reported live: a positive line was misread as negative
+    # when manually re-typed from the rendered label. A positive line
+    # now always shows its own "+" so the two can never be confused at
+    # a glance; a negative line already carries its "-", so it's left
+    # untouched (never a second one).
+    if market in _HANDICAP_MARKETS:
+        try:
+            line = float(outcome)
+        except (TypeError, ValueError):
+            pass
+        else:
+            return f"+{outcome}" if line > 0 else outcome
     return OUTCOME_LABELS.get(outcome, outcome.replace("_", " ").title())
 
 
 def full_label(market: str, outcome: str) -> str:
+    # No " - " separator for a handicap: its outcome_label already
+    # starts with "+"/"-", which reads as the separator -- "Handicap
+    # Casa - +1.5"/"Handicap Casa - -1.5" would just reintroduce the
+    # same visual confusion this was added to remove.
+    if market in _HANDICAP_MARKETS:
+        return f"{market_label(market)} {outcome_label(market, outcome)}"
     return f"{market_label(market)} - {outcome_label(market, outcome)}"
 
 

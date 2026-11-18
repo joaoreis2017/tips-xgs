@@ -16,6 +16,7 @@ import json
 from datetime import date, datetime
 from pathlib import Path
 
+from .markets import full_label
 from .models import Fixture, MatchedGame, MatchResult, OddsOffer, Prediction, ValueBetEntry
 
 
@@ -121,7 +122,14 @@ def game_from_dict(raw: dict) -> MatchedGame:
         ValueBetEntry(
             market=v["market"],
             outcome=v["outcome"],
-            label=v["label"],
+            # Recomputed from market/outcome, NOT the stored "label" string
+            # (kept in the JSON only for a human skimming the file) --
+            # otherwise a day saved before a labeling fix (e.g. the
+            # handicap sign/separator fix, 2026-11-18) would keep showing
+            # its stale label forever on reload, even after the fix
+            # shipped, since re-rendering a past day never recomputes
+            # value bets from scratch.
+            label=full_label(v["market"], v["outcome"]),
             probability=v["probability"],
             odd=v.get("odd"),
             implied_probability=v.get("implied_probability"),

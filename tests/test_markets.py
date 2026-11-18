@@ -6,6 +6,7 @@ from tipsxgs.markets import (
     market_label,
     merge_markets,
     normalize_markets,
+    outcome_label,
 )
 
 
@@ -85,6 +86,34 @@ def test_market_label_handles_dynamic_over_under_and_handicap_names():
     assert market_label("away_total_1") == "Total Fora Mais/Menos de 1"
     assert market_label("handicap_home") == "Handicap Casa"
     assert market_label("handicap_away") == "Handicap Fora"
+
+
+def test_outcome_label_adds_an_explicit_sign_to_a_positive_handicap_line():
+    # Real confusion reported live (2026-11-18): a positive handicap line
+    # ("1.5", +1.5 to that side) rendered with no visible sign at all,
+    # and got misread as the negative line when manually re-typed from
+    # the label -- a "+" now makes the two impossible to confuse.
+    assert outcome_label("handicap_home", "1.5") == "+1.5"
+    assert outcome_label("handicap_away", "2.5") == "+2.5"
+
+
+def test_outcome_label_leaves_a_negative_handicap_line_as_is():
+    # Already carries its own "-" -- must never get a second one.
+    assert outcome_label("handicap_home", "-1.5") == "-1.5"
+    assert outcome_label("handicap_away", "-2.5") == "-2.5"
+
+
+def test_outcome_label_leaves_a_zero_handicap_line_unsigned():
+    assert outcome_label("handicap_home", "0") == "0"
+
+
+def test_full_label_handicap_has_no_separator_before_the_signed_line():
+    # No " - " between the market and its signed line -- that would
+    # reintroduce the same confusion ("Handicap Casa - +1.5" /
+    # "Handicap Casa - -1.5") the sign was added to remove.
+    assert full_label("handicap_home", "1.5") == "Handicap Casa +1.5"
+    assert full_label("handicap_home", "-1.5") == "Handicap Casa -1.5"
+    assert full_label("handicap_away", "0") == "Handicap Fora 0"
 
 
 def test_market_family_strips_the_trailing_line_only():

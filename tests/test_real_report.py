@@ -142,6 +142,42 @@ def test_build_real_context_game_breakdown_respects_custom_min_probability():
     assert len(above["game_breakdown"]) == 1
 
 
+def test_build_real_context_multiple_legs_tiebreak_prefers_sample_size_then_model_probability():
+    # Real case (2026-11-18): three fixtures tied at exactly the same
+    # real rate and sample size -- without a tiebreak, whichever fixture
+    # xGScore happened to list first would win a later leg cap purely by
+    # accident. Now: higher sample size wins outright; when sample size
+    # ALSO ties, the model's own probability decides.
+    low_n = make_game({"1x2": {"home": 0.60}}, {"1x2": {"home": 1.3}}, slug="low-n", home="A1", away="A2")
+    high_model = make_game({"1x2": {"home": 0.95}}, {"1x2": {"home": 1.3}}, slug="high-model", home="B1", away="B2")
+    low_model = make_game({"1x2": {"home": 0.75}}, {"1x2": {"home": 1.3}}, slug="low-model", home="C1", away="C2")
+    # Each bucket's own probability_bucket must match _bucket_label() of
+    # that fixture's model probability (0.60 -> "60-69%", 0.95 -> "90-99%",
+    # 0.75 -> "70-79%") for calibrated_probability's lookup to find it.
+    # hits/count are chosen so all three land on the exact same real
+    # rate (0.80) -- low_n with a HIGHER sample size (10) than the other
+    # two (5 each), which share that lower sample size.
+    buckets = [
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="60-69%", count=10, hits=8, avg_predicted_probability=0.60),
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="90-99%", count=5, hits=4, avg_predicted_probability=0.95),
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="70-79%", count=5, hits=4, avg_predicted_probability=0.75),
+    ]
+
+    ctx = build_real_context(
+        date(2026, 11, 17), [low_n, high_model, low_model], buckets,
+        high_probability_min=0.70, high_odd_min=1.25, high_odd_max=1.45,
+    )
+
+    legs = ctx["multiple_legs"]
+    assert [leg["real_probability"] for leg in legs] == [0.8, 0.8, 0.8]  # genuine 3-way tie
+    # low_n wins outright: same real rate, but sample size 10 > 5.
+    assert legs[0]["game_slug"] == "low-n"
+    # high_model and low_model share sample size 5 -- model probability
+    # (0.95 vs 0.75) breaks that second-level tie.
+    assert legs[1]["game_slug"] == "high-model"
+    assert legs[2]["game_slug"] == "low-model"
+
+
 def test_build_real_context_ranks_multiple_legs_by_real_rate_not_model_probability():
     # game_a has the higher MODEL probability but a lower REAL rate;
     # game_b is the other way round -- sorting must follow the real rate.

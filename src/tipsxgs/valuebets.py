@@ -194,6 +194,7 @@ def top_probability_bets_today(
     coverable_markets: set[str] | None = None,
     probability_of: Callable[[ValueBetEntry], float | None] | None = None,
     entries_of: Callable[[MatchedGame], list[ValueBetEntry]] | None = None,
+    tiebreak_of: Callable[[ValueBetEntry], tuple] | None = None,
 ) -> list[tuple[MatchedGame, ValueBetEntry]]:
     """Flatten every game's events into one list of model-probability
     "high confidence" picks, sorted by probability descending.
@@ -270,9 +271,29 @@ def top_probability_bets_today(
     ``probability_of`` comes back ``None`` (no historical data at all,
     when using the calibrated one) is skipped outright, never silently
     falling back to another number.
+
+    ``tiebreak_of`` (explicitly requested, 2026-11-18: a real case where
+    three legs tied at exactly the same real rate, and the one that won
+    the single remaining slot in a capped multiple did so purely by
+    accident of which order ``games`` happened to list fixtures in that
+    day -- not by any actual merit) returns extra sort keys (as a tuple)
+    appended after ``probability_of`` and compared the same way (higher
+    wins) whenever two entries tie on it exactly. ``report.
+    build_real_context`` passes ``lambda e: (e.calibration_sample_size or
+    0, e.probability)`` -- while a band hasn't reached the 30-game
+    production threshold, more accumulated sample is the more trustworthy
+    tie-break; only once sample size *also* ties (as it will between
+    same-day bets sharing one band) does the model's own probability
+    decide. Omit for no tie-break at all (the previous behaviour: ties
+    keep whatever order they already had).
     """
     get_probability = probability_of or (lambda e: e.probability)
     get_entries = entries_of or (lambda g: g.value_bets)
+    get_sort_key = (
+        (lambda e: (get_probability(e),) + tuple(tiebreak_of(e)))
+        if tiebreak_of
+        else get_probability
+    )
     min_pct = _rounded_percent(min_probability)
     max_pct = _rounded_percent(max_probability) if max_probability is not None else None
 
@@ -299,7 +320,7 @@ def top_probability_bets_today(
             if entry.odd is None and coverable_markets is not None and market_family(entry.market) not in coverable_markets:
                 continue
             pairs.append((game, entry))
-    pairs.sort(key=lambda p: get_probability(p[1]), reverse=True)
+    pairs.sort(key=lambda p: get_sort_key(p[1]), reverse=True)
     return pairs if limit is None else pairs[:limit]
 
 
@@ -342,6 +363,7 @@ def pick_multiple_legs(
     coverable_markets: set[str] | None = None,
     probability_of: Callable[[ValueBetEntry], float | None] | None = None,
     entries_of: Callable[[MatchedGame], list[ValueBetEntry]] | None = None,
+    tiebreak_of: Callable[[ValueBetEntry], tuple] | None = None,
 ) -> list[BetPick]:
     """Every candidate leg for the daily multiple/parlay: entries
     clearing ``min_probability`` with a matched odd between
@@ -357,9 +379,12 @@ def pick_multiple_legs(
     when a fixture has more than one qualifying outcome, the one with
     the higher ``value_ratio`` wins that fixture's slot.
 
-    ``probability_of``/``entries_of`` pass straight through to
-    ``top_probability_bets_today`` -- see there (used by the "apostas por
-    taxa real" page to rank by the real observed hit rate instead).
+    ``probability_of``/``entries_of``/``tiebreak_of`` pass straight
+    through to ``top_probability_bets_today`` -- see there (used by the
+    "apostas por taxa real" page to rank by the real observed hit rate,
+    and to break a tie between two fixtures sharing one band by sample
+    size then model probability, instead of by accident of fixture
+    order -- a real case, 2026-11-18).
     """
     candidates = top_probability_bets_today(
         games,
@@ -370,6 +395,7 @@ def pick_multiple_legs(
         coverable_markets=coverable_markets,
         probability_of=probability_of,
         entries_of=entries_of,
+        tiebreak_of=tiebreak_of,
     )
     candidates = [
         (game, entry)
@@ -384,8 +410,13 @@ def pick_multiple_legs(
             best_per_fixture[game.fixture.id] = (game, entry)
 
     get_probability = probability_of or (lambda e: e.probability)
+    get_sort_key = (
+        (lambda e: (get_probability(e),) + tuple(tiebreak_of(e)))
+        if tiebreak_of
+        else get_probability
+    )
     legs = list(best_per_fixture.values())
-    legs.sort(key=lambda pair: get_probability(pair[1]), reverse=True)
+    legs.sort(key=lambda pair: get_sort_key(pair[1]), reverse=True)
     return legs
 
 
@@ -433,6 +464,7 @@ def pick_band_bets(
     coverable_markets: set[str] | None = None,
     probability_of: Callable[[ValueBetEntry], float | None] | None = None,
     entries_of: Callable[[MatchedGame], list[ValueBetEntry]] | None = None,
+    tiebreak_of: Callable[[ValueBetEntry], tuple] | None = None,
 ) -> list[BetPick]:
     """Every entry within one probability/odd band (see
     ``top_probability_bets_today``, which already sorts by probability
@@ -440,8 +472,8 @@ def pick_band_bets(
     (explicitly requested: "nestas duas secções apenas quero as apostas
     de valor maior ou igual a 1.00x") -- used for a section that should
     only show bets from a specific confidence band (e.g. "60%-69%, odd
-    1.5-2.2"). ``probability_of``/``entries_of`` pass straight through
-    to ``top_probability_bets_today`` -- see there.
+    1.5-2.2"). ``probability_of``/``entries_of``/``tiebreak_of`` pass
+    straight through to ``top_probability_bets_today`` -- see there.
     """
     candidates = top_probability_bets_today(
         games,
@@ -453,6 +485,7 @@ def pick_band_bets(
         coverable_markets=coverable_markets,
         probability_of=probability_of,
         entries_of=entries_of,
+        tiebreak_of=tiebreak_of,
     )
     return [
         (game, entry)

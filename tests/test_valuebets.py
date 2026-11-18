@@ -586,6 +586,73 @@ def test_pick_multiple_legs_entries_of_uses_a_different_per_game_entry_list():
     assert legs[0][1] not in model_entries
 
 
+def test_top_probability_bets_today_tiebreak_of_breaks_a_probability_tie():
+    # Real case (2026-11-18): three entries tied at exactly the same
+    # calibrated_probability -- without a tiebreak, which one ends up
+    # first is just an accident of insertion order. tiebreak_of lets a
+    # caller decide: here, higher calibration_sample_size wins the tie.
+    game = make_game(
+        {"1x2": {"home": 0.72}, "btts": {"yes": 0.61}, "double_chance": {"1x": 0.84}},
+        {"1x2": {"home": 1.3}, "btts": {"yes": 1.3}, "double_chance": {"1x": 1.3}},
+    )
+    entries = compute_value_bets(game)
+    for e in entries:
+        e.calibrated_probability = 0.80  # tied on the ranking field
+    home = next(e for e in entries if e.outcome == "home")
+    yes = next(e for e in entries if e.outcome == "yes")
+    onex = next(e for e in entries if e.outcome == "1x")
+    home.calibration_sample_size = 5
+    yes.calibration_sample_size = 12
+    onex.calibration_sample_size = 5
+    home.probability, yes.probability, onex.probability = 0.72, 0.61, 0.84
+
+    picks = top_probability_bets_today(
+        [game],
+        min_probability=0.0,
+        probability_of=lambda e: e.calibrated_probability,
+        tiebreak_of=lambda e: (e.calibration_sample_size or 0, e.probability),
+    )
+    # "yes" has the highest sample size (12) -- wins outright.
+    assert picks[0][1].outcome == "yes"
+    # "home" and "1x" both have sample_size=5 -- next tiebreak is model
+    # probability, where "1x" (0.84) beats "home" (0.72).
+    assert picks[1][1].outcome == "1x"
+    assert picks[2][1].outcome == "home"
+
+
+def test_top_probability_bets_today_without_tiebreak_of_behaves_as_before():
+    # Omitting tiebreak_of must not change anything for every existing
+    # caller (report.build_context, every test above this one).
+    game = make_game({"1x2": {"home": 0.9, "away": 0.1}}, {"1x2": {"home": 1.3, "away": 1.3}})
+    compute_value_bets(game)
+    picks = top_probability_bets_today([game], min_probability=0.0)
+    assert [e.outcome for _, e in picks] == ["home", "away"]
+
+
+def test_pick_multiple_legs_tiebreak_of_decides_which_fixture_wins_a_shared_slot():
+    # Three different fixtures tied at the same real rate and sample
+    # size -- the model probability tiebreak decides their relative
+    # order (used when a caller later caps the leg count).
+    a = make_game({"1x2": {"home": 0.60}}, {"1x2": {"home": 1.3}}, slug="a", home="A1", away="A2")
+    b = make_game({"1x2": {"home": 0.95}}, {"1x2": {"home": 1.3}}, slug="b", home="B1", away="B2")
+    c = make_game({"1x2": {"home": 0.75}}, {"1x2": {"home": 1.3}}, slug="c", home="C1", away="C2")
+    for g in (a, b, c):
+        compute_value_bets(g)
+        g.value_bets[0].calibrated_probability = 0.80
+        g.value_bets[0].calibration_sample_size = 5
+        g.value_bets[0].value_ratio = 0.80 * g.value_bets[0].odd  # keep it >= min_value_ratio
+
+    legs = pick_multiple_legs(
+        [a, b, c],
+        min_probability=0.70,
+        min_odd=1.25,
+        max_odd=1.45,
+        probability_of=lambda e: e.calibrated_probability,
+        tiebreak_of=lambda e: (e.calibration_sample_size or 0, e.probability),
+    )
+    assert [g.fixture.slug for g, _ in legs] == ["b", "c", "a"]
+
+
 def test_multiple_combined_probability_with_probability_of_override():
     a = make_game({"1x2": {"home": 0.8}}, {"1x2": {"home": 1.3}}, slug="a", home="A1", away="A2")
     b = make_game({"1x2": {"home": 0.75}}, {"1x2": {"home": 1.4}}, slug="b", home="B1", away="B2")

@@ -322,6 +322,16 @@ def build_real_context(
     def probability_of(e) -> float | None:
         return e.calibrated_probability
 
+    # Explicitly requested (2026-11-18): a real case where three entries
+    # tied at exactly the same real rate, and the one that won a
+    # capped/shared slot did so purely by accident of fixture order.
+    # While a band hasn't reached the 30-game production threshold, more
+    # accumulated sample is the more trustworthy tie-break; only once
+    # sample size *also* ties (as it commonly will between same-day bets
+    # sharing one band) does the model's own probability decide.
+    def tiebreak_of(e) -> tuple:
+        return (e.calibration_sample_size or 0, e.probability)
+
     multiple_legs = pick_multiple_legs(
         games,
         min_probability=high_probability_min,
@@ -331,6 +341,7 @@ def build_real_context(
         coverable_markets=betclic_markets,
         probability_of=probability_of,
         entries_of=entries_of,
+        tiebreak_of=tiebreak_of,
     )
     mid_bets = pick_band_bets(
         games,
@@ -343,6 +354,7 @@ def build_real_context(
         coverable_markets=betclic_markets,
         probability_of=probability_of,
         entries_of=entries_of,
+        tiebreak_of=tiebreak_of,
     )
 
     game_breakdown = []
@@ -354,7 +366,7 @@ def build_real_context(
         ]
         if not qualifying:
             continue
-        qualifying.sort(key=lambda e: e.calibrated_probability, reverse=True)
+        qualifying.sort(key=lambda e: (e.calibrated_probability, e.calibration_sample_size or 0, e.probability), reverse=True)
         game_breakdown.append(
             {
                 "slug": g.fixture.slug,

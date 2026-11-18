@@ -234,6 +234,27 @@ class AppConfig:
     report_mid_odd_min: float = 1.5
     report_mid_odd_max: float = 2.2
 
+    # "apostas por taxa real" page (report.build_real_context/
+    # render_real_report) ONLY -- the model-probability dashboard above
+    # (report_high_*/report_mid_*) is untouched. Explicitly requested
+    # (2026-11-18), after backtesting 5 days of accumulated real-rate
+    # history (see docs/CALIBRATION.md): this specific combination --
+    # capping the multiple to its best 3 legs, and loosening the mid
+    # band's probability floor while tightening its odd floor -- had by
+    # far the best mean-return-to-variance ratio of everything tried,
+    # and was profitable on every single backtested day (never just a
+    # one-good-day fluke pulling up the average). The high band's own
+    # probability/odd (>=80%, 1.20-1.49) stay shared with the model page
+    # -- only the leg cap and the mid band differ here.
+    #
+    # None disables the cap (every qualifying leg, as before) -- the
+    # model-probability page has no equivalent setting at all, since
+    # this is deliberately scoped to the real-rate strategy only.
+    report_real_multiple_leg_cap: int | None = 3
+    report_real_mid_probability_min: float = 0.60
+    report_real_mid_odd_min: float = 1.8
+    report_real_mid_odd_max: float = 2.5
+
     # Daily bet plan (explicitly requested 2026-09-18, changed to list
     # every candidate within each band rather than one single pick on
     # 2026-09-29) -- see valuebets.py's "Daily bet plan" section. The
@@ -366,6 +387,18 @@ def load_config(path: str | Path | None = None) -> AppConfig:
         report_high_odd_max=float(raw.get("report_high_odd_max", 1.49)),
         report_mid_odd_min=float(raw.get("report_mid_odd_min", 1.5)),
         report_mid_odd_max=float(raw.get("report_mid_odd_max", 2.2)),
+        report_real_multiple_leg_cap=(
+            int(raw["report_real_multiple_leg_cap"])
+            if raw.get("report_real_multiple_leg_cap") is not None
+            # Absent entirely -> the backtested default (3); explicitly
+            # "report_real_multiple_leg_cap: null" -> None (no cap at
+            # all), a real distinction unlike report_mid_probability_max
+            # above (whose own default already IS None either way).
+            else (None if "report_real_multiple_leg_cap" in raw else 3)
+        ),
+        report_real_mid_probability_min=float(raw.get("report_real_mid_probability_min", 0.60)),
+        report_real_mid_odd_min=float(raw.get("report_real_mid_odd_min", 1.8)),
+        report_real_mid_odd_max=float(raw.get("report_real_mid_odd_max", 2.5)),
         report_min_value_ratio=float(raw.get("report_min_value_ratio", 1.0)),
         report_multiple_stake=float(raw.get("report_multiple_stake", 0.50)),
         report_mid_single_stake=float(raw.get("report_mid_single_stake", 1.00)),

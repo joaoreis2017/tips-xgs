@@ -287,6 +287,7 @@ def build_real_context(
     multiple_stake: float = 0.50,
     mid_single_stake: float = 1.00,
     has_calibration: bool = False,
+    multiple_leg_cap: int | None = None,
 ) -> dict:
     """Same two daily-bet-plan sections as ``build_context`` (same
     configured probability/odd bands, so the two pages are an apples-to-
@@ -302,6 +303,17 @@ def build_real_context(
     naturally grows in coverage over time as more bands accumulate
     history, rather than waiting for everything to clear 30 games at
     once.
+
+    ``multiple_leg_cap`` (explicitly requested 2026-11-18, after
+    backtesting 5 days of accumulated history -- see
+    ``config.AppConfig.report_real_multiple_leg_cap``): keeps only the
+    best ``multiple_leg_cap`` legs (by real rate, already-applied
+    tiebreak included) of the otherwise-qualifying multiple, instead of
+    every leg that clears the band. A multiple needs ALL its legs to
+    hit, so each extra leg multiplies the chance of losing -- capping it
+    was, by a wide margin, the single biggest lever found for the real-
+    rate multiple's own backtested consistency. ``None`` (the default)
+    keeps every qualifying leg, unchanged from before this was added.
 
     Also builds ``game_breakdown`` (explicitly requested, 2026-11-17,
     "tal como no outro" -- mirroring the dashboard's own per-game
@@ -343,6 +355,8 @@ def build_real_context(
         entries_of=entries_of,
         tiebreak_of=tiebreak_of,
     )
+    if multiple_leg_cap is not None:
+        multiple_legs = multiple_legs[:multiple_leg_cap]
     mid_bets = pick_band_bets(
         games,
         min_probability=mid_probability_min,
@@ -381,6 +395,7 @@ def build_real_context(
         "min_sample_size": DEFAULT_MIN_CALIBRATION_SAMPLE_SIZE,
         "min_probability": min_probability,
         "game_breakdown": game_breakdown,
+        "multiple_leg_cap": multiple_leg_cap,
         "multiple_legs": [_real_pick_ctx(leg) for leg in multiple_legs],
         "multiple_combined_odd": multiple_combined_odd(multiple_legs),
         "multiple_combined_probability": multiple_combined_probability(multiple_legs, probability_of=probability_of),
@@ -416,6 +431,7 @@ def render_real_report(
     min_value_ratio: float = 1.0,
     multiple_stake: float = 0.50,
     mid_single_stake: float = 1.00,
+    multiple_leg_cap: int | None = None,
 ) -> Path:
     """Render ``reports_dir/<day>/real.html`` -- the "apostas por taxa
     real" counterpart of that day's dashboard (see ``build_real_context``
@@ -443,6 +459,7 @@ def render_real_report(
             multiple_stake=multiple_stake,
             mid_single_stake=mid_single_stake,
             has_calibration=(reports_dir / "calibration.html").exists(),
+            multiple_leg_cap=multiple_leg_cap,
         )
     )
 

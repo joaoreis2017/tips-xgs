@@ -62,7 +62,23 @@ def report(config_path: str | None, date_str: str) -> None:
     path = render_dashboard(
         day, games, cfg.reports_dir, value_bet_threshold=cfg.value_bet_threshold, has_real_report=True
     )
-    real_path = render_real_report(day, games, calibration_buckets, cfg.reports_dir)
+    real_path = render_real_report(
+        day,
+        games,
+        calibration_buckets,
+        cfg.reports_dir,
+        min_probability=cfg.report_min_probability,
+        high_probability_min=cfg.report_high_probability_min,
+        high_odd_min=cfg.report_high_odd_min,
+        high_odd_max=cfg.report_high_odd_max,
+        mid_probability_min=cfg.report_real_mid_probability_min,
+        mid_odd_min=cfg.report_real_mid_odd_min,
+        mid_odd_max=cfg.report_real_mid_odd_max,
+        min_value_ratio=cfg.report_min_value_ratio,
+        multiple_stake=cfg.report_multiple_stake,
+        mid_single_stake=cfg.report_mid_single_stake,
+        multiple_leg_cap=cfg.report_real_multiple_leg_cap,
+    )
     click.echo(f"Re-rendered {path} and {real_path}")
 
 

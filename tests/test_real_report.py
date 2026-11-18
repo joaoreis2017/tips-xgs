@@ -178,6 +178,58 @@ def test_build_real_context_multiple_legs_tiebreak_prefers_sample_size_then_mode
     assert legs[2]["game_slug"] == "low-model"
 
 
+def test_build_real_context_multiple_leg_cap_keeps_only_the_best_n_legs():
+    # Explicitly requested (2026-11-18), after backtesting: capping the
+    # multiple's own leg count was the single biggest lever for its
+    # consistency (a multiple needs every leg to hit, so each extra leg
+    # multiplies the chance of losing).
+    games = [
+        make_game({"1x2": {"home": 0.95}}, {"1x2": {"home": 1.30}}, slug="a", home="A1", away="A2"),
+        make_game({"1x2": {"home": 0.90}}, {"1x2": {"home": 1.30}}, slug="b", home="B1", away="B2"),
+        make_game({"1x2": {"home": 0.85}}, {"1x2": {"home": 1.30}}, slug="c", home="C1", away="C2"),
+        make_game({"1x2": {"home": 0.82}}, {"1x2": {"home": 1.30}}, slug="d", home="D1", away="D2"),
+    ]
+    buckets = [
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket=f"{int(p*100)//10*10:02d}-{int(p*100)//10*10+9:02d}%", count=10, hits=9, avg_predicted_probability=p)
+        for p in (0.95, 0.90, 0.85, 0.82)
+    ]
+
+    without_cap = build_real_context(date(2026, 11, 17), games, buckets, high_probability_min=0.80, high_odd_min=1.20, high_odd_max=1.45)
+    assert len(without_cap["multiple_legs"]) == 4
+    assert without_cap["multiple_leg_cap"] is None
+
+    with_cap = build_real_context(
+        date(2026, 11, 17), games, buckets, high_probability_min=0.80, high_odd_min=1.20, high_odd_max=1.45,
+        multiple_leg_cap=2,
+    )
+    assert len(with_cap["multiple_legs"]) == 2
+    assert with_cap["multiple_leg_cap"] == 2
+    # Keeps the best 2 (highest real rate), same order as before capping.
+    assert [leg["game_slug"] for leg in with_cap["multiple_legs"]] == ["a", "b"]
+
+
+def test_build_real_context_multiple_leg_cap_recomputes_the_combined_odd_and_probability():
+    games = [
+        make_game({"1x2": {"home": 0.95}}, {"1x2": {"home": 1.30}}, slug="a", home="A1", away="A2"),
+        make_game({"1x2": {"home": 0.90}}, {"1x2": {"home": 1.40}}, slug="b", home="B1", away="B2"),
+        make_game({"1x2": {"home": 0.85}}, {"1x2": {"home": 1.20}}, slug="c", home="C1", away="C2"),
+    ]
+    buckets = [
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="90-99%", count=10, hits=9, avg_predicted_probability=0.95),
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="90-99%", count=10, hits=9, avg_predicted_probability=0.90),
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="80-89%", count=10, hits=9, avg_predicted_probability=0.85),
+    ]
+
+    ctx = build_real_context(
+        date(2026, 11, 17), games, buckets, high_probability_min=0.80, high_odd_min=1.20, high_odd_max=1.45,
+        multiple_leg_cap=2,
+    )
+    # Only the best 2 legs (a, b) -- NOT the 3rd (c) -- contribute to the
+    # combined odd/probability.
+    assert ctx["multiple_combined_odd"] == pytest.approx(1.30 * 1.40)
+    assert ctx["multiple_combined_probability"] == pytest.approx(0.9 * 0.9)  # both real_probability = 9/10
+
+
 def test_build_real_context_ranks_multiple_legs_by_real_rate_not_model_probability():
     # game_a has the higher MODEL probability but a lower REAL rate;
     # game_b is the other way round -- sorting must follow the real rate.

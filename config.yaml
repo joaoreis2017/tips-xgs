@@ -82,6 +82,22 @@ report_high_odd_max: 1.49
 report_mid_odd_min: 1.5     # mid band: inclusive (>=1.5 and <=2.2)
 report_mid_odd_max: 2.2
 
+# "apostas por taxa real" page (data/<dia>/real.html) ONLY -- the model-
+# probability dashboard above (report_high_*/report_mid_*) is untouched
+# by these. Explicitly requested (2026-11-18), after backtesting 5 days
+# of accumulated real-rate history (see docs/CALIBRATION.md): this
+# specific combination -- capping the multiple to its best 3 legs
+# (null disables the cap, keeping every qualifying leg), and loosening
+# the mid band's probability floor while tightening its odd floor --
+# had by far the best mean-return-to-variance ratio of everything
+# tried, and was profitable on every single backtested day. The high
+# band's own probability/odd (report_high_probability_min/
+# report_high_odd_min/max above) stay shared with the model page.
+report_real_multiple_leg_cap: 3
+report_real_mid_probability_min: 0.60
+report_real_mid_odd_min: 1.8
+report_real_mid_odd_max: 2.5
+
 # The daily bet plan itself (explicitly requested): each section lists
 # EVERY candidate within its own band, sorted by probability descending
 # (changed 2026-09-29 -- previously each narrowed down to one single

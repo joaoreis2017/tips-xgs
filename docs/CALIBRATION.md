@@ -202,6 +202,47 @@ nesta página (não há taxa real nenhuma para a ordenar), ao contrário do
 painel principal que mostra tudo. Ver `report.build_real_context` /
 `valuebets.compute_real_rate_value_bets`.
 
+Quando duas ou mais jogadas empatam exatamente na mesma taxa real (e por
+isso disputam o mesmo lugar numa múltipla já limitada -- ver abaixo), o
+desempate (2026-11-18) é primeiro pela amostra (`calibration_sample_size`)
+-- enquanto um escalão não chega aos 30 jogos, mais amostra acumulada é
+mais fiável mesmo sem estar "confirmado" -- e só quando a amostra também
+empata é que a probabilidade do próprio modelo decide. Sem isto, quem
+ganhava o desempate era só quem por acaso vinha primeiro na lista de
+jogos do dia, sem relação nenhuma com o mérito da aposta (caso real,
+2026-11-18). Ver `valuebets.top_probability_bets_today`'s `tiebreak_of`.
+
+### `report_real_*` -- a múltipla e as apostas de probabilidade média desta página têm as suas próprias regras
+
+Explicitamente pedido (2026-11-18), depois de testar (backtest) 5 dias
+de histórico já acumulado contra vários nºs de pernas/bandas de
+odd/taxa diferentes: esta página (só esta, nunca o painel do modelo)
+passou a usar as suas próprias regras em `config.yaml`, em vez de
+reaproveitar as do painel do modelo:
+
+- `report_real_multiple_leg_cap: 3` -- a múltipla só guarda as 3
+  melhores pernas (por taxa real) das que qualificam, em vez de todas.
+  Como uma múltipla só paga se **todas** as pernas acertarem, cada
+  perna a mais multiplica a chance de perder -- foi, de longe, a
+  alavanca que mais melhorou a consistência da múltipla no backtest.
+  `null` desativa o limite (volta a guardar todas, como antes desta
+  mudança).
+- `report_real_mid_probability_min: 0.60` (desce de 0.70) +
+  `report_real_mid_odd_min/max: 1.8`/`2.5` (sobe de 1.5/2.2) -- desce o
+  piso de taxa real das apostas de probabilidade média, mas sobe a odd
+  mínima o suficiente para compensar: deixa entrar mais jogadas, mas só
+  as que já vêm com odd suficiente para compensar uma taxa de acerto
+  um pouco menor.
+
+No backtest dos 5 dias já acumulados, esta combinação específica teve a
+melhor relação média/desvio-padrão diário de tudo o que foi testado
+(nunca um dia negativo), não só o maior total (que estava a ser
+dominado por um único dia excecional). A banda de probabilidade/odd da
+múltipla em si (`report_high_probability_min`/`report_high_odd_min/max`)
+continua partilhada com o painel do modelo -- só o limite de pernas e a
+banda das apostas de probabilidade média são próprios desta página. Ver
+`report.build_real_context`'s `multiple_leg_cap`.
+
 ## Passo 4 — testar
 
 ```bash

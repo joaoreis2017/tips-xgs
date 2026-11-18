@@ -32,7 +32,13 @@ module did would hide that.
 out) at the same request -- never bet on, so never tracked. Likewise
 (2026-11-16): a whole-number over/under line (1, 2, 3, ...) is excluded
 entirely -- only half-integer lines (0.5, 1.5, 2.5, ...) are ever bet
-on, so only those are tracked.
+on, so only those are tracked. Likewise (2026-11-18):
+``handicap_home``/``handicap_away`` at exactly their own +0.5 line are
+excluded too -- each is mathematically the SAME bet as a
+``double_chance`` outcome (home covers +0.5 iff it doesn't lose, i.e.
+exactly "1x"; away's own +0.5 is exactly "x2"), so tracking both would
+calibrate the identical real-world event twice under two different
+labels.
 
 Deliberately does NOT also report a single hit-rate *per market*
 pooled across every probability level (an earlier version did, and was
@@ -117,9 +123,22 @@ _DOUBLE_CHANCE_COVERS: dict[str, set[str]] = {
 }
 
 # (market, outcome) pairs explicitly excluded from calibration
-# entirely -- never bet on, so never tracked, rather than tracked
-# separately like every other outcome. See the module docstring.
-_EXCLUDED_MARKET_OUTCOMES: set[tuple[str, str]] = {("double_chance", "12")}
+# entirely -- never tracked, rather than tracked separately like every
+# other outcome. See the module docstring.
+_EXCLUDED_MARKET_OUTCOMES: set[tuple[str, str]] = {
+    ("double_chance", "12"),  # never bet on
+    # Explicitly requested (2026-11-18): a team's own handicap_home/away
+    # at exactly the +0.5 line is the SAME bet as a double_chance
+    # outcome, not just correlated with it -- home covers +0.5 iff
+    # home_goals + 0.5 > away_goals, i.e. home_goals >= away_goals (home
+    # doesn't lose), which is exactly double_chance "1x" (home or draw);
+    # likewise handicap_away's own +0.5 is exactly "x2" (draw or away).
+    # Tracking both separately would calibrate the identical real-world
+    # event twice under two different labels -- "1x"/"x2" themselves
+    # stay tracked (only this one redundant handicap line is dropped).
+    ("handicap_home", "0.5"),
+    ("handicap_away", "0.5"),
+}
 
 
 def actual_outcome_hit(market: str, outcome: str, home_goals: int, away_goals: int) -> bool | None:

@@ -248,6 +248,32 @@ def test_compute_calibration_keeps_1x_separate_from_x2_and_excludes_12():
     assert by_outcome["x2"].hits == 0
 
 
+def test_compute_calibration_excludes_the_plus_half_handicap_lines_as_duplicates_of_double_chance():
+    # Explicitly requested (2026-11-18): handicap_home/away at exactly
+    # their own +0.5 line is mathematically the SAME bet as a
+    # double_chance outcome (home covers +0.5 iff it doesn't lose --
+    # exactly "1x"; away's own +0.5 is exactly "x2") -- tracking both
+    # would calibrate the identical real-world event twice. Only the
+    # +0.5 handicap lines are dropped; "-0.5" (a genuinely different
+    # bet) and the double_chance outcomes themselves stay tracked.
+    game = make_game(
+        [
+            ValueBetEntry(market="handicap_home", outcome="0.5", label="x", probability=0.80),  # excluded
+            ValueBetEntry(market="handicap_away", outcome="0.5", label="y", probability=0.60),  # excluded
+            ValueBetEntry(market="handicap_home", outcome="-0.5", label="z", probability=0.55),  # kept: different bet
+            ValueBetEntry(market="double_chance", outcome="1x", label="w", probability=0.80),  # kept
+        ]
+    )
+    result = make_result(home_goals=2, away_goals=1)  # home wins
+    buckets = compute_calibration([(game, result)])
+
+    by_market_outcome = {(b.market, b.outcome) for b in buckets}
+    assert ("handicap_home", "0.5") not in by_market_outcome
+    assert ("handicap_away", "0.5") not in by_market_outcome
+    assert ("handicap_home", "-0.5") in by_market_outcome
+    assert ("double_chance", "1x") in by_market_outcome
+
+
 def test_compute_calibration_keeps_per_team_totals_separate_from_match_total():
     # Explicitly requested: over/under for the whole match must NOT be
     # pooled together with either team's own individual total.

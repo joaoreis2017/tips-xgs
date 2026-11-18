@@ -122,7 +122,14 @@ também entrou na calibração (2026-11-17) -- a linha, nestes dois
 mercados, vem no `outcome` em vez de no nome do mercado (ex.
 `handicap_home` com outcome `"-1.5"`), mas segue a mesma regra: uma
 linha de número inteiro ("0", "1", ...) pode empatar exatamente e é
-excluída, só as de meio-número ficam.
+excluída, só as de meio-número ficam. Também excluído por completo
+(2026-11-18): a linha `+0.5` do handicap (`handicap_home`/`handicap_away`
+com outcome `"0.5"`) -- é matematicamente **a mesma aposta** que a dupla
+hipótese "1X"/"X2" (cobrir +0.5 é não perder, exatamente a definição de
+"1X"/"X2"), por isso calibrar as duas em separado estaria só a repetir o
+mesmo acontecimento real sob dois nomes diferentes. A dupla hipótese
+em si ("1X"/"X2") continua a ser seguida normalmente; só esta linha de
+handicap específica é que deixa de ser.
 
 **Limitação confirmada (na própria captura):** a página tem um toggle
 próprio "Week / Yesterday / Today" que por defeito mostra **Yesterday**

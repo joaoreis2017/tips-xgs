@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-18",
+  "generated_at": "2026-11-19T09:46:10.792960",
+  "results": [
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Corinthians",
+      "away_team": "Botafogo",
+      "kickoff": "2026-11-19T00:30:00+00:00",
+      "home_goals": 4,
+      "away_goals": 0
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Grêmio",
+      "away_team": "Bahia",
+      "kickoff": "2026-11-19T00:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    }
+  ]
+}

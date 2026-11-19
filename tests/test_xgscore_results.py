@@ -57,7 +57,9 @@ RESULTS_BLOB = [
 
 
 class FakeSession:
-    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000):
+    def get_html_and_captured_json(
+        self, url, url_substring_filter=None, wait_ms=2000, click_selector=None, click_wait_ms=1500
+    ):
         return "<html></html>", [GEO_BLOB, EMPTY_DECOY, RESULTS_BLOB]
 
 
@@ -79,3 +81,41 @@ def test_scrape_results_against_real_xgscore_json_shape():
     assert moldova.away_goals == 1
 
     assert ("TeamA", "TeamB") not in by_pair
+
+
+class SpySession:
+    """Records what it was called with instead of returning real data --
+    used to confirm scrape_results forwards click_selector/click_wait_ms
+    through to the browser session (see browser.py's own docstring for
+    the real case this exists for: xgscore.results' "Yesterday" tab
+    default silently changing to "Today")."""
+
+    def __init__(self):
+        self.calls = []
+
+    def get_html_and_captured_json(self, url, url_substring_filter=None, wait_ms=2000, click_selector=None, click_wait_ms=1500):
+        self.calls.append(dict(click_selector=click_selector, click_wait_ms=click_wait_ms))
+        return "<html></html>", [GEO_BLOB, EMPTY_DECOY, RESULTS_BLOB]
+
+
+def test_scrape_results_forwards_click_selector_to_the_browser_session(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    # A minimal config.yaml, calibrated just enough for this page, with
+    # click_selector set -- confirms the value actually reaches the
+    # browser session call, not just that config.py can parse it.
+    (tmp_path / "config.yaml").write_text(
+        "xgscore:\n"
+        "  results:\n"
+        "    url: 'https://xgscore.io/xg-statistics'\n"
+        "    json_list_path: '[?played]'\n"
+        "    click_selector: 'button.yesterday'\n"
+        "    click_wait_ms: 2500\n"
+        "    fields: []\n"
+        "betclic: {}\n",
+        encoding="utf-8",
+    )
+    cfg = load_config(tmp_path / "config.yaml")
+    spy = SpySession()
+    scrape_results(cfg, day=datetime(2026, 11, 13).date(), session=spy)
+
+    assert spy.calls == [dict(click_selector="button.yesterday", click_wait_ms=2500)]

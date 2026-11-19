@@ -55,6 +55,16 @@ def main() -> None:
     parser.add_argument("--out", default="inspect_out")
     parser.add_argument("--wait-ms", type=int, default=4000, help="Extra time (ms) to let JS finish rendering after the DOM is ready -- raise this for slow/heavy pages")
     parser.add_argument("--timeout-ms", type=int, default=45_000, help="Max time (ms) to wait for the initial page load")
+    parser.add_argument(
+        "--click",
+        default=None,
+        help="CSS selector to click after the page loads, before capturing/reading it -- "
+        "use this to test a tab/button selector (e.g. a 'Yesterday' tab) before "
+        "putting it in config.yaml's click_selector. Run once WITHOUT --click and once "
+        "WITH it, diff the two page.html/captured_json outputs to confirm it actually "
+        "changed what the page shows (see config.PageConfig.click_selector).",
+    )
+    parser.add_argument("--click-wait-ms", type=int, default=1500, help="Extra time (ms) to wait after the click, before reading the page")
     args = parser.parse_args()
 
     out_dir = Path(args.out) / slugify(args.url)
@@ -64,7 +74,13 @@ def main() -> None:
     headless = not args.show
     print(f"Loading {args.url} (headless={headless})...")
     with BrowserSession(headless=headless, timeout_ms=args.timeout_ms) as session:
-        html, captured = session.get_html_and_captured_json(args.url, url_substring_filter=args.json_filter, wait_ms=args.wait_ms)
+        html, captured = session.get_html_and_captured_json(
+            args.url,
+            url_substring_filter=args.json_filter,
+            wait_ms=args.wait_ms,
+            click_selector=args.click,
+            click_wait_ms=args.click_wait_ms,
+        )
 
     (out_dir / "page.html").write_text(html, encoding="utf-8")
     print(f"Saved rendered HTML -> {out_dir / 'page.html'} ({len(html)} bytes)")

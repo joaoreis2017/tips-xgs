@@ -160,6 +160,18 @@ class PageConfig:
     # matter how long wait_ms is. 0 (default) never scrolls.
     scroll_count: int = 0
     scroll_pause_ms: int = 800
+    # Explicitly requested (2026-11-19), after a real case: a page whose
+    # "current tab" was assumed stable (xgscore.results' "Yesterday"
+    # default, calibrated 2026-11-14) silently started showing a
+    # different tab's data ("Today") instead, with no error anywhere --
+    # nothing here checks WHICH tab is active, only that some JSON came
+    # back. A CSS selector for the tab/button to click before reading
+    # the page -- e.g. an explicit "Yesterday" tab -- removes the
+    # dependency on whatever the page defaults to. None (the default)
+    # keeps relying on that default, same as before this existed. See
+    # BrowserSession.get_html_and_captured_json's own ``click_selector``.
+    click_selector: str | None = None
+    click_wait_ms: int = 1500
 
 
 @dataclass
@@ -333,6 +345,8 @@ def _page_config(raw: dict | None) -> PageConfig:
         wait_ms=raw.get("wait_ms"),
         scroll_count=int(raw.get("scroll_count", 0) or 0),
         scroll_pause_ms=int(raw.get("scroll_pause_ms", 800) or 800),
+        click_selector=raw.get("click_selector"),
+        click_wait_ms=int(raw.get("click_wait_ms", 1500) or 1500),
     )
 
 

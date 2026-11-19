@@ -33,7 +33,10 @@ def fake_playwright(monkeypatch):
     mock_sync_playwright = MagicMock()
     mock_sync_playwright.return_value.start.return_value = mock_playwright_instance
 
-    fake_module = types.SimpleNamespace(sync_playwright=mock_sync_playwright)
+    # _goto imports TimeoutError from this same module to catch a slow
+    # navigation -- the fake module needs SOME exception class there,
+    # even though no test here actually raises it.
+    fake_module = types.SimpleNamespace(sync_playwright=mock_sync_playwright, TimeoutError=TimeoutError)
     monkeypatch.setitem(sys.modules, "playwright.sync_api", fake_module)
     return mock_chromium
 
@@ -51,3 +54,42 @@ def test_browser_session_defaults_to_no_proxy(fake_playwright):
     session.__enter__()
 
     fake_playwright.launch.assert_called_once_with(headless=True, proxy=None)
+
+
+# --- get_html_and_captured_json's click_selector (2026-11-19) -----------
+#
+# Real case: a page whose "current tab" was assumed stable (xgscore.
+# results' "Yesterday" default) silently changed, and nothing checked
+# WHICH tab was showing -- only that some JSON came back. click_selector
+# lets a caller click a specific tab/button before reading the page
+# instead of trusting its current default.
+
+
+@pytest.fixture
+def fake_page(fake_playwright):
+    """A BrowserSession whose context.new_page() returns a MagicMock page
+    (goto/wait_for_timeout/click/content/evaluate all no-ops), so
+    get_html_and_captured_json can run without a real browser."""
+    session = BrowserSession()
+    session.__enter__()
+    mock_page = MagicMock()
+    mock_page.content.return_value = "<html></html>"
+    session._context = MagicMock()
+    session._context.new_page.return_value = mock_page
+    return session, mock_page
+
+
+def test_get_html_and_captured_json_clicks_the_given_selector(fake_page):
+    session, mock_page = fake_page
+    session.get_html_and_captured_json("https://example.com", click_selector=".yesterday-tab", click_wait_ms=999)
+
+    mock_page.click.assert_called_once_with(".yesterday-tab")
+    # The extra wait happens AFTER the click, not instead of it.
+    assert mock_page.wait_for_timeout.call_args_list[-1].args == (999,)
+
+
+def test_get_html_and_captured_json_never_clicks_without_a_selector(fake_page):
+    session, mock_page = fake_page
+    session.get_html_and_captured_json("https://example.com")
+
+    mock_page.click.assert_not_called()

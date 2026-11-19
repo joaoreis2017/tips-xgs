@@ -350,9 +350,9 @@ xgscore:
     # every match actually played has played: true.
     #
     # IMPORTANT LIMITATION (confirmed from the same capture): the page's
-    # own "Week / Yesterday / Today" toggle defaults to **Yesterday**
-    # (every match in the real capture was dated the day before the
-    # capture was taken) and no query param was observed to select a
+    # own "Week / Yesterday / Today" toggle defaulted to **Yesterday** on
+    # 2026-11-14 (every match in that capture was dated the day before
+    # it was taken) and no query param was observed to select a
     # different date -- this URL can only ever be scraped for
     # *yesterday's* results, not an arbitrary past day. `calibrate`
     # (cli.py) only attempts a scrape when the day being calibrated
@@ -361,6 +361,22 @@ xgscore:
     # the day after. Backfilling older days would need capturing
     # whatever request the "Today"/"Week" toggle buttons fire (not
     # captured here) and recalibrating this section accordingly.
+    #
+    # REAL CASE (2026-11-19): that "defaults to Yesterday" behaviour
+    # silently stopped holding -- a run picked up "Today"'s results
+    # instead, with no error (nothing here checks WHICH tab is active,
+    # only that some JSON comes back), so none of them paired to that
+    # day's own predictions. `click_selector` (commented out below) now
+    # exists precisely for this: a CSS selector for the "Yesterday"
+    # tab/button itself, clicked before every scrape instead of trusting
+    # the page's current default. Still needs calibrating against the
+    # real page (blocked from this dev sandbox -- see README.md) before
+    # it can be turned on:
+    #   python scripts/inspect_site.py https://xgscore.io/xg-statistics --click "<selector>"
+    # Diff that output against a run without --click to confirm the
+    # selector actually switches to Yesterday's data, then uncomment.
+    # click_selector: "<selector for the 'Yesterday' tab/button>"
+    # click_wait_ms: 1500
     url: "https://xgscore.io/xg-statistics"
     json_list_path: "[?played]"
     fields:

@@ -75,6 +75,29 @@ def test_real_rate_page_leg_cap_can_be_disabled_with_null(tmp_path):
     assert cfg.report_real_multiple_leg_cap is None
 
 
+def test_page_config_click_selector_defaults_to_none(tmp_path):
+    cfg_path = tmp_path / "config.yaml"
+    cfg_path.write_text("xgscore: {results: {}}\nbetclic: {}\n", encoding="utf-8")
+    cfg = load_config(cfg_path)
+    assert cfg.xgscore.page("results").click_selector is None
+    assert cfg.xgscore.page("results").click_wait_ms == 1500
+
+
+def test_page_config_click_selector_is_read_from_config_yaml(tmp_path):
+    # Explicitly requested (2026-11-19), after a real case: xgscore.
+    # results' own "Yesterday" tab default silently changed to "Today"
+    # with no error -- click_selector lets a page explicitly click a
+    # tab/button before reading it instead of trusting the default.
+    cfg_path = tmp_path / "config.yaml"
+    cfg_path.write_text(
+        "xgscore: {results: {click_selector: 'button.yesterday', click_wait_ms: 2500}}\nbetclic: {}\n",
+        encoding="utf-8",
+    )
+    cfg = load_config(cfg_path)
+    assert cfg.xgscore.page("results").click_selector == "button.yesterday"
+    assert cfg.xgscore.page("results").click_wait_ms == 2500
+
+
 def test_betclic_proxy_omits_username_and_password_when_unset():
     cfg = AppConfig(
         timezone="Europe/Lisbon",

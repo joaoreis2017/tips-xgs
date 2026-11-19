@@ -10,10 +10,20 @@ against a real capture of the page: a plain JSON array of match objects
 ``fullTimeGoals.h/a``), no nested "game" wrapper this time.
 
 CONFIRMED LIMITATION: the page's own "Week / Yesterday / Today" toggle
-defaults to *yesterday* and no query param was observed to pick another
-date -- this can only scrape yesterday's results, never an arbitrary
-past day (see ``cli.calibrate``, which only scrapes when the day being
-calibrated actually is yesterday).
+had no query param found to pick another date -- this can only scrape
+whichever one of those three the page currently shows, never an
+arbitrary past day (see ``cli.calibrate``, which only scrapes when the
+day being calibrated actually is yesterday).
+
+REAL CASE (2026-11-19): calibrated 2026-11-14 as defaulting to
+"Yesterday" with no interaction needed -- that default silently
+changed at some point, and a run picked up "Today"'s results instead
+without erroring (nothing here checked *which* tab was showing, only
+that *some* JSON came back), pairing none of them to the day's own
+predictions. ``config.yaml``'s ``xgscore.results.click_selector``, once
+set to a selector for the "Yesterday" tab/button itself, makes this
+scrape that tab explicitly on every run instead of trusting the page's
+current default -- see ``BrowserSession.get_html_and_captured_json``.
 """
 
 from __future__ import annotations
@@ -149,7 +159,10 @@ def scrape_results(cfg: AppConfig, day: date, session: BrowserSession | None = N
         results: list[MatchResult] = []
         for url in urls:
             html, blobs_captured = session.get_html_and_captured_json(
-                url, wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000
+                url,
+                wait_ms=page_cfg.wait_ms if page_cfg.wait_ms is not None else 2000,
+                click_selector=page_cfg.click_selector,
+                click_wait_ms=page_cfg.click_wait_ms,
             )
             blobs = blobs_captured + find_embedded_json(html, page_cfg.embedded_json_hints)
 

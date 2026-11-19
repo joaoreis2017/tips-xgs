@@ -145,6 +145,27 @@ preencher dias mais antigos em falta, precisas de descobrir que pedido
 os botões "Today"/"Week" disparam (inspecionar com as devtools do
 browser ao clicar neles) e recalibrar esta secção.
 
+**Caso real (2026-11-19):** esse "por defeito mostra Yesterday" deixou
+de se verificar — uma run apanhou os resultados de "Today" em vez de
+"Yesterday", sem erro nenhum (nada aqui verifica QUAL separador está
+ativo, só que chegou algum JSON), e por isso nenhum resultado emparelhou
+com as previsões desse dia (jogos completamente diferentes). Para
+deixar de depender do que a página mostra por defeito, `config.yaml`'s
+`xgscore.results` ganhou um `click_selector` (e `click_wait_ms`) --
+quando preenchido, clica explicitamente nesse separador antes de ler a
+página, em vez de confiar no estado em que ela já está. Para calibrar:
+
+```bash
+python scripts/inspect_site.py https://xgscore.io/xg-statistics --click "<seletor do separador 'Yesterday'>"
+```
+
+Compara o `captured_json`/`page.html` dessa run com uma run sem
+`--click` para confirmares que o seletor realmente muda para os dados
+de ontem, antes de preencheres `click_selector` em `config.yaml` (fica
+comentado por omissão, já que ainda não foi calibrado contra a página
+real). Ver `BrowserSession.get_html_and_captured_json`'s próprio
+`click_selector`.
+
 ```bash
 python scripts/inspect_site.py https://xgscore.io/xg-statistics
 ```

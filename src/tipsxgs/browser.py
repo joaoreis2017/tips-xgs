@@ -114,6 +114,8 @@ class BrowserSession:
         wait_ms: int = 2000,
         scroll_count: int = 0,
         scroll_pause_ms: int = 800,
+        click_selector: str | None = None,
+        click_wait_ms: int = 1500,
     ) -> tuple[str, list[dict]]:
         """Navigate to ``url``, capture any JSON XHR/fetch responses, and
         return ``(html, [decoded_json_bodies])``.
@@ -131,6 +133,23 @@ class BrowserSession:
         that renders only an initial batch of items regardless of how
         long you wait otherwise (a symptom that shows up as "coverage
         stays exactly the same no matter how high wait_ms goes").
+
+        ``click_selector`` (explicitly requested, 2026-11-19, after a real
+        case: xgscore.results' own "Week / Yesterday / Today" toggle was
+        calibrated (2026-11-14) as defaulting to "Yesterday" with no page
+        reload needed -- that default silently changed at some point, and
+        a later run picked up "Today"'s (wrong) results instead without
+        erroring, since nothing here was checking *which* tab was active,
+        only that *some* JSON came back) -- when given, clicked once
+        after the initial ``wait_ms``, with the response listener already
+        attached so any JSON the click itself triggers (e.g. switching
+        tabs re-fetching that tab's data) is still captured; ``html`` is
+        then read only after ``click_wait_ms`` on top, so it reflects the
+        post-click state too. Omit it to keep relying on the page's own
+        default (today's behaviour) -- only pass it once you've found a
+        selector that reliably lands on the tab you actually want (see
+        scripts/inspect_site.py's own ``--click``), since clicking the
+        wrong thing is worse than not clicking at all.
         """
         captured: list[dict] = []
 
@@ -158,6 +177,9 @@ class BrowserSession:
             page.on("response", _on_response)
             self._goto(page, url)
             page.wait_for_timeout(wait_ms)
+            if click_selector:
+                page.click(click_selector)
+                page.wait_for_timeout(click_wait_ms)
             for _ in range(scroll_count):
                 page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
                 page.wait_for_timeout(scroll_pause_ms)

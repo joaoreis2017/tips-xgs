@@ -491,30 +491,47 @@ betclic:
     # -- written here with the same "futebol-s1/<slug>-c<id>" URL shape as
     # every other entry (per the note above, only the "-c<id>" suffix
     # actually has to be right; Betclic 301s the rest).
+    # CHANGED (2026-11-20, explicitly requested): every league below was
+    # previously commented out except whichever one happened to be the
+    # current international window -- which meant any day whose
+    # xGScore fixtures were domestic league games (the normal case) got
+    # ZERO Betclic coverage, misdiagnosed once as "Betclic is blocking
+    # us" (see the "blocking-looking" warning in betclic/odds.py) when
+    # it was really just "the only active competition page has nothing
+    # to do with today's games". Now every previously-calibrated league
+    # stays on by default -- a few extra seconds per run (one request +
+    # request_delay_seconds polite pause each) is a cheap trade for
+    # never again silently missing a day's leagues. Keep adding new
+    # ones here as xGScore brings up leagues not yet in this list
+    # (still needs a real competitionId from Betclic's own nav payload
+    # -- see the 2026-09-16/2026-09-25 notes above).
     urls:
-      #- "https://www.betclic.pt/futebol-s1/inglaterra-premier-league-c3"
-      #- "https://www.betclic.pt/futebol-s1/inglaterra-championship-c28"
-      #- "https://www.betclic.pt/futebol-s1/espanha-la-liga-c7"
-      #- "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-c5"
-      #- "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-2-c29"
-      #- "https://www.betclic.pt/futebol-s1/franca-ligue-1-c4"
-      #- "https://www.betclic.pt/futebol-s1/franca-ligue-2-c19"
-      #- "https://www.betclic.pt/futebol-s1/italia-serie-a-c6"
-      #- "https://www.betclic.pt/futebol-s1/italia-serie-b-c30"
-      #- "https://www.betclic.pt/futebol-s1/paises-baixos-eredivisie-c21"
-      #- "https://www.betclic.pt/futebol-s1/liga-portugal-betclic-c32"
-      #- "https://www.betclic.pt/futebol-s1/dinamarca-superliga-c88"
-      #- "https://www.betclic.pt/futebol-s1/suecia-allsvenskan-c145"
-      #- "https://www.betclic.pt/futebol-s1/argentina-primera-c230"
-      #- "https://www.betclic.pt/futebol-s1/brasil-serie-a-c187"
-      #- "https://www.betclic.pt/futebol-s1/mexico-liga-mx-c432"
-      #- "https://www.betclic.pt/futebol-s1/eua-mls-c504"
-      #- "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8"
-      #- "https://www.betclic.pt/futebol-s1/liga-europa-c3453"
-      #- "https://www.betclic.pt/futebol-s1/liga-conferencia-c28946"
+      - "https://www.betclic.pt/futebol-s1/inglaterra-premier-league-c3"
+      - "https://www.betclic.pt/futebol-s1/inglaterra-championship-c28"
+      - "https://www.betclic.pt/futebol-s1/espanha-la-liga-c7"
+      - "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-c5"
+      - "https://www.betclic.pt/futebol-s1/alemanha-bundesliga-2-c29"
+      - "https://www.betclic.pt/futebol-s1/franca-ligue-1-c4"
+      - "https://www.betclic.pt/futebol-s1/franca-ligue-2-c19"
+      - "https://www.betclic.pt/futebol-s1/italia-serie-a-c6"
+      - "https://www.betclic.pt/futebol-s1/italia-serie-b-c30"
+      - "https://www.betclic.pt/futebol-s1/paises-baixos-eredivisie-c21"
+      - "https://www.betclic.pt/futebol-s1/liga-portugal-betclic-c32"
+      - "https://www.betclic.pt/futebol-s1/dinamarca-superliga-c88"
+      - "https://www.betclic.pt/futebol-s1/suecia-allsvenskan-c145"
+      - "https://www.betclic.pt/futebol-s1/argentina-primera-c230"
+      - "https://www.betclic.pt/futebol-s1/brasil-serie-a-c187"
+      - "https://www.betclic.pt/futebol-s1/mexico-liga-mx-c432"
+      - "https://www.betclic.pt/futebol-s1/eua-mls-c504"
+      - "https://www.betclic.pt/futebol-s1/liga-dos-campeoes-c8"
+      - "https://www.betclic.pt/futebol-s1/liga-europa-c3453"
+      - "https://www.betclic.pt/futebol-s1/liga-conferencia-c28946"
       - "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676"
-      #- "https://www.betclic.pt/futebol-sfootball/brasil-serie-a-c187"
-      #- "https://www.betclic.pt/futebol-sfootball/noruega-eliteserien-c156"
+      - "https://www.betclic.pt/futebol-s1/noruega-eliteserien-c156"
+      # STILL MISSING (2026-11-20 bug report): Ukraine Premier League
+      # (today's Shakhtar - Livyi Bereh had no competition page here at
+      # all) -- needs a real competitionId from Betclic's own
+      # competition-nav payload before it can be added.
     # Each competition page is much lighter than the old generic page --
     # no scrolling needed, and less time per visit -- but there are many
     # of them, so this adds up (~17 pages x (wait_ms + a polite delay

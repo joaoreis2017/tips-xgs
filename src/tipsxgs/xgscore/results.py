@@ -11,28 +11,32 @@ against a real capture of the page: a plain JSON array of match objects
 
 CONFIRMED LIMITATION: the page's own "Week / Yesterday / Today" toggle
 had no query param found to pick another date -- this can only scrape
-whichever one of those three the page currently shows.
+whichever one of those three the page currently shows (or whichever
+``click_selector`` below explicitly switches it to).
 
 REAL CASE (2026-11-18/19): a results.json ended up full of games that
-matched none of that day's predictions. Initially suspected to be a
-wrong/drifted tab (hence ``click_selector``, below), but a live DOM
-dump (2026-11-20) proved "Week" was already the page's own default
-(``-selected``/``aria-pressed="true"``) -- no click needed at all. The
-ACTUAL cause: one page load fires more than one JSON response that
-independently matches the configured ``json_list_path`` (a small one,
-a much larger one), and ``_results_from_json`` used to stop at the
-first match it saw -- a capture-order race, unrelated to which tab is
-visually shown. Fixed in ``_results_from_json`` itself (unions every
-matching blob's items, deduplicated by ``id``) and in
-``cli.calibrate``, which no longer trusts "this scrape is for day X"
-at all -- it groups whatever comes back by each result's OWN date and
-only saves a day's results.json when that exact date shows up (see its
-own docstring), so a wrong/drifted tab (should one ever actually occur)
-now just contributes nothing instead of silently mislabeling itself.
-``config.yaml``'s ``xgscore.results.click_selector`` remains available
-as general-purpose infra (e.g. to force a specific tab on a page that
-doesn't default the way this one does) but was NOT the fix for this
-incident. See ``BrowserSession.get_html_and_captured_json``.
+matched none of that day's predictions. Two independent, compounding
+causes, both now fixed:
+1. The page's default tab turned out NOT to be stable -- a live DOM
+   dump on one visit (2026-11-20) showed "Week" already selected
+   (``-selected``/``aria-pressed="true"``) with no click needed, while
+   a scrape minutes later on the same URL came back with only 2-3
+   games dated that exact day -- i.e. "Today". Fixed by setting
+   ``click_selector: "text=Week"`` in config.yaml (verified via
+   ``scripts/inspect_site.py --click "text=Week"`` to reliably return a
+   full week's results regardless of whatever the page would have
+   defaulted to).
+2. Independently, one page load can fire more than one JSON response
+   that matches the configured ``json_list_path`` (e.g. a small one and
+   a much larger one), and ``_results_from_json`` used to stop at the
+   first match it saw -- a capture-order race, unrelated to which tab
+   is visually shown. Fixed there (unions every matching blob's items,
+   deduplicated by ``id``) and in ``cli.calibrate``, which no longer
+   trusts "this scrape is for day X" at all -- it groups whatever comes
+   back by each result's OWN date and only saves a day's results.json
+   when that exact date shows up (see its own docstring), so a
+   wrong/drifted tab now just contributes nothing instead of silently
+   mislabeling itself. See ``BrowserSession.get_html_and_captured_json``.
 """
 
 from __future__ import annotations

@@ -374,13 +374,17 @@ xgscore:
     #    results in one response lets a single scrape backfill every
     #    missing day it covers (not just one), and sidesteps the whole
     #    "which single day is currently showing" question entirely.
-    # Still needs calibrating against the real page (blocked from this
-    # dev sandbox -- see README.md) before it can be turned on:
-    #   python scripts/inspect_site.py https://xgscore.io/xg-statistics --click "<selector>"
-    # Diff that output against a run without --click to confirm the
-    # selector actually switches to the Week view, then uncomment.
-    # click_selector: "<selector for the 'Week' tab/button>"
-    # click_wait_ms: 1500
+    # CONFIRMED (2026-11-20): the page's own default tab is NOT stable --
+    # the same URL was observed defaulting to "Week" on one visit and to
+    # "Today" (only that day's 2-3 games) on another, with no change on
+    # our side. Verified via `scripts/inspect_site.py --click "text=Week"`
+    # (Playwright's text-selector syntax, since the toggle buttons expose
+    # no stable id/class -- see the toggle group's own markup) that
+    # clicking it explicitly reliably returns a full week's worth of
+    # results (confirmed covering 2026-11-13 through 2026-11-20,
+    # including every game this project had predicted in that range).
+    click_selector: "text=Week"
+    click_wait_ms: 1500
     url: "https://xgscore.io/xg-statistics"
     json_list_path: "[?played]"
     fields:

@@ -528,6 +528,7 @@ betclic:
       - "https://www.betclic.pt/futebol-s1/liga-conferencia-c28946"
       - "https://www.betclic.pt/futebol-s1/liga-das-nacoes-c22676"
       - "https://www.betclic.pt/futebol-s1/noruega-eliteserien-c156"
+      - "https://www.betclic.pt/futebol-sfootball/ucrania-1-liga-c530"
       # STILL MISSING (2026-11-20 bug report): Ukraine Premier League
       # (today's Shakhtar - Livyi Bereh had no competition page here at
       # all) -- needs a real competitionId from Betclic's own

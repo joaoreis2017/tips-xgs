@@ -112,6 +112,10 @@ def calibrate(config_path: str | None, since_str: str | None, scrape_results: bo
             days_with_games.append(day)
 
     missing_days = [d for d in days_with_games if not load_results(d, cfg.data_dir)]
+    if missing_days:
+        click.echo(f"{len(missing_days)} day(s) missing results: {', '.join(d.isoformat() for d in missing_days)}")
+    else:
+        click.echo("No day is missing results -- nothing to scrape.")
 
     # Explicitly requested (2026-11-20): scrape ONCE (not once per
     # missing day, and no longer gated on "the missing day IS literally
@@ -128,6 +132,7 @@ def calibrate(config_path: str | None, since_str: str | None, scrape_results: bo
     # click_selector) can backfill every missing day it covers in one
     # scrape, not just a single one.
     if scrape_results and missing_days:
+        click.echo("Scraping xgscore.results for missing results...")
         scrapeable_day = datetime.now().date() - timedelta(days=1)
         try:
             scraped = scrape_xgscore_results(cfg, scrapeable_day)
@@ -139,9 +144,19 @@ def calibrate(config_path: str | None, since_str: str | None, scrape_results: bo
             if r.kickoff is None:
                 continue
             results_by_date.setdefault(r.kickoff.date(), []).append(r)
-        for day in missing_days:
-            if day in results_by_date:
-                save_results(day, results_by_date[day], cfg.data_dir)
+        if results_by_date:
+            covered = ", ".join(f"{d.isoformat()} ({len(rs)})" for d, rs in sorted(results_by_date.items()))
+            click.echo(f"  scraped {len(scraped)} result(s) total, covering: {covered}")
+        else:
+            click.echo(f"  scraped {len(scraped)} result(s) total, none with a usable kickoff date")
+        saved_days = [day for day in missing_days if day in results_by_date]
+        for day in saved_days:
+            save_results(day, results_by_date[day], cfg.data_dir)
+        still_missing = [day for day in missing_days if day not in results_by_date]
+        if saved_days:
+            click.echo(f"  filled in: {', '.join(d.isoformat() for d in saved_days)}")
+        if still_missing:
+            click.echo(f"  still missing (not covered by this scrape): {', '.join(d.isoformat() for d in still_missing)}")
 
     paired = []
     for day in days_with_games:

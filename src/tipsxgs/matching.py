@@ -122,6 +122,20 @@ _CLUB_NAME_ALIASES: dict[str, str] = {
     # min_confidence=80.
     "celta": "celta vigo",
     "real betis": "betis",
+    # Real bug report (2026-11-20): Shakhtar - Livyi Bereh (xGScore, 74.0)
+    # vs Shakhtar Donetsk - Levy Bereg Kiev (Betclic) -- "Shakhtar" alone
+    # vs "Shakhtar Donetsk", plus two different transliterations of the
+    # same Ukrainian club's nickname ("Livyi Bereh" vs "Levy Bereg
+    # Kiev"); and Bayern M. - Koln (xGScore, 76.4) vs Bayern Munique -
+    # Colónia (Betclic) -- "Bayern M." abbreviated too short for
+    # _expand_abbreviated_tokens (stem "m" is 1 char, below
+    # _MIN_ABBREVIATION_STEM_LEN), plus "Koln" (xGScore, no umlaut) vs
+    # the Portuguese city name "Colónia" for Cologne/Köln.
+    "shakhtar": "shakhtar donetsk",
+    "livyi bereh": "levy bereg kiev",
+    "bayern m.": "bayern munique",
+    "koln": "cologne",
+    "colónia": "cologne",
 }
 
 _TEAM_NAME_ALIASES: dict[str, str] = {**_COUNTRY_NAME_ALIASES, **_CLUB_NAME_ALIASES}

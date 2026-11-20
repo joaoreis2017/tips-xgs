@@ -124,6 +124,21 @@ def test_portuguese_country_names_match_their_english_xgscore_spelling():
     assert all(g.match_confidence == 100.0 for g in games)
 
 
+def test_shakhtar_and_bayern_koln_aliases_fix_the_real_2026_11_20_misses():
+    # Real bug report (2026-11-20): Shakhtar - Livyi Bereh (xGScore, 74.0)
+    # vs Shakhtar Donetsk - Levy Bereg Kiev (Betclic), and Bayern M. -
+    # Koln (xGScore, 76.4) vs Bayern Munique - Colónia (Betclic) both
+    # fell just under min_confidence=80 -- see _CLUB_NAME_ALIASES.
+    fixtures = [fx("Shakhtar", "Livyi Bereh"), fx("Bayern M.", "Koln")]
+    offers = [
+        offer("Shakhtar Donetsk", "Levy Bereg Kiev"),
+        offer("Bayern Munique", "Colónia"),
+    ]
+    games = match_fixtures_to_odds(fixtures, {}, offers, min_confidence=80)
+    assert all(g.odds is not None for g in games)
+    assert all(g.match_confidence == 100.0 for g in games)
+
+
 def test_short_abbreviated_tokens_do_not_expand_and_cannot_cause_false_positives():
     # "K." (1 letter) and "R." are far too short to be a reliable
     # abbreviation signal -- lots of unrelated words start with the same

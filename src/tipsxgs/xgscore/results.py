@@ -204,6 +204,15 @@ def scrape_results(cfg: AppConfig, day: date, session: BrowserSession | None = N
             page_results = _results_from_json(page_cfg, blobs)
             if not page_results:
                 page_results = _results_from_css(page_cfg, html)
+            dated = [r.kickoff.date() for r in page_results if r.kickoff is not None]
+            date_range = f"{min(dated)}..{max(dated)}" if dated else "none dated"
+            logger.info(
+                "%s: %d JSON blob(s) captured, %d result(s) extracted (kickoff dates: %s)",
+                url,
+                len(blobs),
+                len(page_results),
+                date_range,
+            )
             results.extend(page_results)
 
         if not results:

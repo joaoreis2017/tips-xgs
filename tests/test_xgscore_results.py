@@ -83,6 +83,58 @@ def test_scrape_results_against_real_xgscore_json_shape():
     assert ("TeamA", "TeamB") not in by_pair
 
 
+SMALL_DECOY_BLOB = [
+    {
+        "id": "small-blob-game",
+        "slug": "corinthians-botafogo",
+        "datetime": "2026-11-19T00:30:00.000Z",
+        "played": True,
+        "tournament": {"id": "brasileirao", "name": "Brasileirão", "slug": "brasileirao"},
+        "fullTimeGoals": {"h": 1, "a": 1},
+        "teams": {"h": {"name": "Corinthians"}, "a": {"name": "Botafogo"}},
+    },
+]
+
+
+class TwoBlobsSession:
+    """Simulates the real 2026-11-18/19 incident: a single page load
+    fires more than one JSON response that independently matches
+    json_list_path -- here a small, unrelated one captured first, and
+    the actual (larger) results blob captured second."""
+
+    def get_html_and_captured_json(
+        self, url, url_substring_filter=None, wait_ms=2000, click_selector=None, click_wait_ms=1500
+    ):
+        return "<html></html>", [GEO_BLOB, EMPTY_DECOY, SMALL_DECOY_BLOB, RESULTS_BLOB]
+
+
+def test_scrape_results_unions_every_blob_that_matches_json_list_path():
+    cfg = load_config()
+    results = scrape_results(cfg, day=datetime(2026, 11, 13).date(), session=TwoBlobsSession())
+
+    by_pair = {(r.home_team, r.away_team): r for r in results}
+    # The small, earlier-captured blob's game must NOT shadow the
+    # larger blob's games -- both must be present.
+    assert ("Corinthians", "Botafogo") in by_pair
+    assert ("Andorra", "Gibraltar") in by_pair
+    assert ("Moldova", "Kazakhstan") in by_pair
+    assert ("TeamA", "TeamB") not in by_pair  # still dropped: not played yet
+
+
+def test_scrape_results_deduplicates_the_same_item_seen_in_two_matching_blobs():
+    cfg = load_config()
+    # The same results array captured twice (e.g. two tabs that happen
+    # to overlap) must not produce duplicate MatchResults.
+    class DuplicateBlobsSession:
+        def get_html_and_captured_json(
+            self, url, url_substring_filter=None, wait_ms=2000, click_selector=None, click_wait_ms=1500
+        ):
+            return "<html></html>", [RESULTS_BLOB, RESULTS_BLOB]
+
+    results = scrape_results(cfg, day=datetime(2026, 11, 13).date(), session=DuplicateBlobsSession())
+    assert len(results) == 2  # not 4
+
+
 class SpySession:
     """Records what it was called with instead of returning real data --
     used to confirm scrape_results forwards click_selector/click_wait_ms

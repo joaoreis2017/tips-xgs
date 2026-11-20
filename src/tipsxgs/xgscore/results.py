@@ -13,23 +13,26 @@ CONFIRMED LIMITATION: the page's own "Week / Yesterday / Today" toggle
 had no query param found to pick another date -- this can only scrape
 whichever one of those three the page currently shows.
 
-REAL CASE (2026-11-19): calibrated 2026-11-14 as defaulting to
-"Yesterday" with no interaction needed -- that default silently
-changed at some point, and a run picked up "Today"'s results instead
-without erroring (nothing checked *which* tab was showing, only that
-*some* JSON came back), pairing none of them to the day's own
-predictions. Fixed two ways (2026-11-20): ``cli.calibrate`` no longer
-trusts "this scrape is for day X" at all -- it groups whatever comes
-back by each result's OWN date and only saves a day's results.json
-when that exact date shows up (see its own docstring), so a
-wrong/drifted tab now just contributes nothing instead of silently
-mislabeling itself; and ``config.yaml``'s
-``xgscore.results.click_selector``, once calibrated, clicks a specific
-tab explicitly rather than trusting the page's current default --
-pointed at "Week" rather than "Yesterday" now that a day is identified
-by its own date instead of by which call produced it, since one scrape
-can then backfill every missing day it covers, not just one. See
-``BrowserSession.get_html_and_captured_json``.
+REAL CASE (2026-11-18/19): a results.json ended up full of games that
+matched none of that day's predictions. Initially suspected to be a
+wrong/drifted tab (hence ``click_selector``, below), but a live DOM
+dump (2026-11-20) proved "Week" was already the page's own default
+(``-selected``/``aria-pressed="true"``) -- no click needed at all. The
+ACTUAL cause: one page load fires more than one JSON response that
+independently matches the configured ``json_list_path`` (a small one,
+a much larger one), and ``_results_from_json`` used to stop at the
+first match it saw -- a capture-order race, unrelated to which tab is
+visually shown. Fixed in ``_results_from_json`` itself (unions every
+matching blob's items, deduplicated by ``id``) and in
+``cli.calibrate``, which no longer trusts "this scrape is for day X"
+at all -- it groups whatever comes back by each result's OWN date and
+only saves a day's results.json when that exact date shows up (see its
+own docstring), so a wrong/drifted tab (should one ever actually occur)
+now just contributes nothing instead of silently mislabeling itself.
+``config.yaml``'s ``xgscore.results.click_selector`` remains available
+as general-purpose infra (e.g. to force a specific tab on a page that
+doesn't default the way this one does) but was NOT the fix for this
+incident. See ``BrowserSession.get_html_and_captured_json``.
 """
 
 from __future__ import annotations
@@ -55,17 +58,40 @@ _SCORE_RE = re.compile(r"(\d+)\D+(\d+)")
 
 
 def _results_from_json(page_cfg: PageConfig, blobs: list[dict]) -> list[MatchResult]:
+    """Union the matching items from EVERY captured blob, not just the
+    first one that matches.
+
+    REAL INCIDENT (2026-11-18/19): a single page load fires more than
+    one JSON response that independently matches ``json_list_path``
+    (e.g. ``[?played]``) -- a small one (a handful of games) and a much
+    larger one (a full week). Which one Playwright's response listener
+    captures first is a race, unrelated to which tab is visually
+    "selected" on the page. Stopping at the first match (the old
+    behaviour) silently threw away the larger blob whenever the smaller
+    one happened to arrive first, which is exactly what produced a
+    results.json full of games that matched none of that day's
+    predictions. Unioning everything is safe: ``cli.calibrate`` already
+    sorts every result into its own day by its own ``kickoff`` date, so
+    extra (even duplicate) items from another blob just add coverage.
+    """
     if not page_cfg.json_list_path:
         return []
     items: list[dict] = []
+    seen_ids: set = set()
     for blob in blobs:
         try:
             found = jmespath.search(page_cfg.json_list_path, blob)
         except jmespath.exceptions.JMESPathError:
             continue
-        if isinstance(found, list) and found:
-            items = found
-            break
+        if not isinstance(found, list) or not found:
+            continue
+        for item in found:
+            item_id = item.get("id") if isinstance(item, dict) else None
+            if item_id is not None:
+                if item_id in seen_ids:
+                    continue
+                seen_ids.add(item_id)
+            items.append(item)
 
     results = []
     for item in items:

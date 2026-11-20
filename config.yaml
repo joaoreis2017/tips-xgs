@@ -353,29 +353,33 @@ xgscore:
     # own "Week / Yesterday / Today" toggle defaulted to **Yesterday** on
     # 2026-11-14 (every match in that capture was dated the day before
     # it was taken) and no query param was observed to select a
-    # different date -- this URL can only ever be scraped for
-    # *yesterday's* results, not an arbitrary past day. `calibrate`
-    # (cli.py) only attempts a scrape when the day being calibrated
-    # actually IS yesterday relative to when it's run -- run it daily
-    # (e.g. right after `run`) so each day's results get picked up once,
-    # the day after. Backfilling older days would need capturing
-    # whatever request the "Today"/"Week" toggle buttons fire (not
-    # captured here) and recalibrating this section accordingly.
+    # different date.
     #
     # REAL CASE (2026-11-19): that "defaults to Yesterday" behaviour
     # silently stopped holding -- a run picked up "Today"'s results
-    # instead, with no error (nothing here checks WHICH tab is active,
-    # only that some JSON comes back), so none of them paired to that
-    # day's own predictions. `click_selector` (commented out below) now
-    # exists precisely for this: a CSS selector for the "Yesterday"
-    # tab/button itself, clicked before every scrape instead of trusting
-    # the page's current default. Still needs calibrating against the
-    # real page (blocked from this dev sandbox -- see README.md) before
-    # it can be turned on:
+    # instead, with no error (nothing here checked WHICH tab was active,
+    # only that some JSON came back), so none of them paired to that
+    # day's own predictions.
+    #
+    # Fixed two ways, together:
+    # 1. cli.calibrate (2026-11-20) no longer trusts "this scrape is for
+    #    day X" at all -- it groups whatever comes back by each result's
+    #    OWN date and only saves a day's results.json when that exact
+    #    date shows up, so a wrong/drifted tab now contributes nothing
+    #    instead of silently mislabeling itself.
+    # 2. `click_selector` (commented out below) stops relying on the
+    #    page's current default in the first place -- a CSS selector
+    #    clicked before every scrape. Given (1) above, **prefer pointing
+    #    it at "Week" rather than "Yesterday"**: a week's worth of
+    #    results in one response lets a single scrape backfill every
+    #    missing day it covers (not just one), and sidesteps the whole
+    #    "which single day is currently showing" question entirely.
+    # Still needs calibrating against the real page (blocked from this
+    # dev sandbox -- see README.md) before it can be turned on:
     #   python scripts/inspect_site.py https://xgscore.io/xg-statistics --click "<selector>"
     # Diff that output against a run without --click to confirm the
-    # selector actually switches to Yesterday's data, then uncomment.
-    # click_selector: "<selector for the 'Yesterday' tab/button>"
+    # selector actually switches to the Week view, then uncomment.
+    # click_selector: "<selector for the 'Week' tab/button>"
     # click_wait_ms: 1500
     url: "https://xgscore.io/xg-statistics"
     json_list_path: "[?played]"

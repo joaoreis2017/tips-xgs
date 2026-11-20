@@ -11,19 +11,25 @@ against a real capture of the page: a plain JSON array of match objects
 
 CONFIRMED LIMITATION: the page's own "Week / Yesterday / Today" toggle
 had no query param found to pick another date -- this can only scrape
-whichever one of those three the page currently shows, never an
-arbitrary past day (see ``cli.calibrate``, which only scrapes when the
-day being calibrated actually is yesterday).
+whichever one of those three the page currently shows.
 
 REAL CASE (2026-11-19): calibrated 2026-11-14 as defaulting to
 "Yesterday" with no interaction needed -- that default silently
 changed at some point, and a run picked up "Today"'s results instead
-without erroring (nothing here checked *which* tab was showing, only
-that *some* JSON came back), pairing none of them to the day's own
-predictions. ``config.yaml``'s ``xgscore.results.click_selector``, once
-set to a selector for the "Yesterday" tab/button itself, makes this
-scrape that tab explicitly on every run instead of trusting the page's
-current default -- see ``BrowserSession.get_html_and_captured_json``.
+without erroring (nothing checked *which* tab was showing, only that
+*some* JSON came back), pairing none of them to the day's own
+predictions. Fixed two ways (2026-11-20): ``cli.calibrate`` no longer
+trusts "this scrape is for day X" at all -- it groups whatever comes
+back by each result's OWN date and only saves a day's results.json
+when that exact date shows up (see its own docstring), so a
+wrong/drifted tab now just contributes nothing instead of silently
+mislabeling itself; and ``config.yaml``'s
+``xgscore.results.click_selector``, once calibrated, clicks a specific
+tab explicitly rather than trusting the page's current default --
+pointed at "Week" rather than "Yesterday" now that a day is identified
+by its own date instead of by which call produced it, since one scrape
+can then backfill every missing day it covers, not just one. See
+``BrowserSession.get_html_and_captured_json``.
 """
 
 from __future__ import annotations
@@ -137,14 +143,17 @@ def scrape_results(cfg: AppConfig, day: date, session: BrowserSession | None = N
 
     ``day`` is NOT used to pick a date on the real page as calibrated --
     its "Week / Yesterday / Today" toggle has no query-param equivalent
-    we've found, so this always returns whatever it currently defaults
-    to (confirmed: yesterday's results). ``day`` only feeds a literal
-    ``{date}`` placeholder in ``url``/``urls`` (substituted as
-    ``YYYY-MM-DD``), kept in case a future recalibration finds a real
-    date param to target -- the currently calibrated ``url`` has no such
-    placeholder, so it's a no-op today. Callers (``cli.calibrate``) are
-    responsible for only calling this when ``day`` actually is
-    yesterday, since that's the only day it can ever return.
+    we've found, so this always returns whatever it currently shows
+    (whichever tab that is, possibly several days' worth at once --
+    see ``config.yaml``'s own ``click_selector`` comment). ``day`` only
+    feeds a literal ``{date}`` placeholder in ``url``/``urls``
+    (substituted as ``YYYY-MM-DD``), kept in case a future
+    recalibration finds a real date param to target -- the currently
+    calibrated ``url`` has no such placeholder, so it's a no-op today.
+    Callers (``cli.calibrate``) do NOT assume the results returned are
+    for any particular day -- each one's own ``kickoff`` date decides
+    where it gets saved, so a caller can use this for whatever date
+    range the page currently shows, not just yesterday.
     """
     page_cfg = cfg.xgscore.page("results")
     urls = list(page_cfg.urls) or ([page_cfg.url] if page_cfg.url else [])

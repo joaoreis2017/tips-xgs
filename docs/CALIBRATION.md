@@ -132,39 +132,46 @@ em si ("1X"/"X2") continua a ser seguida normalmente; só esta linha de
 handicap específica é que deixa de ser.
 
 **Limitação confirmada (na própria captura):** a página tem um toggle
-próprio "Week / Yesterday / Today" que por defeito mostra **Yesterday**
-(ontem) — não foi encontrado nenhum parâmetro de URL que escolha outro
-dia. Isto significa que só é possível obter os resultados de **ontem**,
-nunca um dia arbitrário do passado. Por isso, `calibrate` só tenta
-fazer scraping quando o dia em falta é mesmo "ontem" (relativo ao
-momento em que corre) — qualquer outro dia sem `results.json` fica
-simplesmente sem dados até esse dia ser "ontem" numa run futura. Corre
-`python -m tipsxgs calibrate` todos os dias (ex. logo depois de `run`,
-no mesmo cron) para ires acumulando histórico dia a dia; se quiseres
-preencher dias mais antigos em falta, precisas de descobrir que pedido
-os botões "Today"/"Week" disparam (inspecionar com as devtools do
-browser ao clicar neles) e recalibrar esta secção.
+próprio "Week / Yesterday / Today" que por defeito mostrava
+**Yesterday** (ontem) em 2026-11-14 — não foi encontrado nenhum
+parâmetro de URL que escolha outro dia.
 
 **Caso real (2026-11-19):** esse "por defeito mostra Yesterday" deixou
 de se verificar — uma run apanhou os resultados de "Today" em vez de
-"Yesterday", sem erro nenhum (nada aqui verifica QUAL separador está
-ativo, só que chegou algum JSON), e por isso nenhum resultado emparelhou
-com as previsões desse dia (jogos completamente diferentes). Para
-deixar de depender do que a página mostra por defeito, `config.yaml`'s
-`xgscore.results` ganhou um `click_selector` (e `click_wait_ms`) --
-quando preenchido, clica explicitamente nesse separador antes de ler a
-página, em vez de confiar no estado em que ela já está. Para calibrar:
+"Yesterday", sem erro nenhum (nada aqui verificava QUAL separador
+estava ativo, só que chegava algum JSON), e por isso nenhum resultado
+emparelhou com as previsões desse dia (jogos completamente diferentes).
+
+Corrigido de duas formas, em conjunto (2026-11-20):
+
+1. **`cli.calibrate` deixou de confiar em "este scraping é do dia X"**
+   — agora agrupa o que quer que venha pelo **próprio** `datetime` de
+   cada resultado, e só grava o `results.json` de um dia quando essa
+   data exata aparece no que foi obtido. Um separador errado/desviado
+   passa a não contribuir nada (em vez de se etiquetar mal
+   silenciosamente), e já não há a restrição de "só tenta scraping
+   quando o dia em falta é mesmo ontem" — tenta sempre que houver pelo
+   menos um dia em falta, uma única vez por `calibrate`, nunca uma vez
+   por dia em falta.
+2. **`click_selector`** (em `config.yaml`, comentado por omissão) --
+   clica explicitamente num separador antes de ler a página, em vez de
+   confiar no que ela mostra por defeito. Dado o ponto 1 acima, **faz
+   mais sentido apontá-lo ao separador "Week" em vez de "Yesterday"**:
+   uma única captura já traz uma semana de resultados, o que permite
+   preencher vários dias em falta de uma vez (não só "ontem"), e evita
+   por completo a pergunta "qual separador está ativo agora".
+
+Para calibrar:
 
 ```bash
-python scripts/inspect_site.py https://xgscore.io/xg-statistics --click "<seletor do separador 'Yesterday'>"
+python scripts/inspect_site.py https://xgscore.io/xg-statistics --click "<seletor do separador 'Week'>"
 ```
 
 Compara o `captured_json`/`page.html` dessa run com uma run sem
-`--click` para confirmares que o seletor realmente muda para os dados
-de ontem, antes de preencheres `click_selector` em `config.yaml` (fica
-comentado por omissão, já que ainda não foi calibrado contra a página
-real). Ver `BrowserSession.get_html_and_captured_json`'s próprio
-`click_selector`.
+`--click` para confirmares que o seletor realmente muda para a vista de
+semana, antes de preencheres `click_selector` em `config.yaml` (ainda
+por calibrar contra a página real neste momento). Ver
+`BrowserSession.get_html_and_captured_json`'s próprio `click_selector`.
 
 ```bash
 python scripts/inspect_site.py https://xgscore.io/xg-statistics

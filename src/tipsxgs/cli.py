@@ -101,37 +101,54 @@ def calibrate(config_path: str | None, since_str: str | None, scrape_results: bo
     _setup_logging(verbose)
     cfg = load_config(config_path)
     since = datetime.strptime(since_str, "%Y-%m-%d").date() if since_str else None
-    # xgscore.results' real page has no way to request a specific past
-    # date (see config.yaml's comment on it) -- its default view only
-    # ever covers *yesterday*, relative to whenever the scrape actually
-    # runs. So a day missing results.json only gets scraped when it IS
-    # yesterday; any other missing day is simply skipped (no results
-    # available for it until this project gains a way to request an
-    # older date).
-    scrapeable_day = datetime.now().date() - timedelta(days=1)
 
     day_dirs = sorted(p.parent.name for p in cfg.data_dir.glob("*/games.json"))
-    paired = []
+    days_with_games: list[date] = []
     for day_str in day_dirs:
         day = datetime.strptime(day_str, "%Y-%m-%d").date()
         if since and day < since:
             continue
-        games = load_day(day, cfg.data_dir)
-        if not games:
-            continue
+        if load_day(day, cfg.data_dir):
+            days_with_games.append(day)
 
-        results = load_results(day, cfg.data_dir)
-        if not results and scrape_results and day == scrapeable_day:
-            try:
-                results = scrape_xgscore_results(cfg, day)
-            except RuntimeError as exc:
-                click.echo(f"  {day_str}: {exc}", err=True)
+    missing_days = [d for d in days_with_games if not load_results(d, cfg.data_dir)]
+
+    # Explicitly requested (2026-11-20): scrape ONCE (not once per
+    # missing day, and no longer gated on "the missing day IS literally
+    # yesterday") and sort whatever comes back into the right day(s) by
+    # each result's OWN date, instead of blindly trusting that the page
+    # was showing a particular day at all. This is what actually fixes
+    # the real incident from the day before (results.json saved under
+    # "yesterday" that, checked afterwards, weren't for that day at all
+    # -- the page had drifted to showing "Today" instead, and nothing
+    # here was checking) -- a mismatched scrape now just contributes
+    # nothing (no day's date matches), rather than silently mislabeling
+    # itself. It also means a "Week"-style view (several days' worth of
+    # results in one response -- see config.yaml's xgscore.results.
+    # click_selector) can backfill every missing day it covers in one
+    # scrape, not just a single one.
+    if scrape_results and missing_days:
+        scrapeable_day = datetime.now().date() - timedelta(days=1)
+        try:
+            scraped = scrape_xgscore_results(cfg, scrapeable_day)
+        except RuntimeError as exc:
+            click.echo(f"  {exc}", err=True)
+            scraped = []
+        results_by_date: dict[date, list] = {}
+        for r in scraped:
+            if r.kickoff is None:
                 continue
-            if results:
-                save_results(day, results, cfg.data_dir)
+            results_by_date.setdefault(r.kickoff.date(), []).append(r)
+        for day in missing_days:
+            if day in results_by_date:
+                save_results(day, results_by_date[day], cfg.data_dir)
+
+    paired = []
+    for day in days_with_games:
+        games = load_day(day, cfg.data_dir)
+        results = load_results(day, cfg.data_dir)
         if not results:
             continue
-
         paired.extend(match_games_to_results(games, results, min_confidence=cfg.min_match_confidence))
 
     if not paired:

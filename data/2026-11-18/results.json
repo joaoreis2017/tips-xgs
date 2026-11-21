@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-18",
+  "generated_at": "2026-11-20T10:59:05.826266",
+  "results": [
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Cruzeiro",
+      "away_team": "Palmeiras",
+      "kickoff": "2026-11-18T23:30:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Remo",
+      "away_team": "Chapecoense",
+      "kickoff": "2026-11-18T23:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 0
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Coritiba",
+      "away_team": "Santos",
+      "kickoff": "2026-11-18T22:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Flamengo",
+      "away_team": "Atlético PR",
+      "kickoff": "2026-11-18T23:30:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-14",
+  "generated_at": "2026-11-15T11:27:00.561446",
+  "results": [
+    {
+      "league": "League of Nations",
+      "home_team": "Romania",
+      "away_team": "Poland",
+      "kickoff": "2026-11-14T19:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Sweden",
+      "away_team": "Bosnia and Herz.",
+      "kickoff": "2026-11-14T19:45:00+00:00",
+      "home_goals": 3,
+      "away_goals": 2
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Georgia",
+      "away_team": "Hungary",
+      "kickoff": "2026-11-14T17:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 2
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Norway",
+      "away_team": "Wales",
+      "kickoff": "2026-11-14T17:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 1
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Kosovo",
+      "away_team": "Israel",
+      "kickoff": "2026-11-14T14:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Mirassol",
+      "away_team": "Atlético M",
+      "kickoff": "2026-11-14T21:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "N. Ireland",
+      "away_team": "Ukraine",
+      "kickoff": "2026-11-14T19:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Austria",
+      "away_team": "Ireland",
+      "kickoff": "2026-11-14T19:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "League of Nations",
+      "home_team": "Portugal",
+      "away_team": "Denmark",
+      "kickoff": "2026-11-14T19:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 4
+    },
+    {
+      "league": "Mexico Liga MX",
+      "home_team": "Querétaro",
+      "away_team": "Monterrey",
+      "kickoff": "2026-11-14T23:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Chapecoense",
+      "away_team": "Vasco da Gama",
+      "kickoff": "2026-11-14T23:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 2
+    }
+  ]
+}

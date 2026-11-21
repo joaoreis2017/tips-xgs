@@ -1,0 +1,1590 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tips xGScore + Betclic — 2026-09-20</title>
+<style>
+  :root{
+    --bg:#f7f7f8; --panel:#ffffff; --border:#e3e3e6; --text:#1b1c1f; --muted:#6b6f76;
+    --accent:#2f6fed; --good:#12805c; --good-bg:#e6f6ef; --bad:#b3261e;
+    --chip-bg:#eef1f6; --shadow:0 1px 2px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15161a; --panel:#1e2025; --border:#2c2e34; --text:#eef0f3; --muted:#9a9ea7;
+      --accent:#6ea1ff; --good:#3fd68f; --good-bg:#123527; --bad:#ff6b64;
+      --chip-bg:#26282e; --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 10px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15161a; --panel:#1e2025; --border:#2c2e34; --text:#eef0f3; --muted:#9a9ea7;
+    --accent:#6ea1ff; --good:#3fd68f; --good-bg:#123527; --bad:#ff6b64;
+    --chip-bg:#26282e; --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 10px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:20px 16px 64px; max-width:1080px; margin-inline:auto;
+  }
+  h1{font-size:1.4rem; margin:0 0 2px;}
+  .subtitle{color:var(--muted); font-size:.85rem; margin:0 0 22px;}
+  .panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow); padding:18px; margin-bottom:20px;
+  }
+  .panel h2{margin:0 0 12px; font-size:1.05rem;}
+  table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  th{text-align:left; color:var(--muted); font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; padding:6px 8px; border-bottom:1px solid var(--border);}
+  td{padding:8px 8px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:.72rem; font-weight:600; background:var(--chip-bg); color:var(--muted);}
+  .value-pill{background:var(--good-bg); color:var(--good);}
+  .game-header{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; cursor:pointer;}
+  .game-header .teams{font-weight:600; font-size:1rem;}
+  .game-meta{color:var(--muted); font-size:.8rem;}
+  details{background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden;}
+  details > summary{list-style:none; padding:14px 18px; cursor:pointer;}
+  details > summary::-webkit-details-marker{display:none;}
+  details[open] > summary{border-bottom:1px solid var(--border);}
+  .details-body{padding:6px 18px 18px;}
+  .section-title{font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700; margin:16px 0 8px;}
+  .empty{color:var(--muted); font-size:.85rem; padding:8px 0;}
+  .confidence-low{color:var(--bad);}
+  a{color:var(--accent); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .top-row{display:flex; justify-content:space-between; gap:10px;}
+  .rank{color:var(--muted); width:1.6em; display:inline-block;}
+  @media (max-width:560px){
+    .panel, details{border-radius:10px;}
+    th,td{padding:6px 4px; font-size:.8rem;}
+  }
+</style>
+</head>
+<body>
+
+<h1>⚽ Tips do dia — xGScore × Betclic</h1>
+<p class="subtitle">2026-09-20 · gerado em 2026-09-20 13:05 · 53 jogo(s)</p>
+
+<div class="panel">
+  <h2>🎫 Múltipla do dia · 0.50€</h2>
+  <p class="subtitle" style="margin:-6px 0 12px;">Até 4 pernas (uma por jogo no máximo), probabilidade ≥ 70% e odd Betclic entre 1.25 e 1.45 (exclusive).</p>
+  
+  <p class="empty">Sem pernas suficientes hoje dentro deste critério (ver docs/CALIBRATION.md).</p>
+  
+</div>
+
+
+
+
+<div class="panel">
+  <h2>💰 Aposta de valor · 0.50€</h2>
+  <p class="subtitle" style="margin:-6px 0 12px;">A melhor jogada de valor do dia em qualquer jogo/mercado — probabilidade ≥ 45% e valor ≥ 1.10×.</p>
+  
+  <p class="empty">Sem jogada a cumprir estes critérios hoje (ver docs/CALIBRATION.md).</p>
+  
+</div>
+
+
+
+<div class="panel">
+  <h2>📊 Aposta de probabilidade média · 1.00€</h2>
+  <p class="subtitle" style="margin:-6px 0 12px;">Probabilidade entre 60% e 69%, odd Betclic entre 1.50 e 2.20 (inclusive).</p>
+  
+  <p class="empty">Sem jogada a cumprir estes critérios hoje (ver docs/CALIBRATION.md).</p>
+  
+</div>
+
+
+
+<details id="game-kalmar-hacken" open>
+  <summary>
+    <div class="game-header">
+      <span class="teams">Kalmar — Häcken</span>
+      <span class="game-meta">
+        sweden-allsvenskan · 12:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/sweden-allsvenskan/kalmar-hacken/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-djurgarden-elfsborg" open>
+  <summary>
+    <div class="game-header">
+      <span class="teams">Djurgården — Elfsborg</span>
+      <span class="game-meta">
+        sweden-allsvenskan · 12:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/sweden-allsvenskan/djurgarden-elfsborg/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-halmstad-aik" open>
+  <summary>
+    <div class="game-header">
+      <span class="teams">Halmstad — AIK</span>
+      <span class="game-meta">
+        sweden-allsvenskan · 12:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/sweden-allsvenskan/halmstad-aik/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-degerfors-hammarby" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Degerfors — Hammarby</span>
+      <span class="game-meta">
+        sweden-allsvenskan · 14:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/sweden-allsvenskan/degerfors-hammarby/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-mjallby-gais" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Mjällby — GAIS</span>
+      <span class="game-meta">
+        sweden-allsvenskan · 14:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/sweden-allsvenskan/mjallby-gais/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-getafe-malaga" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Getafe — Malaga</span>
+      <span class="game-meta">
+        la-liga · 12:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/la-liga/getafe-malaga/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-atletico-real-madrid" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Atlético — Real Madrid</span>
+      <span class="game-meta">
+        la-liga · 14:15
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/la-liga/atletico-real-madrid/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-la-coruna-real-betis" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">La Coruña — Real Betis</span>
+      <span class="game-meta">
+        la-liga · 16:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/la-liga/la-coruna-real-betis/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-villarreal-levante" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Villarreal — Levante</span>
+      <span class="game-meta">
+        la-liga · 16:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/la-liga/villarreal-levante/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-valencia-real-sociedad" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Valencia — R. Sociedad</span>
+      <span class="game-meta">
+        la-liga · 19:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/la-liga/valencia-real-sociedad/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-sonderjyske-randers" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">SønderjyskE — Randers</span>
+      <span class="game-meta">
+        denmark-superliga · 12:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/danish-superliga/sonderjyske-randers/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-brondby-copenhagen" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Brondby — Copenhagen</span>
+      <span class="game-meta">
+        denmark-superliga · 12:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/danish-superliga/brondby-copenhagen/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-horsens-aarhus" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Horsens — Aarhus</span>
+      <span class="game-meta">
+        denmark-superliga · 14:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/danish-superliga/horsens-aarhus/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-viborg-nordsjaelland" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Viborg — Nordsjælland</span>
+      <span class="game-meta">
+        denmark-superliga · 16:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/danish-superliga/viborg-nordsjaelland/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-twente-psv" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Twente — PSV</span>
+      <span class="game-meta">
+        eredivisie · 12:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/eredivisie/twente-psv/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-az-alkmar-telstar" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">AZ Alkmaar — Telstar</span>
+      <span class="game-meta">
+        eredivisie · 12:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/eredivisie/az-alkmar-telstar/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-nec-go-ahead-eagles" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">NEC — Go Ahead Eagles</span>
+      <span class="game-meta">
+        eredivisie · 14:45
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/eredivisie/nec-go-ahead-eagles/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-valerenga-fredrikstad" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Vålerenga — Fredrikstad</span>
+      <span class="game-meta">
+        norway-eliteserien · 12:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/norway-eliteserien/valerenga-fredrikstad/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-viking-lillestrom" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Viking — Lillestrøm</span>
+      <span class="game-meta">
+        norway-eliteserien · 15:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/norway-eliteserien/viking-lillestrom/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-tromso-hamkam" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Tromsø — HamKam</span>
+      <span class="game-meta">
+        norway-eliteserien · 15:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/norway-eliteserien/tromso-hamkam/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-sandefjord-start" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Sandefjord — Start</span>
+      <span class="game-meta">
+        norway-eliteserien · 15:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/norway-eliteserien/sandefjord-start/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-brann-bodo-glimt" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Brann — Bodø-Glimt</span>
+      <span class="game-meta">
+        norway-eliteserien · 17:15
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/norway-eliteserien/brann-bodo-glimt/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-karpaty-veres" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Karpaty — Veres</span>
+      <span class="game-meta">
+        ukraine-premier-league · 12:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/ukrainian-premier-league/karpaty-veres/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-shakhtar-d-lnz" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Shakhtar — LNZ</span>
+      <span class="game-meta">
+        ukraine-premier-league · 15:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/ukrainian-premier-league/shakhtar-d-lnz/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-auxerre-brest" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Auxerre — Brest</span>
+      <span class="game-meta">
+        ligue-1 · 13:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/league-1/auxerre-brest/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-nice-lille" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Nice — Lille</span>
+      <span class="game-meta">
+        ligue-1 · 15:15
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/league-1/nice-lille/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-marseille-psg" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Marseille — PSG</span>
+      <span class="game-meta">
+        ligue-1 · 18:45
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/league-1/marseille-psg/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-leeds-crystal-palace" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Leeds — Crystal Palace</span>
+      <span class="game-meta">
+        premier-league · 13:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/epl/leeds-crystal-palace/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-bournemouth-liverpool" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Bournemouth — Liverpool</span>
+      <span class="game-meta">
+        premier-league · 13:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/epl/bournemouth-liverpool/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-man-city-sunderland" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Man City — Sunderland</span>
+      <span class="game-meta">
+        premier-league · 13:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/epl/man-city-sunderland/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-fulham-man-united" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Fulham — Man United</span>
+      <span class="game-meta">
+        premier-league · 15:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/epl/fulham-man-united/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-frosinone-como" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Frosinone — Como</span>
+      <span class="game-meta">
+        serie-a · 13:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/serie-a/frosinone-como/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-parma-genoa" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Parma — Genoa</span>
+      <span class="game-meta">
+        serie-a · 13:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/serie-a/parma-genoa/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-juventus-atalanta" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Juventus — Atalanta</span>
+      <span class="game-meta">
+        serie-a · 16:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/serie-a/juventus-atalanta/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-milan-lecce" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Milan — Lecce</span>
+      <span class="game-meta">
+        serie-a · 18:45
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/serie-a/milan-lecce/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-bayer-rb-leipzig" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Bayer — RB Leipzig</span>
+      <span class="game-meta">
+        bundesliga · 13:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/bundesliga/bayer-rb-leipzig/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-schalke-elversberg" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Schalke — Elversberg</span>
+      <span class="game-meta">
+        bundesliga · 15:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/bundesliga/schalke-elversberg/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-paderborn-hoffenheim" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Paderborn — Hoffenheim</span>
+      <span class="game-meta">
+        bundesliga · 17:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/bundesliga/paderborn-hoffenheim/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-gremio-palmeiras" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Grêmio — Palmeiras</span>
+      <span class="game-meta">
+        brazil-serie-a · 14:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/brazil-serie-a/gremio-palmeiras/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-corinthians-fluminense" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Corinthians — Fluminense</span>
+      <span class="game-meta">
+        brazil-serie-a · 19:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/brazil-serie-a/corinthians-fluminense/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-vitoria-cruzeiro" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Vitória — Cruzeiro</span>
+      <span class="game-meta">
+        brazil-serie-a · 19:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/brazil-serie-a/vitoria-cruzeiro/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-flamengo-bragantino" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Flamengo — RB Bragantino</span>
+      <span class="game-meta">
+        brazil-serie-a · 21:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/brazil-serie-a/flamengo-bragantino/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-atletico-pr-bahia" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Atlético PR — Bahia</span>
+      <span class="game-meta">
+        brazil-serie-a · 22:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/brazil-serie-a/atletico-pr-bahia/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-vitoria-g-moreirense" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Victoria G. — Moreirense</span>
+      <span class="game-meta">
+        liga-portugal · 14:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/primeira-liga/vitoria-g-moreirense/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-estrela-academico-v" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Estrela — Academico</span>
+      <span class="game-meta">
+        liga-portugal · 14:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/primeira-liga/estrela-academico-v/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-santa-clara-braga" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Santa Clara — Braga</span>
+      <span class="game-meta">
+        liga-portugal · 17:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/primeira-liga/santa-clara-braga/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-estoril-casa-pia" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Estoril — Casa Pia</span>
+      <span class="game-meta">
+        liga-portugal · 17:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/primeira-liga/estoril-casa-pia/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-porto-benfica" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Porto — Benfica</span>
+      <span class="game-meta">
+        liga-portugal · 19:30
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/primeira-liga/porto-benfica/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-san-lorenzo-boca-juniors" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">San Lorenzo — Boca Juniors</span>
+      <span class="game-meta">
+        argentina-liga-profesional · 17:45
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/argentina-primera/san-lorenzo-boca-juniors/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-rosario-c-argentinos" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Rosario C. — Argentinos</span>
+      <span class="game-meta">
+        argentina-liga-profesional · 20:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/argentina-primera/rosario-c-argentinos/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-platense-newells-ob" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Platense — Newell's OB</span>
+      <span class="game-meta">
+        argentina-liga-profesional · 20:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/argentina-primera/platense-newells-ob/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-belgrano-estudiantes-r" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Belgrano — Estudiantes R.</span>
+      <span class="game-meta">
+        argentina-liga-profesional · 22:15
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/argentina-primera/belgrano-estudiantes-r/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+<details id="game-inter-miami-san-diego" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Inter Miami — San Diego</span>
+      <span class="game-meta">
+        mls · 23:00
+        
+          · <span class="confidence-low">sem odds Betclic emparelhadas</span>
+        
+      </span>
+    </div>
+  </summary>
+  <div class="details-body">
+
+    <div class="section-title">Acontecimentos por probabilidade (maior → menor)</div>
+    
+    <p class="empty">Há previsões do xGScore para este jogo, mas nenhum acontecimento passa do limite de probabilidade configurado (&gt; 50%) com uma odd Betclic emparelhada.</p>
+    
+
+    <div class="section-title">Melhores apostas de valor deste jogo</div>
+    
+    <p class="empty">Nenhuma aposta com valor positivo (valor &gt; 1.00×) encontrada para este jogo.</p>
+    
+
+    <p class="game-meta" style="margin-top:14px;"><a href="https://xgscore.io/mls/inter-miami-san-diego/preview" target="_blank" rel="noopener">Ver análise completa no xGScore →</a></p>
+  </div>
+</details>
+
+
+<p class="game-meta">Valor = probabilidade do modelo × odd da Betclic. 1.00× é o ponto de equilíbrio; acima disso, a aposta tem valor esperado positivo segundo o modelo (ex.: prob. 70% e odd 2.00 → 1.40×).</p>
+
+</body>
+</html>

@@ -1,0 +1,398 @@
+{
+  "date": "2026-11-21",
+  "generated_at": "2026-11-22T11:14:06.438305",
+  "results": [
+    {
+      "league": "Premier League",
+      "home_team": "Coventry",
+      "away_team": "Crystal Palace",
+      "kickoff": "2026-11-21T15:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 2
+    },
+    {
+      "league": "Eredivisie",
+      "home_team": "Telstar",
+      "away_team": "Zwolle",
+      "kickoff": "2026-11-21T20:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 3
+    },
+    {
+      "league": "Eredivisie",
+      "home_team": "NEC",
+      "away_team": "PSV",
+      "kickoff": "2026-11-21T15:30:00+00:00",
+      "home_goals": 1,
+      "away_goals": 4
+    },
+    {
+      "league": "Sweden Allsvenskan",
+      "home_team": "AIK",
+      "away_team": "Degerfors",
+      "kickoff": "2026-11-21T14:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "MLS",
+      "home_team": "Revolution",
+      "away_team": "Philadelphia",
+      "kickoff": "2026-11-21T19:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 0
+    },
+    {
+      "league": "Norway Eliteserien",
+      "home_team": "Tromsø",
+      "away_team": "Viking",
+      "kickoff": "2026-11-21T13:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 2
+    },
+    {
+      "league": "Sweden Allsvenskan",
+      "home_team": "GAIS",
+      "away_team": "Västerås",
+      "kickoff": "2026-11-21T16:30:00+00:00",
+      "home_goals": 3,
+      "away_goals": 1
+    },
+    {
+      "league": "Norway Eliteserien",
+      "home_team": "Vålerenga",
+      "away_team": "Start",
+      "kickoff": "2026-11-21T17:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 2
+    },
+    {
+      "league": "Premier League",
+      "home_team": "Bournemouth",
+      "away_team": "Nott'm Forest",
+      "kickoff": "2026-11-21T15:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 0
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Elversberg",
+      "away_team": "Freiburg",
+      "kickoff": "2026-11-21T14:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Serie A",
+      "home_team": "Napoli",
+      "away_team": "Torino",
+      "kickoff": "2026-11-21T19:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "Ligue 1",
+      "home_team": "Nice",
+      "away_team": "PSG",
+      "kickoff": "2026-11-21T16:15:00+00:00",
+      "home_goals": 2,
+      "away_goals": 3
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Bayer",
+      "away_team": "Paderborn",
+      "kickoff": "2026-11-21T14:30:00+00:00",
+      "home_goals": 4,
+      "away_goals": 0
+    },
+    {
+      "league": "MLS",
+      "home_team": "Dallas",
+      "away_team": "Portland",
+      "kickoff": "2026-11-21T21:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 0
+    },
+    {
+      "league": "Ligue 1",
+      "home_team": "Monaco",
+      "away_team": "Auxerre",
+      "kickoff": "2026-11-21T19:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Eredivisie",
+      "home_team": "Feyenoord",
+      "away_team": "Excelsior",
+      "kickoff": "2026-11-21T17:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 3
+    },
+    {
+      "league": "Mexico Liga MX",
+      "home_team": "Pachuca",
+      "away_team": "Toluca",
+      "kickoff": "2026-11-21T22:50:00+00:00",
+      "home_goals": 2,
+      "away_goals": 0
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Union",
+      "away_team": "RB Leipzig",
+      "kickoff": "2026-11-21T14:30:00+00:00",
+      "home_goals": 1,
+      "away_goals": 5
+    },
+    {
+      "league": "Serie A",
+      "home_team": "Parma",
+      "away_team": "Roma",
+      "kickoff": "2026-11-21T17:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 5
+    },
+    {
+      "league": "Sweden Allsvenskan",
+      "home_team": "Mjällby",
+      "away_team": "Malmö",
+      "kickoff": "2026-11-21T14:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "La Liga",
+      "home_team": "R. Vallecano",
+      "away_team": "Valencia",
+      "kickoff": "2026-11-21T15:15:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Borussia M.",
+      "away_team": "Borussia D.",
+      "kickoff": "2026-11-21T14:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "La Liga",
+      "home_team": "Alaves",
+      "away_team": "La Coruña",
+      "kickoff": "2026-11-21T13:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 1
+    },
+    {
+      "league": "La Liga",
+      "home_team": "Real Madrid",
+      "away_team": "Celta",
+      "kickoff": "2026-11-21T20:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "Premier League",
+      "home_team": "Tottenham",
+      "away_team": "Ipswich Town",
+      "kickoff": "2026-11-21T15:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 0
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Schalke",
+      "away_team": "Stuttgart",
+      "kickoff": "2026-11-21T17:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "Norway Eliteserien",
+      "home_team": "HamKam",
+      "away_team": "Fredrikstad",
+      "kickoff": "2026-11-21T15:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "Premier League",
+      "home_team": "Man City",
+      "away_team": "Fulham",
+      "kickoff": "2026-11-21T12:30:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Premier League",
+      "home_team": "Chelsea",
+      "away_team": "Leeds",
+      "kickoff": "2026-11-21T15:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 4
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Bahia",
+      "away_team": "Coritiba",
+      "kickoff": "2026-11-21T20:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Serie A",
+      "home_team": "Lazio",
+      "away_team": "Lecce",
+      "kickoff": "2026-11-21T14:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 0
+    },
+    {
+      "league": "Ukraine Premier League",
+      "home_team": "Kolos",
+      "away_team": "Metalist 1925",
+      "kickoff": "2026-11-21T11:30:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "Ligue 1",
+      "home_team": "Lens",
+      "away_team": "Toulouse",
+      "kickoff": "2026-11-21T19:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Ligue 1",
+      "home_team": "Strasbourg",
+      "away_team": "Brest",
+      "kickoff": "2026-11-21T19:45:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Mexico Liga MX",
+      "home_team": "Tijuana",
+      "away_team": "Atlante",
+      "kickoff": "2026-11-21T03:10:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "Premier League",
+      "home_team": "Aston Villa",
+      "away_team": "Sunderland",
+      "kickoff": "2026-11-21T15:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "Premier League",
+      "home_team": "Newcastle",
+      "away_team": "Arsenal",
+      "kickoff": "2026-11-21T17:30:00+00:00",
+      "home_goals": 2,
+      "away_goals": 2
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Eintracht",
+      "away_team": "Hoffenheim",
+      "kickoff": "2026-11-21T14:30:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "La Liga",
+      "home_team": "Sevilla",
+      "away_team": "Real Betis",
+      "kickoff": "2026-11-21T17:30:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Mexico Liga MX",
+      "home_team": "Santos L.",
+      "away_team": "León",
+      "kickoff": "2026-11-21T23:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 2
+    },
+    {
+      "league": "Ligue 1",
+      "home_team": "Lille",
+      "away_team": "Lyon",
+      "kickoff": "2026-11-21T19:45:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Mexico Liga MX",
+      "home_team": "Puebla",
+      "away_team": "Atlético S.L.",
+      "kickoff": "2026-11-21T01:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Eredivisie",
+      "home_team": "Groningen",
+      "away_team": "Heerenveen",
+      "kickoff": "2026-11-21T20:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 3
+    },
+    {
+      "league": "MLS",
+      "home_team": "Inter Miami",
+      "away_team": "Columbus Crew",
+      "kickoff": "2026-11-21T23:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 3
+    },
+    {
+      "league": "Eredivisie",
+      "home_team": "Utrecht",
+      "away_team": "Cambuur",
+      "kickoff": "2026-11-21T17:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 3
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Palmeiras",
+      "away_team": "Flamengo",
+      "kickoff": "2026-11-21T19:30:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Serie A",
+      "home_team": "Como",
+      "away_team": "Cagliari",
+      "kickoff": "2026-11-21T14:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 0
+    },
+    {
+      "league": "Ukraine Premier League",
+      "home_team": "Karpaty",
+      "away_team": "Zorya",
+      "kickoff": "2026-11-21T16:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "Mexico Liga MX",
+      "home_team": "Juárez",
+      "away_team": "Atlas",
+      "kickoff": "2026-11-21T03:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 3
+    }
+  ]
+}

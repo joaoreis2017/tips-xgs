@@ -84,17 +84,32 @@ report_mid_odd_max: 2.2
 
 # "apostas por taxa real" page (data/<dia>/real.html) ONLY -- the model-
 # probability dashboard above (report_high_*/report_mid_*) is untouched
-# by these. Explicitly requested (2026-11-18), after backtesting 5 days
-# of accumulated real-rate history (see docs/CALIBRATION.md): this
-# specific combination -- capping the multiple to its best 3 legs
-# (null disables the cap, keeping every qualifying leg), and loosening
-# the mid band's probability floor while tightening its odd floor --
-# had by far the best mean-return-to-variance ratio of everything
-# tried, and was profitable on every single backtested day. The high
-# band's own probability/odd (report_high_probability_min/
-# report_high_odd_min/max above) stay shared with the model page.
-report_real_multiple_leg_cap: 3
-report_real_mid_probability_min: 0.60
+# by these. The high band's own probability/odd
+# (report_high_probability_min/report_high_odd_min/max above) stay
+# shared with the model page.
+#
+# REVISED (2026-11-24, explicitly requested), after backtesting 11 days
+# of accumulated real-rate history across 4 ways of filtering by
+# calibration sample size (no filter at all / filter the multiple only /
+# filter the mid band only / filter both at a >=10-game ad hoc
+# threshold -- see the session's own backtest scripts): "multipla
+# cap4 + mid band >=70%,odd1.8-2.5" came out at or near the top under
+# EVERY one of those 4 filtering choices, unlike the 2026-11-18 pick
+# below (cap3, mid floor lowered to 60%) which only looked best with 5
+# days of data and fell to near the bottom of the ranking once 11 days
+# were available. No extra sample-size filter is applied at all (beyond
+# the pre-existing >=30-game "trusted" vs "ainda nao atingiu os 30
+# jogos" display distinction) -- removing bets with little history
+# consistently produced WORSE results across all 4 filtering scenarios
+# tested, likely because cutting them also cuts the number of bets
+# (less diversification) rather than just cutting noise.
+#
+# SUPERSEDED (2026-11-18): capping the multiple to its best 3 legs and
+# loosening the mid band's probability floor to >=60% while tightening
+# its odd floor to 1.8 had the best mean-return-to-variance ratio of
+# everything tried against only 5 days of backtested history.
+report_real_multiple_leg_cap: 4
+report_real_mid_probability_min: 0.70
 report_real_mid_odd_min: 1.8
 report_real_mid_odd_max: 2.5
 

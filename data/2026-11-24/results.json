@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-24",
+  "generated_at": "2026-11-25T10:49:50.540011",
+  "results": [
+    {
+      "league": "Champions League",
+      "home_team": "Real Madrid",
+      "away_team": "PSV",
+      "kickoff": "2026-11-24T20:00:00+00:00",
+      "home_goals": 5,
+      "away_goals": 1
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Feyenoord",
+      "away_team": "Porto",
+      "kickoff": "2026-11-24T20:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Slovan B.",
+      "away_team": "Real Betis",
+      "kickoff": "2026-11-24T20:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 2
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Man City",
+      "away_team": "Napoli",
+      "kickoff": "2026-11-24T20:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 2
+    },
+    {
+      "league": "Champions League",
+      "home_team": "RB Leipzig",
+      "away_team": "Lens",
+      "kickoff": "2026-11-24T20:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 1
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Arsenal",
+      "away_team": "Borussia D.",
+      "kickoff": "2026-11-24T20:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Bodø-Glimt",
+      "away_team": "LASK",
+      "kickoff": "2026-11-24T17:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Como",
+      "away_team": "AEK",
+      "kickoff": "2026-11-24T20:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "MLS",
+      "home_team": "St. Louis City",
+      "away_team": "Los Angeles",
+      "kickoff": "2026-11-24T01:20:00+00:00",
+      "home_goals": 3,
+      "away_goals": 2
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Galatasaray",
+      "away_team": "Aston Villa",
+      "kickoff": "2026-11-24T17:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Chapecoense",
+      "away_team": "Palmeiras",
+      "kickoff": "2026-11-24T21:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 0
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Santos",
+      "away_team": "Grêmio",
+      "kickoff": "2026-11-24T00:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 2
+    }
+  ]
+}

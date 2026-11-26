@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-25",
+  "generated_at": "2026-11-26T10:27:43.528216",
+  "results": [
+    {
+      "league": "Champions League",
+      "home_team": "Slavia",
+      "away_team": "Villarreal",
+      "kickoff": "2026-11-25T17:45:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Lille",
+      "away_team": "Bayern M.",
+      "kickoff": "2026-11-25T20:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Sporting",
+      "away_team": "Man United",
+      "kickoff": "2026-11-25T20:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 2
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Inter",
+      "away_team": "Stuttgart",
+      "kickoff": "2026-11-25T20:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 0
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Shakhtar",
+      "away_team": "Fenerbahce",
+      "kickoff": "2026-11-25T20:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Atlético",
+      "away_team": "Viking",
+      "kickoff": "2026-11-25T20:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 0
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Bruges",
+      "away_team": "Liverpool",
+      "kickoff": "2026-11-25T20:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 3
+    },
+    {
+      "league": "Champions League",
+      "home_team": "Sabah",
+      "away_team": "Barcelona",
+      "kickoff": "2026-11-25T17:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 4
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "Atlético M",
+      "away_team": "Corinthians",
+      "kickoff": "2026-11-25T23:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Champions League",
+      "home_team": "PSG",
+      "away_team": "Roma",
+      "kickoff": "2026-11-25T20:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 2
+    },
+    {
+      "league": "MLS",
+      "home_team": "SJ Earthquakes",
+      "away_team": "Dynamo H.",
+      "kickoff": "2026-11-25T03:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    }
+  ]
+}

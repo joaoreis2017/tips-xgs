@@ -175,8 +175,8 @@
           <td class="rank">{{ loop.index }}</td>
           <td>{{ e.label }}</td>
           <td class="num">{{ real_prob_cell(e.real_probability, e.model_probability, e.sample_size, e.is_confirmed) }}</td>
-          <td class="num">{{ "%.2f"|format(e.odd) }}</td>
-          <td class="num"><span class="pill value-pill">{{ "%.2f"|format(e.value_ratio) }}×</span></td>
+          <td class="num">{{ "%.2f"|format(e.odd) if e.odd else "—" }}</td>
+          <td class="num">{% if e.value_ratio %}<span class="pill value-pill">{{ "%.2f"|format(e.value_ratio) }}×</span>{% else %}—{% endif %}</td>
         </tr>
       {% endfor %}
       </tbody>

@@ -61,7 +61,16 @@ def build_context(
     mid_single_stake: float = 1.00,
     has_calibration: bool = False,
     has_real_report: bool = False,
+    require_odd: bool = True,
 ) -> dict:
+    # ``require_odd`` (explicitly requested, 2026-11-27, for days a
+    # run's own ``--skip-betclic`` -- see pipeline.run_daily -- never
+    # even attempted Betclic at all): pass False to drop the odds-
+    # required filter below so the model's probabilities still show
+    # with no odd/valor, rather than leaving the whole page empty.
+    # Default True keeps the normal behaviour (described below) for a
+    # day where Betclic WAS attempted and some games just didn't match
+    # -- there a "—" row is still noise, not information.
     game_ctx = []
     for g in games:
         # CHANGED (2026-09-14, explicitly requested a third time): earlier
@@ -75,7 +84,9 @@ def build_context(
         # every event with a real Betclic odd shows, not only the ones
         # that clear the value-bet bar.
         events = [
-            e for e in g.events_by_probability if e.probability > min_probability and e.odd is not None
+            e
+            for e in g.events_by_probability
+            if e.probability > min_probability and (e.odd is not None or not require_odd)
         ]
         # Distinct from "events is empty" below: this says whether
         # scraping actually got *any* xGScore probabilities for this game
@@ -170,6 +181,7 @@ def render_dashboard(
     multiple_stake: float = 0.50,
     mid_single_stake: float = 1.00,
     has_real_report: bool = False,
+    require_odd: bool = True,
 ) -> Path:
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATE_DIR)),
@@ -195,6 +207,7 @@ def render_dashboard(
             mid_single_stake=mid_single_stake,
             has_calibration=(reports_dir / "calibration.html").exists(),
             has_real_report=has_real_report,
+            require_odd=require_odd,
         )
     )
 
@@ -288,6 +301,7 @@ def build_real_context(
     mid_single_stake: float = 1.00,
     has_calibration: bool = False,
     multiple_leg_cap: int | None = None,
+    require_odd: bool = True,
 ) -> dict:
     """Same two daily-bet-plan sections as ``build_context`` (same
     configured probability/odd bands, so the two pages are an apples-to-
@@ -376,7 +390,9 @@ def build_real_context(
         qualifying = [
             e
             for e in real_entries_by_fixture[g.fixture.id]
-            if e.calibrated_probability is not None and e.calibrated_probability > min_probability and e.odd is not None
+            if e.calibrated_probability is not None
+            and e.calibrated_probability > min_probability
+            and (e.odd is not None or not require_odd)
         ]
         if not qualifying:
             continue
@@ -432,6 +448,7 @@ def render_real_report(
     multiple_stake: float = 0.50,
     mid_single_stake: float = 1.00,
     multiple_leg_cap: int | None = None,
+    require_odd: bool = True,
 ) -> Path:
     """Render ``reports_dir/<day>/real.html`` -- the "apostas por taxa
     real" counterpart of that day's dashboard (see ``build_real_context``
@@ -460,6 +477,7 @@ def render_real_report(
             mid_single_stake=mid_single_stake,
             has_calibration=(reports_dir / "calibration.html").exists(),
             multiple_leg_cap=multiple_leg_cap,
+            require_odd=require_odd,
         )
     )
 

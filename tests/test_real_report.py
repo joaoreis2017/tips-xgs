@@ -129,6 +129,22 @@ def test_build_real_context_game_breakdown_requires_a_matched_odd():
     assert ctx["game_breakdown"] == []
 
 
+def test_build_real_context_game_breakdown_require_odd_false_keeps_odd_less_events():
+    # Real case (2026-11-27): a --skip-betclic run (no Betclic attempt
+    # at all that day) must still show the real rates instead of an
+    # empty page -- require_odd=False lets an odd-less qualifying event
+    # through, same as build_context's own events table.
+    game = make_game({"1x2": {"home": 0.85}}, {})  # no odds at all
+    buckets = [
+        CalibrationBucket(market="1x2", outcome="home", probability_bucket="80-89%", count=6, hits=5, avg_predicted_probability=0.85)
+    ]
+    ctx = build_real_context(date(2026, 11, 17), [game], buckets, require_odd=False)
+    assert len(ctx["game_breakdown"]) == 1
+    event = ctx["game_breakdown"][0]["events"][0]
+    assert event["odd"] is None
+    assert event["value_ratio"] is None
+
+
 def test_build_real_context_game_breakdown_respects_custom_min_probability():
     game = make_game({"1x2": {"home": 0.60}}, {"1x2": {"home": 1.5}})
     buckets = [

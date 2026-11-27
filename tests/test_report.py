@@ -82,6 +82,25 @@ def test_events_require_both_probability_threshold_and_a_matched_odd():
     assert all(e.odd is not None for e in events)
 
 
+def test_require_odd_false_shows_odd_less_events_too():
+    # Real case (2026-11-27): a run with --skip-betclic (pipeline.
+    # run_daily's own skip_betclic, for GitHub Actions' geo-blocked IP)
+    # has NO matched odds at all that day -- require_odd=False (set
+    # there whenever nothing matched) lets the model's own
+    # probabilities still show instead of leaving every game's table
+    # empty for no good reason.
+    game = _game(
+        markets={"1x2": {"home": 0.55}, "btts": {"yes": 0.7}},
+        odds_markets=None,
+    )
+
+    ctx = build_context(date(2026, 9, 12), [game], min_probability=0.5, require_odd=False)
+    events = ctx["games"][0]["events"]
+
+    assert {e.market for e in events} == {"1x2", "btts"}
+    assert all(e.odd is None for e in events)
+
+
 def test_events_drop_markets_with_no_matched_odd_even_if_betclic_covers_them():
     # handicap_home (odd-less here, e.g. Betclic just doesn't offer this
     # exact line) is dropped same as btts (also odd-less) -- unlike the

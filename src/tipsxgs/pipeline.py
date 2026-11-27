@@ -170,6 +170,16 @@ def run_daily(cfg: AppConfig, day: date | None = None, skip_betclic: bool = Fals
     # ever agree).
     logger.info("Saved %s (%d/%d fixtures matched to a Betclic offer this run)", json_path, matched, len(games))
 
+    # Explicitly requested (2026-11-27): on a day with zero Betclic
+    # matches at all (--skip-betclic, or Betclic itself just failed),
+    # the model's own probabilities should still show -- a "—" row is
+    # only noise when SOME games that day did get a real odd and this
+    # one just missed; when NONE did, there's nothing to compare it
+    # against anyway, so hiding every event leaves the page empty for
+    # no good reason. See build_context/build_real_context's own
+    # require_odd docstring notes.
+    require_odd = matched > 0
+
     logger.info("Rendering dashboard...")
     html_path = render_dashboard(
         today,
@@ -189,6 +199,7 @@ def run_daily(cfg: AppConfig, day: date | None = None, skip_betclic: bool = Fals
         multiple_stake=cfg.report_multiple_stake,
         mid_single_stake=cfg.report_mid_single_stake,
         has_real_report=True,
+        require_odd=require_odd,
     )
     logger.info("Rendering 'apostas por taxa real' page...")
     real_path = render_real_report(
@@ -208,6 +219,7 @@ def run_daily(cfg: AppConfig, day: date | None = None, skip_betclic: bool = Fals
         min_value_ratio=cfg.report_min_value_ratio,
         multiple_stake=cfg.report_multiple_stake,
         mid_single_stake=cfg.report_mid_single_stake,
+        require_odd=require_odd,
         multiple_leg_cap=cfg.report_real_multiple_leg_cap,
     )
     render_index(cfg.reports_dir)

@@ -1,23 +1,26 @@
 name: Daily xGScore + Betclic run
 
 on:
-  # DISABLED (2026-10-02): the schedule trigger below used to fire this
-  # every day regardless of whether a proxy is configured -- without
-  # one, Betclic 403s every request (see config.AppConfig.betclic_proxy
-  # and browser.py's diagnostic logging), so this ran anyway, committed
-  # an odds-less snapshot, and PUSHED OVER a same-day local run's real
-  # data (real incident: a local run with 10/11 fixtures matched got
-  # silently overwritten by this workflow's own 0/12 a few hours later).
-  # Re-enable the `schedule:` block below only once BETCLIC_PROXY_SERVER/
-  # _USERNAME/_PASSWORD are set as repository secrets -- until then, use
-  # README.md's "Opção A" (run locally + push -- deploy-on-push.yml
-  # publishes it) or "Opção B" (cron/systemd on a Portuguese-IP machine
-  # that itself commits+pushes) instead. workflow_dispatch is kept so
-  # this can still be triggered manually, e.g. to test a newly-added
-  # proxy.
-  #
-  # schedule:
-  #   - cron: "0 8 * * *"
+  # RE-ENABLED (2026-11-27, explicitly requested): previously disabled
+  # because, without a Portuguese-exit proxy, Betclic 403s every
+  # request from this runner's datacenter IP (see
+  # config.AppConfig.betclic_proxy and browser.py's diagnostic logging)
+  # -- an earlier run silently PUSHED OVER a same-day local run's real
+  # 10/11-matched data with this workflow's own 0/12. Fixed by having
+  # this workflow explicitly pass `--skip-betclic` to `run` below
+  # (pipeline.run_daily's own skip_betclic param) instead of letting
+  # every Betclic request fail/retry for nothing -- so a scheduled run
+  # here only ever produces an *intentionally* odds-less snapshot
+  # (calibration/history still accumulates normally), never one that
+  # looks like it tried and failed. Meant to keep xGScore data/
+  # calibration flowing during a stretch without access to a
+  # Portuguese-IP machine (see README.md's "Opção A"/"Opção B" for the
+  # normal, odds-included way of running this) -- re-add
+  # BETCLIC_PROXY_SERVER/_USERNAME/_PASSWORD as repository secrets and
+  # drop `--skip-betclic` below to get real odds out of this workflow
+  # instead.
+  schedule:
+    - cron: "0 8 * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -45,6 +48,14 @@ jobs:
           pip install -e .
           playwright install --with-deps chromium
 
+      - name: Backfill results + update calibration
+        # Scrapes xgscore.results (not geo-blocked) for any day missing
+        # results.json and recomputes the calibration pages -- same as
+        # running `python -m tipsxgs calibrate` locally. Run before
+        # today's own pipeline so its value-bet computation sees
+        # whatever new history this just pulled in.
+        run: python -m tipsxgs calibrate -v
+
       - name: Run daily pipeline
         env:
           # Betclic geo-blocks this runner's (non-Portuguese) datacenter
@@ -53,13 +64,13 @@ jobs:
           # Betclic browser session through a proxy with a Portuguese
           # exit IP works around it -- see config.AppConfig.betclic_proxy.
           # Add these as repository secrets (Settings -> Secrets and
-          # variables -> Actions) once you have a proxy; until then
-          # they're empty and this step behaves exactly as before (no
-          # proxy, same as a local run).
+          # variables -> Actions) and drop --skip-betclic below once you
+          # have a proxy; until then this intentionally never attempts
+          # Betclic at all (see this workflow's own `on:` comment).
           BETCLIC_PROXY_SERVER: ${{ secrets.BETCLIC_PROXY_SERVER }}
           BETCLIC_PROXY_USERNAME: ${{ secrets.BETCLIC_PROXY_USERNAME }}
           BETCLIC_PROXY_PASSWORD: ${{ secrets.BETCLIC_PROXY_PASSWORD }}
-        run: python scripts/run_daily.py
+        run: python scripts/run_daily.py --skip-betclic
 
       - name: Commit updated data
         run: |

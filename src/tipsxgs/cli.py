@@ -36,13 +36,21 @@ def cli() -> None:
 @cli.command()
 @click.option("--config", "config_path", default=None, help="Path to config.yaml (default: repo root)")
 @click.option("--date", "date_str", default=None, help="Day to run for, YYYY-MM-DD (default: today)")
+@click.option(
+    "--skip-betclic",
+    is_flag=True,
+    default=False,
+    help="Don't even attempt the Betclic scrape (e.g. GitHub Actions' datacenter IPs are geo-blocked by "
+    "Betclic outright -- see pipeline.run_daily's own docstring). Still scrapes xGScore and builds the "
+    "dashboard, just with no odds/value bets.",
+)
 @click.option("-v", "--verbose", is_flag=True, default=False)
-def run(config_path: str | None, date_str: str | None, verbose: bool) -> None:
+def run(config_path: str | None, date_str: str | None, skip_betclic: bool, verbose: bool) -> None:
     """Scrape xGScore + Betclic and build today's (or DATE's) dashboard."""
     _setup_logging(verbose)
     cfg = load_config(config_path)
     day = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else date.today()
-    games = run_daily(cfg, day)
+    games = run_daily(cfg, day, skip_betclic=skip_betclic)
     click.echo(f"Done. {len(games)} game(s) processed for {day.isoformat()}.")
     click.echo(f"Dashboard: {cfg.reports_dir / day.isoformat() / 'index.html'}")
 

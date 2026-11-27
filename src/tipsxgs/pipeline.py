@@ -83,9 +83,22 @@ def _betclic_coverable_markets(cfg: AppConfig) -> set[str]:
     return families
 
 
-def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
+def run_daily(cfg: AppConfig, day: date | None = None, skip_betclic: bool = False) -> list[MatchedGame]:
     """Run the whole pipeline for ``day`` (default: today) and write both
     the JSON snapshot and the HTML dashboard to ``cfg.data_dir``.
+
+    ``skip_betclic`` (explicitly requested, 2026-11-27, for
+    ``.github/workflows/daily.yml`` running unattended while away from a
+    Portuguese IP for a week): Betclic geo-blocks GitHub Actions'
+    datacenter IPs outright (confirmed: a literal "Error 403 Forbidden"
+    page, see browser.py/betclic/odds.py's own diagnostics) -- every
+    request would just fail/retry for nothing. Rather than let that
+    happen silently, skip the Betclic scrape entirely when this is set,
+    so the run still captures today's xGScore fixtures/predictions (and
+    updates docs/CALIBRATION.md-tracked history once ``calibrate`` is
+    also run) with no wasted requests and no odds-shaped games -- the
+    dashboard just shows every game with no matched Betclic offer, same
+    as a normal run that found zero offers.
 
     Returns the list of :class:`MatchedGame` produced, for callers (tests,
     the CLI) that want to inspect the result directly.
@@ -116,9 +129,13 @@ def run_daily(cfg: AppConfig, day: date | None = None) -> list[MatchedGame]:
             len(fixtures),
         )
 
-    logger.info("Scraping Betclic odds...")
-    odds_offers = scrape_today_odds(cfg, day=today)
-    logger.info("Found %d Betclic odds offers", len(odds_offers))
+    if skip_betclic:
+        logger.info("Skipping Betclic odds (skip_betclic=True) -- geo-blocked here, not even attempting it.")
+        odds_offers = []
+    else:
+        logger.info("Scraping Betclic odds...")
+        odds_offers = scrape_today_odds(cfg, day=today)
+        logger.info("Found %d Betclic odds offers", len(odds_offers))
 
     logger.info("Matching fixtures to odds offers...")
     games = match_fixtures_to_odds(

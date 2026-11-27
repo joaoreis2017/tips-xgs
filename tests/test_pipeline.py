@@ -1,5 +1,8 @@
+from datetime import date, datetime
+
 from tipsxgs.config import load_config
-from tipsxgs.pipeline import _betclic_coverable_markets, _count_with_data
+from tipsxgs.models import Fixture, Prediction
+from tipsxgs.pipeline import _betclic_coverable_markets, _count_with_data, run_daily
 
 
 def test_betclic_coverable_markets_derived_from_real_config():
@@ -22,6 +25,45 @@ def test_betclic_coverable_markets_derived_from_real_config():
         "handicap_home",
         "handicap_away",
     }
+
+
+def test_run_daily_skip_betclic_never_calls_the_betclic_scraper(tmp_path, monkeypatch):
+    # Real case (2026-11-27): GitHub Actions' datacenter IP is
+    # geo-blocked by Betclic outright -- every request would just
+    # fail/retry for nothing while away from a Portuguese-IP machine for
+    # a week. skip_betclic=True must skip calling scrape_today_odds
+    # entirely rather than let it run and 403.
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "config.yaml").write_text(
+        "xgscore: {}\nbetclic: {}\n",
+        encoding="utf-8",
+    )
+    cfg = load_config(tmp_path / "config.yaml")
+    day = date(2026, 11, 27)
+    fixture = Fixture(
+        slug="a-b",
+        league="test-league",
+        home_team="Team A",
+        away_team="Team B",
+        kickoff=datetime(2026, 11, 27, 18, 0),
+        preview_url="https://xgscore.io/test-league/a-b/preview",
+    )
+    monkeypatch.setattr("tipsxgs.pipeline.scrape_today_fixtures", lambda cfg: [fixture])
+    monkeypatch.setattr(
+        "tipsxgs.pipeline.scrape_previews",
+        lambda cfg, fixtures: {fixture.id: Prediction(fixture_id=fixture.id, markets={"1x2": {"home": 0.6}})},
+    )
+
+    betclic_calls = []
+    monkeypatch.setattr(
+        "tipsxgs.pipeline.scrape_today_odds", lambda *a, **kw: (betclic_calls.append(1) or [])
+    )
+
+    games = run_daily(cfg, day, skip_betclic=True)
+
+    assert betclic_calls == []  # never even attempted
+    assert len(games) == 1
+    assert games[0].odds is None
 
 
 def test_count_with_data_ignores_empty_previews():

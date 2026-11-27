@@ -67,8 +67,18 @@ def report(config_path: str | None, date_str: str) -> None:
     if not games:
         raise click.ClickException(f"No saved data found for {day.isoformat()} in {cfg.data_dir}")
     calibration_buckets = load_accumulated_calibration(cfg.data_dir, min_confidence=cfg.min_match_confidence)
+    # See pipeline.run_daily's own comment: a day with zero matched
+    # Betclic odds at all (e.g. re-rendering a --skip-betclic day)
+    # shouldn't hide the model's probabilities behind the odds-required
+    # filter the same way a normal day with just a few misses should.
+    require_odd = any(g.odds is not None for g in games)
     path = render_dashboard(
-        day, games, cfg.reports_dir, value_bet_threshold=cfg.value_bet_threshold, has_real_report=True
+        day,
+        games,
+        cfg.reports_dir,
+        value_bet_threshold=cfg.value_bet_threshold,
+        has_real_report=True,
+        require_odd=require_odd,
     )
     real_path = render_real_report(
         day,
@@ -86,6 +96,7 @@ def report(config_path: str | None, date_str: str) -> None:
         multiple_stake=cfg.report_multiple_stake,
         mid_single_stake=cfg.report_mid_single_stake,
         multiple_leg_cap=cfg.report_real_multiple_leg_cap,
+        require_odd=require_odd,
     )
     click.echo(f"Re-rendered {path} and {real_path}")
 

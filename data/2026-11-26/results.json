@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-26",
+  "generated_at": "2026-11-27T09:54:02.854022",
+  "results": [
+    {
+      "league": "Europa League",
+      "home_team": "Dynamo Z.",
+      "away_team": "Bayer",
+      "kickoff": "2026-11-26T17:45:00+00:00",
+      "home_goals": 0,
+      "away_goals": 2
+    },
+    {
+      "league": "Europa League",
+      "home_team": "NEC",
+      "away_team": "Rennes",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 1
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Torreense",
+      "away_team": "Celtic",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 2
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "São Paulo",
+      "away_team": "Remo",
+      "kickoff": "2026-11-26T23:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 1
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Saint-Gilloise",
+      "away_team": "Lech",
+      "kickoff": "2026-11-26T17:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 2
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Juventus",
+      "away_team": "Omonia",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 4,
+      "away_goals": 1
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Celta",
+      "away_team": "Bournemouth",
+      "kickoff": "2026-11-26T17:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 2
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Ferencváros",
+      "away_team": "Celje",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Victoria",
+      "away_team": "Benfica",
+      "kickoff": "2026-11-26T17:45:00+00:00",
+      "home_goals": 4,
+      "away_goals": 0
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Sparta",
+      "away_team": "AZ Alkmaar",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 4
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Olympiacos",
+      "away_team": "Milan",
+      "kickoff": "2026-11-26T17:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 4
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Salzburg",
+      "away_team": "Ararat A.",
+      "kickoff": "2026-11-26T17:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 0
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Lyon",
+      "away_team": "Lillestrøm",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "Europa League",
+      "home_team": "OFI",
+      "away_team": "Anderlecht",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 3
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Sunderland",
+      "away_team": "Jagiellonia",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Hoffenheim",
+      "away_team": "Storm",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 1
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Crystal Palace",
+      "away_team": "R. Sociedad",
+      "kickoff": "2026-11-26T20:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Marseille",
+      "away_team": "Levski Sofia",
+      "kickoff": "2026-11-26T17:45:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    },
+    {
+      "league": "Europa League",
+      "home_team": "Besiktas",
+      "away_team": "Hapoel",
+      "kickoff": "2026-11-26T17:45:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+name: Daily xGScore + Betclic run
+
+on:
+  # RE-ENABLED (2026-11-27, explicitly requested): previously disabled
+  # because, without a Portuguese-exit proxy, Betclic 403s every
+  # request from this runner's datacenter IP (see
+  # config.AppConfig.betclic_proxy and browser.py's diagnostic logging)
+  # -- an earlier run silently PUSHED OVER a same-day local run's real
+  # 10/11-matched data with this workflow's own 0/12. Fixed by having
+  # this workflow explicitly pass `--skip-betclic` to `run` below
+  # (pipeline.run_daily's own skip_betclic param) instead of letting
+  # every Betclic request fail/retry for nothing -- so a scheduled run
+  # here only ever produces an *intentionally* odds-less snapshot
+  # (calibration/history still accumulates normally), never one that
+  # looks like it tried and failed. Meant to keep xGScore data/
+  # calibration flowing during a stretch without access to a
+  # Portuguese-IP machine (see README.md's "Opção A"/"Opção B" for the
+  # normal, odds-included way of running this) -- re-add
+  # BETCLIC_PROXY_SERVER/_USERNAME/_PASSWORD as repository secrets and
+  # drop `--skip-betclic` below to get real odds out of this workflow
+  # instead.
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+          playwright install --with-deps chromium
+
+      - name: Backfill results + update calibration
+        # Scrapes xgscore.results (not geo-blocked) for any day missing
+        # results.json and recomputes the calibration pages -- same as
+        # running `python -m tipsxgs calibrate` locally. Run before
+        # today's own pipeline so its value-bet computation sees
+        # whatever new history this just pulled in.
+        run: python -m tipsxgs calibrate -v
+
+      - name: Run daily pipeline
+        env:
+          # Betclic geo-blocks this runner's (non-Portuguese) datacenter
+          # IP -- confirmed via browser.py's diagnostic logging (a
+          # literal "Error 403 Forbidden" page). Routing just the
+          # Betclic browser session through a proxy with a Portuguese
+          # exit IP works around it -- see config.AppConfig.betclic_proxy.
+          # Add these as repository secrets (Settings -> Secrets and
+          # variables -> Actions) and drop --skip-betclic below once you
+          # have a proxy; until then this intentionally never attempts
+          # Betclic at all (see this workflow's own `on:` comment).
+          BETCLIC_PROXY_SERVER: ${{ secrets.BETCLIC_PROXY_SERVER }}
+          BETCLIC_PROXY_USERNAME: ${{ secrets.BETCLIC_PROXY_USERNAME }}
+          BETCLIC_PROXY_PASSWORD: ${{ secrets.BETCLIC_PROXY_PASSWORD }}
+        run: python scripts/run_daily.py --skip-betclic
+
+      - name: Commit updated data
+        run: |
+          git config user.name "tipsxgs-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "data: daily xGScore/Betclic snapshot $(date -u +%Y-%m-%d)"
+          git push
+
+      - name: Upload dashboard artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: data
+
+  deploy:
+    needs: scrape
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

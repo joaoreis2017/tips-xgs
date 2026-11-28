@@ -1,0 +1,5608 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calibração — Tips xGScore + Betclic</title>
+<style>
+  :root{
+    --bg:#f7f7f8; --panel:#ffffff; --border:#e3e3e6; --text:#1b1c1f; --muted:#6b6f76;
+    --accent:#2f6fed; --good:#12805c; --good-bg:#e6f6ef; --bad:#b3261e; --bad-bg:#fbe9e7;
+    --warn:#9a6700; --warn-bg:#fdf3dd;
+    --chip-bg:#eef1f6; --shadow:0 1px 2px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15161a; --panel:#1e2025; --border:#2c2e34; --text:#eef0f3; --muted:#9a9ea7;
+      --accent:#6ea1ff; --good:#3fd68f; --good-bg:#123527; --bad:#ff6b64; --bad-bg:#3a1b19;
+      --warn:#e0b84c; --warn-bg:#3a2f12;
+      --chip-bg:#26282e; --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 10px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15161a; --panel:#1e2025; --border:#2c2e34; --text:#eef0f3; --muted:#9a9ea7;
+    --accent:#6ea1ff; --good:#3fd68f; --good-bg:#123527; --bad:#ff6b64; --bad-bg:#3a1b19;
+    --warn:#e0b84c; --warn-bg:#3a2f12;
+    --chip-bg:#26282e; --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 10px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:20px 16px 64px; max-width:1080px; margin-inline:auto;
+  }
+  h1{font-size:1.4rem; margin:0 0 2px;}
+  .subtitle{color:var(--muted); font-size:.85rem; margin:0 0 22px;}
+  .panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow); padding:18px; margin-bottom:20px;
+  }
+  .panel h2{margin:0 0 4px; font-size:1.05rem;}
+  table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  th{text-align:left; color:var(--muted); font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; padding:6px 8px; border-bottom:1px solid var(--border);}
+  td{padding:8px 8px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:.72rem; font-weight:600; background:var(--chip-bg); color:var(--muted);}
+  .pill-good{background:var(--good-bg); color:var(--good);}
+  .pill-bad{background:var(--bad-bg); color:var(--bad);}
+  .pill-warn{background:var(--warn-bg); color:var(--warn);}
+  details{background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden;}
+  details > summary{list-style:none; padding:14px 18px; cursor:pointer;}
+  details > summary::-webkit-details-marker{display:none;}
+  details[open] > summary{border-bottom:1px solid var(--border);}
+  .details-body{padding:6px 18px 18px;}
+  .section-title{font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:700; margin:16px 0 8px;}
+  .empty{color:var(--muted); font-size:.85rem; padding:8px 0;}
+  .market-header{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; cursor:pointer;}
+  .market-header .name{font-weight:600; font-size:1rem; text-transform:capitalize;}
+  .market-meta{color:var(--muted); font-size:.8rem;}
+  a{color:var(--accent); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .filter-label{display:block; margin-bottom:6px; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); font-weight:700;}
+  .filter-select{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+    background:var(--panel); color:var(--text); font-size:.92rem; font-family:inherit;
+  }
+  @media (max-width:560px){
+    .panel, details{border-radius:10px;}
+    th,td{padding:6px 4px; font-size:.8rem;}
+  }
+</style>
+</head>
+<body>
+
+<p class="subtitle"><a href="index.html">← Voltar ao painel</a></p>
+<h1>📈 Calibração — probabilidade prevista vs. resultado real</h1>
+<p class="subtitle">gerado em 2026-11-28 10:08 · 182 jogo(s) terminado(s) com previsão e resultado emparelhados</p>
+<p class="subtitle">Cada tabela é um mercado + resultado específico (ex. "1x2 — Casa" é uma tabela à parte de "1x2 — Fora"), mostrando com que frequência o resultado real bateu certo quando o modelo previu uma probabilidade dentro de cada escalão — escalão mais alto (mais confiante) primeiro. Não há uma "taxa de acerto geral" por mercado: para resultados exaustivos (1x2, btts, dupla hipótese), juntar todos os escalões dá sempre um número fixo que não diz nada sobre a qualidade do modelo — só faz sentido olhar escalão a escalão. A opção "12" da dupla hipótese não é seguida (nunca é apostada). Os detalhes estão agrupados por família de mercado e fechados por omissão — usa o resumo ou o seletor abaixo para abrir só o que te interessa.</p>
+
+
+<div class="panel">
+  <label class="filter-label" for="market-filter">Ir para / abrir mercado</label>
+  <select id="market-filter" class="filter-select">
+    <option value="all">— escolhe um mercado —</option>
+    
+    <optgroup label="1x2">
+      
+      <option value="outcome-1x2-away">Resultado Final - Fora (182 amostra(s))</option>
+      
+      <option value="outcome-1x2-draw">Resultado Final - Empate (182 amostra(s))</option>
+      
+      <option value="outcome-1x2-home">Resultado Final - Casa (182 amostra(s))</option>
+      
+    </optgroup>
+    
+    <optgroup label="away total">
+      
+      <option value="outcome-away_total_0.5-over">Total Fora Mais/Menos de 0.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_0.5-under">Total Fora Mais/Menos de 0.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_1.5-over">Total Fora Mais/Menos de 1.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_1.5-under">Total Fora Mais/Menos de 1.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_2.5-over">Total Fora Mais/Menos de 2.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_2.5-under">Total Fora Mais/Menos de 2.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_3.5-over">Total Fora Mais/Menos de 3.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_3.5-under">Total Fora Mais/Menos de 3.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_4.5-over">Total Fora Mais/Menos de 4.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_4.5-under">Total Fora Mais/Menos de 4.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_5.5-over">Total Fora Mais/Menos de 5.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-away_total_5.5-under">Total Fora Mais/Menos de 5.5 - Menos (182 amostra(s))</option>
+      
+    </optgroup>
+    
+    <optgroup label="btts">
+      
+      <option value="outcome-btts-no">Ambas Marcam - Não (182 amostra(s))</option>
+      
+      <option value="outcome-btts-yes">Ambas Marcam - Sim (182 amostra(s))</option>
+      
+    </optgroup>
+    
+    <optgroup label="double chance">
+      
+      <option value="outcome-double_chance-1x">Dupla Hipótese - Casa ou Empate (182 amostra(s))</option>
+      
+      <option value="outcome-double_chance-x2">Dupla Hipótese - Empate ou Fora (182 amostra(s))</option>
+      
+    </optgroup>
+    
+    <optgroup label="handicap away">
+      
+      <option value="outcome-handicap_away--0.5">Handicap Fora -0.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_away--1.5">Handicap Fora -1.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_away--2.5">Handicap Fora -2.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_away--3.5">Handicap Fora -3.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_away--4.5">Handicap Fora -4.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_away-1.5">Handicap Fora +1.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_away-2.5">Handicap Fora +2.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_away-3.5">Handicap Fora +3.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_away-4.5">Handicap Fora +4.5 (182 amostra(s))</option>
+      
+    </optgroup>
+    
+    <optgroup label="handicap home">
+      
+      <option value="outcome-handicap_home--0.5">Handicap Casa -0.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_home--1.5">Handicap Casa -1.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_home--2.5">Handicap Casa -2.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_home--3.5">Handicap Casa -3.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_home--4.5">Handicap Casa -4.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_home-1.5">Handicap Casa +1.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_home-2.5">Handicap Casa +2.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_home-3.5">Handicap Casa +3.5 (182 amostra(s))</option>
+      
+      <option value="outcome-handicap_home-4.5">Handicap Casa +4.5 (182 amostra(s))</option>
+      
+    </optgroup>
+    
+    <optgroup label="home total">
+      
+      <option value="outcome-home_total_0.5-over">Total Casa Mais/Menos de 0.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_0.5-under">Total Casa Mais/Menos de 0.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_1.5-over">Total Casa Mais/Menos de 1.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_1.5-under">Total Casa Mais/Menos de 1.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_2.5-over">Total Casa Mais/Menos de 2.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_2.5-under">Total Casa Mais/Menos de 2.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_3.5-over">Total Casa Mais/Menos de 3.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_3.5-under">Total Casa Mais/Menos de 3.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_4.5-over">Total Casa Mais/Menos de 4.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_4.5-under">Total Casa Mais/Menos de 4.5 - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_5.5-over">Total Casa Mais/Menos de 5.5 - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-home_total_5.5-under">Total Casa Mais/Menos de 5.5 - Menos (182 amostra(s))</option>
+      
+    </optgroup>
+    
+    <optgroup label="over under">
+      
+      <option value="outcome-over_under_0.5-over">Mais/Menos de 0.5 Golos - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_0.5-under">Mais/Menos de 0.5 Golos - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_1.5-over">Mais/Menos de 1.5 Golos - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_1.5-under">Mais/Menos de 1.5 Golos - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_2.5-over">Mais/Menos de 2.5 Golos - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_2.5-under">Mais/Menos de 2.5 Golos - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_3.5-over">Mais/Menos de 3.5 Golos - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_3.5-under">Mais/Menos de 3.5 Golos - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_4.5-over">Mais/Menos de 4.5 Golos - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_4.5-under">Mais/Menos de 4.5 Golos - Menos (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_5.5-over">Mais/Menos de 5.5 Golos - Mais (182 amostra(s))</option>
+      
+      <option value="outcome-over_under_5.5-under">Mais/Menos de 5.5 Golos - Menos (182 amostra(s))</option>
+      
+    </optgroup>
+    
+  </select>
+</div>
+
+<div class="panel">
+  <h2>Resumo por família de mercado</h2>
+  <p class="subtitle" style="margin:4px 0 14px;">Clica no nome para abrir os detalhes.</p>
+  <table>
+    <thead><tr>
+      <th>Mercado</th><th class="num">Amostra</th><th class="num">Escalões</th>
+      <th class="num">Bem calibrado</th><th class="num">Confiante demais</th><th class="num">Pouco confiante</th>
+    </tr></thead>
+    <tbody>
+    
+      <tr>
+        <td><a href="#family-1x2" class="summary-link" data-family="family-1x2">1x2</a></td>
+        <td class="num">546</td>
+        <td class="num">24</td>
+        <td class="num"><span class="pill pill-good">14</span></td>
+        <td class="num"><span class="pill pill-bad">4</span></td>
+        <td class="num"><span class="pill pill-warn">6</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="#family-away_total" class="summary-link" data-family="family-away_total">away total</a></td>
+        <td class="num">2184</td>
+        <td class="num">62</td>
+        <td class="num"><span class="pill pill-good">30</span></td>
+        <td class="num"><span class="pill pill-bad">15</span></td>
+        <td class="num"><span class="pill pill-warn">17</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="#family-btts" class="summary-link" data-family="family-btts">btts</a></td>
+        <td class="num">364</td>
+        <td class="num">14</td>
+        <td class="num"><span class="pill pill-good">6</span></td>
+        <td class="num"><span class="pill pill-bad">4</span></td>
+        <td class="num"><span class="pill pill-warn">4</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="#family-double_chance" class="summary-link" data-family="family-double_chance">double chance</a></td>
+        <td class="num">364</td>
+        <td class="num">19</td>
+        <td class="num"><span class="pill pill-good">10</span></td>
+        <td class="num"><span class="pill pill-bad">6</span></td>
+        <td class="num"><span class="pill pill-warn">3</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="#family-handicap_away" class="summary-link" data-family="family-handicap_away">handicap away</a></td>
+        <td class="num">1638</td>
+        <td class="num">52</td>
+        <td class="num"><span class="pill pill-good">23</span></td>
+        <td class="num"><span class="pill pill-bad">6</span></td>
+        <td class="num"><span class="pill pill-warn">23</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="#family-handicap_home" class="summary-link" data-family="family-handicap_home">handicap home</a></td>
+        <td class="num">1638</td>
+        <td class="num">53</td>
+        <td class="num"><span class="pill pill-good">24</span></td>
+        <td class="num"><span class="pill pill-bad">22</span></td>
+        <td class="num"><span class="pill pill-warn">7</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="#family-home_total" class="summary-link" data-family="family-home_total">home total</a></td>
+        <td class="num">2184</td>
+        <td class="num">82</td>
+        <td class="num"><span class="pill pill-good">39</span></td>
+        <td class="num"><span class="pill pill-bad">22</span></td>
+        <td class="num"><span class="pill pill-warn">21</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="#family-over_under" class="summary-link" data-family="family-over_under">over under</a></td>
+        <td class="num">2184</td>
+        <td class="num">62</td>
+        <td class="num"><span class="pill pill-good">33</span></td>
+        <td class="num"><span class="pill pill-bad">15</span></td>
+        <td class="num"><span class="pill pill-warn">14</span></td>
+      </tr>
+    
+    </tbody>
+  </table>
+</div>
+
+
+
+<details id="family-1x2">
+  <summary>
+    <div class="market-header">
+      <span class="name">1x2</span>
+      <span class="market-meta">546 amostra(s) · 24 escalão(ões)</span>
+    </div>
+  </summary>
+  <div class="details-body">
+    
+    <div id="outcome-1x2-away" class="outcome-block">
+      <div class="section-title">Resultado Final - Fora · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">81%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">3/3</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">77%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">4/9</td>
+            <td class="num"><strong>44%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">10/18</td>
+            <td class="num"><strong>56%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">13/20</td>
+            <td class="num"><strong>65%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">11/38</td>
+            <td class="num"><strong>29%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">11/37</td>
+            <td class="num"><strong>30%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">5/40</td>
+            <td class="num"><strong>12%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">1/16</td>
+            <td class="num"><strong>6%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-1x2-draw" class="outcome-block">
+      <div class="section-title">Resultado Final - Empate · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">4/13</td>
+            <td class="num"><strong>31%</strong></td>
+            <td class="num">31%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">25/127</td>
+            <td class="num"><strong>20%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">7/37</td>
+            <td class="num"><strong>19%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">1/4</td>
+            <td class="num"><strong>25%</strong></td>
+            <td class="num">8%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-1x2-home" class="outcome-block">
+      <div class="section-title">Resultado Final - Casa · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">95%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">8/11</td>
+            <td class="num"><strong>73%</strong></td>
+            <td class="num">84%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">13/14</td>
+            <td class="num"><strong>93%</strong></td>
+            <td class="num">74%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">7/15</td>
+            <td class="num"><strong>47%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">19/34</td>
+            <td class="num"><strong>56%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">14/31</td>
+            <td class="num"><strong>45%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">14/35</td>
+            <td class="num"><strong>40%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">6/24</td>
+            <td class="num"><strong>25%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">4/14</td>
+            <td class="num"><strong>29%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">0/3</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</details>
+
+<details id="family-away_total">
+  <summary>
+    <div class="market-header">
+      <span class="name">away total</span>
+      <span class="market-meta">2184 amostra(s) · 62 escalão(ões)</span>
+    </div>
+  </summary>
+  <div class="details-body">
+    
+    <div id="outcome-away_total_0.5-over" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 0.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">7/9</td>
+            <td class="num"><strong>78%</strong></td>
+            <td class="num">92%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">29/38</td>
+            <td class="num"><strong>76%</strong></td>
+            <td class="num">85%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">43/58</td>
+            <td class="num"><strong>74%</strong></td>
+            <td class="num">75%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">26/40</td>
+            <td class="num"><strong>65%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">17/26</td>
+            <td class="num"><strong>65%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">3/7</td>
+            <td class="num"><strong>43%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">2/3</td>
+            <td class="num"><strong>67%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">30%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_0.5-under" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 0.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">70%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">1/3</td>
+            <td class="num"><strong>33%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">4/7</td>
+            <td class="num"><strong>57%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">9/27</td>
+            <td class="num"><strong>33%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">14/40</td>
+            <td class="num"><strong>35%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">15/58</td>
+            <td class="num"><strong>26%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">9/37</td>
+            <td class="num"><strong>24%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">2/9</td>
+            <td class="num"><strong>22%</strong></td>
+            <td class="num">8%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_1.5-over" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 1.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">82%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">3/3</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">76%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">10/17</td>
+            <td class="num"><strong>59%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">15/23</td>
+            <td class="num"><strong>65%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">7/33</td>
+            <td class="num"><strong>21%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">14/44</td>
+            <td class="num"><strong>32%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">7/37</td>
+            <td class="num"><strong>19%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">3/19</td>
+            <td class="num"><strong>16%</strong></td>
+            <td class="num">16%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">2/5</td>
+            <td class="num"><strong>40%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_1.5-under" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 1.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">3/5</td>
+            <td class="num"><strong>60%</strong></td>
+            <td class="num">94%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">17/20</td>
+            <td class="num"><strong>85%</strong></td>
+            <td class="num">84%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">31/38</td>
+            <td class="num"><strong>82%</strong></td>
+            <td class="num">74%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">29/43</td>
+            <td class="num"><strong>67%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">25/32</td>
+            <td class="num"><strong>78%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">8/24</td>
+            <td class="num"><strong>33%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">7/16</td>
+            <td class="num"><strong>44%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">0/3</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">18%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_2.5-over" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 2.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">3/3</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">56%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">2/4</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">43%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">5/15</td>
+            <td class="num"><strong>33%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">9/33</td>
+            <td class="num"><strong>27%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">9/63</td>
+            <td class="num"><strong>14%</strong></td>
+            <td class="num">14%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">4/64</td>
+            <td class="num"><strong>6%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_2.5-under" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 2.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">61/65</td>
+            <td class="num"><strong>94%</strong></td>
+            <td class="num">94%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">53/62</td>
+            <td class="num"><strong>85%</strong></td>
+            <td class="num">86%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">25/34</td>
+            <td class="num"><strong>74%</strong></td>
+            <td class="num">75%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">9/14</td>
+            <td class="num"><strong>64%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">2/4</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">57%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">0/3</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_3.5-over" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 3.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">2/2</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">36%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">1/6</td>
+            <td class="num"><strong>17%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">5/31</td>
+            <td class="num"><strong>16%</strong></td>
+            <td class="num">14%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">7/143</td>
+            <td class="num"><strong>5%</strong></td>
+            <td class="num">3%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_3.5-under" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 3.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">136/143</td>
+            <td class="num"><strong>95%</strong></td>
+            <td class="num">97%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">26/31</td>
+            <td class="num"><strong>84%</strong></td>
+            <td class="num">86%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">5/6</td>
+            <td class="num"><strong>83%</strong></td>
+            <td class="num">76%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">0/2</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_4.5-over" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 4.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">20%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">0/4</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">16%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">4/177</td>
+            <td class="num"><strong>2%</strong></td>
+            <td class="num">2%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_4.5-under" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 4.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">173/177</td>
+            <td class="num"><strong>98%</strong></td>
+            <td class="num">98%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">4/4</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">84%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">80%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_5.5-over" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 5.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">0/182</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">1%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-away_total_5.5-under" class="outcome-block">
+      <div class="section-title">Total Fora Mais/Menos de 5.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">182/182</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">99%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</details>
+
+<details id="family-btts">
+  <summary>
+    <div class="market-header">
+      <span class="name">btts</span>
+      <span class="market-meta">364 amostra(s) · 14 escalão(ões)</span>
+    </div>
+  </summary>
+  <div class="details-body">
+    
+    <div id="outcome-btts-no" class="outcome-block">
+      <div class="section-title">Ambas Marcam - Não · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">78%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">4/8</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">11/19</td>
+            <td class="num"><strong>58%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">23/51</td>
+            <td class="num"><strong>45%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">22/59</td>
+            <td class="num"><strong>37%</strong></td>
+            <td class="num">34%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">20/40</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">27%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">2/4</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">18%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-btts-yes" class="outcome-block">
+      <div class="section-title">Ambas Marcam - Sim · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">3/5</td>
+            <td class="num"><strong>60%</strong></td>
+            <td class="num">82%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">19/39</td>
+            <td class="num"><strong>49%</strong></td>
+            <td class="num">73%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">37/59</td>
+            <td class="num"><strong>63%</strong></td>
+            <td class="num">66%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">28/51</td>
+            <td class="num"><strong>55%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">8/19</td>
+            <td class="num"><strong>42%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">4/8</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">22%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</details>
+
+<details id="family-double_chance">
+  <summary>
+    <div class="market-header">
+      <span class="name">double chance</span>
+      <span class="market-meta">364 amostra(s) · 19 escalão(ões)</span>
+    </div>
+  </summary>
+  <div class="details-body">
+    
+    <div id="outcome-double_chance-1x" class="outcome-block">
+      <div class="section-title">Dupla Hipótese - Casa ou Empate · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">19/20</td>
+            <td class="num"><strong>95%</strong></td>
+            <td class="num">94%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">33/38</td>
+            <td class="num"><strong>87%</strong></td>
+            <td class="num">84%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">26/37</td>
+            <td class="num"><strong>70%</strong></td>
+            <td class="num">75%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">26/37</td>
+            <td class="num"><strong>70%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">7/20</td>
+            <td class="num"><strong>35%</strong></td>
+            <td class="num">56%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">8/18</td>
+            <td class="num"><strong>44%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">4/8</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">36%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">0/3</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">23%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">19%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-double_chance-x2" class="outcome-block">
+      <div class="section-title">Dupla Hipótese - Empate ou Fora · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">3/3</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">94%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">11/15</td>
+            <td class="num"><strong>73%</strong></td>
+            <td class="num">84%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">17/23</td>
+            <td class="num"><strong>74%</strong></td>
+            <td class="num">75%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">21/37</td>
+            <td class="num"><strong>57%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">17/29</td>
+            <td class="num"><strong>59%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">16/35</td>
+            <td class="num"><strong>46%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">7/14</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">36%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">1/14</td>
+            <td class="num"><strong>7%</strong></td>
+            <td class="num">26%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">3/11</td>
+            <td class="num"><strong>27%</strong></td>
+            <td class="num">16%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">5%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</details>
+
+<details id="family-handicap_away">
+  <summary>
+    <div class="market-header">
+      <span class="name">handicap away</span>
+      <span class="market-meta">1638 amostra(s) · 52 escalão(ões)</span>
+    </div>
+  </summary>
+  <div class="details-body">
+    
+    <div id="outcome-handicap_away--0.5" class="outcome-block">
+      <div class="section-title">Handicap Fora -0.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">81%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">3/3</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">77%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">4/8</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">10/18</td>
+            <td class="num"><strong>56%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">13/20</td>
+            <td class="num"><strong>65%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">11/38</td>
+            <td class="num"><strong>29%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">11/37</td>
+            <td class="num"><strong>30%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">5/40</td>
+            <td class="num"><strong>12%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">1/17</td>
+            <td class="num"><strong>6%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_away--1.5" class="outcome-block">
+      <div class="section-title">Handicap Fora -1.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">60%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">2/3</td>
+            <td class="num"><strong>67%</strong></td>
+            <td class="num">57%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">4/7</td>
+            <td class="num"><strong>57%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">5/12</td>
+            <td class="num"><strong>42%</strong></td>
+            <td class="num">34%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">9/26</td>
+            <td class="num"><strong>35%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">6/61</td>
+            <td class="num"><strong>10%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">4/72</td>
+            <td class="num"><strong>6%</strong></td>
+            <td class="num">5%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_away--2.5" class="outcome-block">
+      <div class="section-title">Handicap Fora -2.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">40%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">1/3</td>
+            <td class="num"><strong>33%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">3/8</td>
+            <td class="num"><strong>38%</strong></td>
+            <td class="num">23%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">3/26</td>
+            <td class="num"><strong>12%</strong></td>
+            <td class="num">14%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">7/144</td>
+            <td class="num"><strong>5%</strong></td>
+            <td class="num">4%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_away--3.5" class="outcome-block">
+      <div class="section-title">Handicap Fora -3.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">23%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">1/8</td>
+            <td class="num"><strong>12%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">2/173</td>
+            <td class="num"><strong>1%</strong></td>
+            <td class="num">2%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_away--4.5" class="outcome-block">
+      <div class="section-title">Handicap Fora -4.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">0/2</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">14%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">1/180</td>
+            <td class="num"><strong>1%</strong></td>
+            <td class="num">1%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_away-1.5" class="outcome-block">
+      <div class="section-title">Handicap Fora +1.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">21/23</td>
+            <td class="num"><strong>91%</strong></td>
+            <td class="num">94%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">42/53</td>
+            <td class="num"><strong>79%</strong></td>
+            <td class="num">85%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">32/39</td>
+            <td class="num"><strong>82%</strong></td>
+            <td class="num">76%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">22/34</td>
+            <td class="num"><strong>65%</strong></td>
+            <td class="num">66%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">7/11</td>
+            <td class="num"><strong>64%</strong></td>
+            <td class="num">56%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">4/10</td>
+            <td class="num"><strong>40%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">6/8</td>
+            <td class="num"><strong>75%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">2/3</td>
+            <td class="num"><strong>67%</strong></td>
+            <td class="num">28%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">12%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_away-2.5" class="outcome-block">
+      <div class="section-title">Handicap Fora +2.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">87/95</td>
+            <td class="num"><strong>92%</strong></td>
+            <td class="num">95%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">46/55</td>
+            <td class="num"><strong>84%</strong></td>
+            <td class="num">85%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">10/11</td>
+            <td class="num"><strong>91%</strong></td>
+            <td class="num">76%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">7/9</td>
+            <td class="num"><strong>78%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">7/8</td>
+            <td class="num"><strong>88%</strong></td>
+            <td class="num">57%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">2/2</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">46%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">40%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">26%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_away-3.5" class="outcome-block">
+      <div class="section-title">Handicap Fora +3.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">142/152</td>
+            <td class="num"><strong>93%</strong></td>
+            <td class="num">97%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">14/16</td>
+            <td class="num"><strong>88%</strong></td>
+            <td class="num">86%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">10/11</td>
+            <td class="num"><strong>91%</strong></td>
+            <td class="num">76%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">2/2</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_away-4.5" class="outcome-block">
+      <div class="section-title">Handicap Fora +4.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">167/170</td>
+            <td class="num"><strong>98%</strong></td>
+            <td class="num">99%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">10/10</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">87%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">79%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">62%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</details>
+
+<details id="family-handicap_home">
+  <summary>
+    <div class="market-header">
+      <span class="name">handicap home</span>
+      <span class="market-meta">1638 amostra(s) · 53 escalão(ões)</span>
+    </div>
+  </summary>
+  <div class="details-body">
+    
+    <div id="outcome-handicap_home--0.5" class="outcome-block">
+      <div class="section-title">Handicap Casa -0.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">95%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">8/11</td>
+            <td class="num"><strong>73%</strong></td>
+            <td class="num">84%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">13/14</td>
+            <td class="num"><strong>93%</strong></td>
+            <td class="num">74%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">7/15</td>
+            <td class="num"><strong>47%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">19/34</td>
+            <td class="num"><strong>56%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">14/31</td>
+            <td class="num"><strong>45%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">14/35</td>
+            <td class="num"><strong>40%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">6/24</td>
+            <td class="num"><strong>25%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">4/14</td>
+            <td class="num"><strong>29%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">0/3</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_home--1.5" class="outcome-block">
+      <div class="section-title">Handicap Casa -1.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">88%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">1/3</td>
+            <td class="num"><strong>33%</strong></td>
+            <td class="num">72%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">2/8</td>
+            <td class="num"><strong>25%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">6/10</td>
+            <td class="num"><strong>60%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">4/11</td>
+            <td class="num"><strong>36%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">12/34</td>
+            <td class="num"><strong>35%</strong></td>
+            <td class="num">34%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">8/40</td>
+            <td class="num"><strong>20%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">10/52</td>
+            <td class="num"><strong>19%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">2/23</td>
+            <td class="num"><strong>9%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_home--2.5" class="outcome-block">
+      <div class="section-title">Handicap Casa -2.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">73%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">60%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">0/2</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">54%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">1/8</td>
+            <td class="num"><strong>12%</strong></td>
+            <td class="num">43%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">2/9</td>
+            <td class="num"><strong>22%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">1/11</td>
+            <td class="num"><strong>9%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">9/55</td>
+            <td class="num"><strong>16%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">8/95</td>
+            <td class="num"><strong>8%</strong></td>
+            <td class="num">5%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_home--3.5" class="outcome-block">
+      <div class="section-title">Handicap Casa -3.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">0/2</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">1/11</td>
+            <td class="num"><strong>9%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">2/16</td>
+            <td class="num"><strong>12%</strong></td>
+            <td class="num">14%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">10/152</td>
+            <td class="num"><strong>7%</strong></td>
+            <td class="num">3%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_home--4.5" class="outcome-block">
+      <div class="section-title">Handicap Casa -4.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">37%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">21%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">0/10</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">13%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">3/170</td>
+            <td class="num"><strong>2%</strong></td>
+            <td class="num">1%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_home-1.5" class="outcome-block">
+      <div class="section-title">Handicap Casa +1.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">68/72</td>
+            <td class="num"><strong>94%</strong></td>
+            <td class="num">95%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">55/61</td>
+            <td class="num"><strong>90%</strong></td>
+            <td class="num">85%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">17/26</td>
+            <td class="num"><strong>65%</strong></td>
+            <td class="num">76%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">7/12</td>
+            <td class="num"><strong>58%</strong></td>
+            <td class="num">66%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">3/7</td>
+            <td class="num"><strong>43%</strong></td>
+            <td class="num">56%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">1/3</td>
+            <td class="num"><strong>33%</strong></td>
+            <td class="num">43%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">40%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_home-2.5" class="outcome-block">
+      <div class="section-title">Handicap Casa +2.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">137/144</td>
+            <td class="num"><strong>95%</strong></td>
+            <td class="num">96%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">23/26</td>
+            <td class="num"><strong>88%</strong></td>
+            <td class="num">86%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">5/8</td>
+            <td class="num"><strong>62%</strong></td>
+            <td class="num">77%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">2/3</td>
+            <td class="num"><strong>67%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">60%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_home-3.5" class="outcome-block">
+      <div class="section-title">Handicap Casa +3.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">171/173</td>
+            <td class="num"><strong>99%</strong></td>
+            <td class="num">98%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">7/8</td>
+            <td class="num"><strong>88%</strong></td>
+            <td class="num">85%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">77%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-handicap_home-4.5" class="outcome-block">
+      <div class="section-title">Handicap Casa +4.5 · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">179/180</td>
+            <td class="num"><strong>99%</strong></td>
+            <td class="num">99%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">2/2</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">86%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</details>
+
+<details id="family-home_total">
+  <summary>
+    <div class="market-header">
+      <span class="name">home total</span>
+      <span class="market-meta">2184 amostra(s) · 82 escalão(ões)</span>
+    </div>
+  </summary>
+  <div class="details-body">
+    
+    <div id="outcome-home_total_0.5-over" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 0.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">25/27</td>
+            <td class="num"><strong>93%</strong></td>
+            <td class="num">94%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">58/72</td>
+            <td class="num"><strong>81%</strong></td>
+            <td class="num">85%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">43/56</td>
+            <td class="num"><strong>77%</strong></td>
+            <td class="num">76%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">8/13</td>
+            <td class="num"><strong>62%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">7/9</td>
+            <td class="num"><strong>78%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">2/4</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">47%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">26%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_0.5-under" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 0.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">74%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">2/4</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">53%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">2/9</td>
+            <td class="num"><strong>22%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">6/15</td>
+            <td class="num"><strong>40%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">12/54</td>
+            <td class="num"><strong>22%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">14/72</td>
+            <td class="num"><strong>19%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">2/27</td>
+            <td class="num"><strong>7%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_1.5-over" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 1.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">93%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">6/7</td>
+            <td class="num"><strong>86%</strong></td>
+            <td class="num">83%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">12/14</td>
+            <td class="num"><strong>86%</strong></td>
+            <td class="num">75%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">17/26</td>
+            <td class="num"><strong>65%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">19/37</td>
+            <td class="num"><strong>51%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">18/48</td>
+            <td class="num"><strong>38%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">11/27</td>
+            <td class="num"><strong>41%</strong></td>
+            <td class="num">36%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">5/16</td>
+            <td class="num"><strong>31%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">2/5</td>
+            <td class="num"><strong>40%</strong></td>
+            <td class="num">16%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">4%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_1.5-under" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 1.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">96%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">4/6</td>
+            <td class="num"><strong>67%</strong></td>
+            <td class="num">83%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">11/16</td>
+            <td class="num"><strong>69%</strong></td>
+            <td class="num">75%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">15/27</td>
+            <td class="num"><strong>56%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">30/47</td>
+            <td class="num"><strong>64%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">18/37</td>
+            <td class="num"><strong>49%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">9/26</td>
+            <td class="num"><strong>35%</strong></td>
+            <td class="num">36%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">2/14</td>
+            <td class="num"><strong>14%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">1/7</td>
+            <td class="num"><strong>14%</strong></td>
+            <td class="num">17%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">7%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_2.5-over" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 2.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">81%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">0/2</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">72%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">2/4</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">63%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">4/9</td>
+            <td class="num"><strong>44%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">2/10</td>
+            <td class="num"><strong>20%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">9/25</td>
+            <td class="num"><strong>36%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">13/58</td>
+            <td class="num"><strong>22%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">9/52</td>
+            <td class="num"><strong>17%</strong></td>
+            <td class="num">16%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">3/21</td>
+            <td class="num"><strong>14%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_2.5-under" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 2.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">19/22</td>
+            <td class="num"><strong>86%</strong></td>
+            <td class="num">93%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">42/52</td>
+            <td class="num"><strong>81%</strong></td>
+            <td class="num">84%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">45/57</td>
+            <td class="num"><strong>79%</strong></td>
+            <td class="num">75%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">16/25</td>
+            <td class="num"><strong>64%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">8/10</td>
+            <td class="num"><strong>80%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">5/9</td>
+            <td class="num"><strong>56%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">2/4</td>
+            <td class="num"><strong>50%</strong></td>
+            <td class="num">37%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">2/2</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">28%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">19%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_3.5-over" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 3.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">63%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">50%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">47%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">2/12</td>
+            <td class="num"><strong>17%</strong></td>
+            <td class="num">34%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">2/11</td>
+            <td class="num"><strong>18%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">6/54</td>
+            <td class="num"><strong>11%</strong></td>
+            <td class="num">14%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">8/102</td>
+            <td class="num"><strong>8%</strong></td>
+            <td class="num">5%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_3.5-under" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 3.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">96/104</td>
+            <td class="num"><strong>92%</strong></td>
+            <td class="num">95%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">47/53</td>
+            <td class="num"><strong>89%</strong></td>
+            <td class="num">86%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">8/11</td>
+            <td class="num"><strong>73%</strong></td>
+            <td class="num">74%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">10/11</td>
+            <td class="num"><strong>91%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">53%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">50%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">37%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_4.5-over" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 4.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">43%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">31%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">0/4</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">23%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">1/17</td>
+            <td class="num"><strong>6%</strong></td>
+            <td class="num">14%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">4/159</td>
+            <td class="num"><strong>3%</strong></td>
+            <td class="num">3%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_4.5-under" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 4.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">156/160</td>
+            <td class="num"><strong>98%</strong></td>
+            <td class="num">97%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">15/16</td>
+            <td class="num"><strong>94%</strong></td>
+            <td class="num">85%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">4/4</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">77%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">69%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">57%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_5.5-over" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 5.5 - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">26%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">0/2</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">16%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">1/179</td>
+            <td class="num"><strong>1%</strong></td>
+            <td class="num">1%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-home_total_5.5-under" class="outcome-block">
+      <div class="section-title">Total Casa Mais/Menos de 5.5 - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">178/179</td>
+            <td class="num"><strong>99%</strong></td>
+            <td class="num">99%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">2/2</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">84%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">74%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</details>
+
+<details id="family-over_under">
+  <summary>
+    <div class="market-header">
+      <span class="name">over under</span>
+      <span class="market-meta">2184 amostra(s) · 62 escalão(ões)</span>
+    </div>
+  </summary>
+  <div class="details-body">
+    
+    <div id="outcome-over_under_0.5-over" class="outcome-block">
+      <div class="section-title">Mais/Menos de 0.5 Golos - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">157/165</td>
+            <td class="num"><strong>95%</strong></td>
+            <td class="num">95%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">14/16</td>
+            <td class="num"><strong>88%</strong></td>
+            <td class="num">88%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">73%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_0.5-under" class="outcome-block">
+      <div class="section-title">Mais/Menos de 0.5 Golos - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">27%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">2/17</td>
+            <td class="num"><strong>12%</strong></td>
+            <td class="num">12%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">8/164</td>
+            <td class="num"><strong>5%</strong></td>
+            <td class="num">5%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_1.5-over" class="outcome-block">
+      <div class="section-title">Mais/Menos de 1.5 Golos - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">31/33</td>
+            <td class="num"><strong>94%</strong></td>
+            <td class="num">93%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">75/98</td>
+            <td class="num"><strong>77%</strong></td>
+            <td class="num">85%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">28/37</td>
+            <td class="num"><strong>76%</strong></td>
+            <td class="num">76%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">7/13</td>
+            <td class="num"><strong>54%</strong></td>
+            <td class="num">67%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">52%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_1.5-under" class="outcome-block">
+      <div class="section-title">Mais/Menos de 1.5 Golos - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">48%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">6/13</td>
+            <td class="num"><strong>46%</strong></td>
+            <td class="num">33%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">9/38</td>
+            <td class="num"><strong>24%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">24/98</td>
+            <td class="num"><strong>24%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">1/32</td>
+            <td class="num"><strong>3%</strong></td>
+            <td class="num">7%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_2.5-over" class="outcome-block">
+      <div class="section-title">Mais/Menos de 2.5 Golos - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">11/13</td>
+            <td class="num"><strong>85%</strong></td>
+            <td class="num">83%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">19/29</td>
+            <td class="num"><strong>66%</strong></td>
+            <td class="num">74%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">32/57</td>
+            <td class="num"><strong>56%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">22/40</td>
+            <td class="num"><strong>55%</strong></td>
+            <td class="num">56%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">16/31</td>
+            <td class="num"><strong>52%</strong></td>
+            <td class="num">46%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">4/12</td>
+            <td class="num"><strong>33%</strong></td>
+            <td class="num">36%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_2.5-under" class="outcome-block">
+      <div class="section-title">Mais/Menos de 2.5 Golos - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">8/12</td>
+            <td class="num"><strong>67%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">15/31</td>
+            <td class="num"><strong>48%</strong></td>
+            <td class="num">54%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">18/40</td>
+            <td class="num"><strong>45%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">26/58</td>
+            <td class="num"><strong>45%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">9/28</td>
+            <td class="num"><strong>32%</strong></td>
+            <td class="num">26%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">2/13</td>
+            <td class="num"><strong>15%</strong></td>
+            <td class="num">17%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_3.5-over" class="outcome-block">
+      <div class="section-title">Mais/Menos de 3.5 Golos - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">72%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">5/6</td>
+            <td class="num"><strong>83%</strong></td>
+            <td class="num">63%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">8/14</td>
+            <td class="num"><strong>57%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">20/39</td>
+            <td class="num"><strong>51%</strong></td>
+            <td class="num">44%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">13/56</td>
+            <td class="num"><strong>23%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">18/44</td>
+            <td class="num"><strong>41%</strong></td>
+            <td class="num">25%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">5/22</td>
+            <td class="num"><strong>23%</strong></td>
+            <td class="num">16%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_3.5-under" class="outcome-block">
+      <div class="section-title">Mais/Menos de 3.5 Golos - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">17/22</td>
+            <td class="num"><strong>77%</strong></td>
+            <td class="num">84%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">26/44</td>
+            <td class="num"><strong>59%</strong></td>
+            <td class="num">75%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">45/59</td>
+            <td class="num"><strong>76%</strong></td>
+            <td class="num">64%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">17/36</td>
+            <td class="num"><strong>47%</strong></td>
+            <td class="num">55%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">6/15</td>
+            <td class="num"><strong>40%</strong></td>
+            <td class="num">45%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">1/5</td>
+            <td class="num"><strong>20%</strong></td>
+            <td class="num">37%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">28%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_4.5-over" class="outcome-block">
+      <div class="section-title">Mais/Menos de 4.5 Golos - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">50%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">1/3</td>
+            <td class="num"><strong>33%</strong></td>
+            <td class="num">43%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">10/22</td>
+            <td class="num"><strong>45%</strong></td>
+            <td class="num">35%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">11/61</td>
+            <td class="num"><strong>18%</strong></td>
+            <td class="num">24%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">13/77</td>
+            <td class="num"><strong>17%</strong></td>
+            <td class="num">15%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">2/18</td>
+            <td class="num"><strong>11%</strong></td>
+            <td class="num">7%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_4.5-under" class="outcome-block">
+      <div class="section-title">Mais/Menos de 4.5 Golos - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">17/19</td>
+            <td class="num"><strong>89%</strong></td>
+            <td class="num">92%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">63/76</td>
+            <td class="num"><strong>83%</strong></td>
+            <td class="num">85%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">50/61</td>
+            <td class="num"><strong>82%</strong></td>
+            <td class="num">76%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">12/22</td>
+            <td class="num"><strong>55%</strong></td>
+            <td class="num">65%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>50-59%</td>
+            <td class="num">2/3</td>
+            <td class="num"><strong>67%</strong></td>
+            <td class="num">57%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>40-49%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">50%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_5.5-over" class="outcome-block">
+      <div class="section-title">Mais/Menos de 5.5 Golos - Mais · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>30-39%</td>
+            <td class="num">1/1</td>
+            <td class="num"><strong>100%</strong></td>
+            <td class="num">33%</td>
+            <td class="num">
+              
+                <span class="pill pill-warn">modelo pouco confiante</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>20-29%</td>
+            <td class="num">3/13</td>
+            <td class="num"><strong>23%</strong></td>
+            <td class="num">23%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>10-19%</td>
+            <td class="num">6/64</td>
+            <td class="num"><strong>9%</strong></td>
+            <td class="num">13%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>00-09%</td>
+            <td class="num">5/104</td>
+            <td class="num"><strong>5%</strong></td>
+            <td class="num">6%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+    <div id="outcome-over_under_5.5-under" class="outcome-block">
+      <div class="section-title">Mais/Menos de 5.5 Golos - Menos · 182 amostra(s)</div>
+      <table>
+        <thead><tr>
+          <th>Escalão previsto</th><th class="num">Amostra</th><th class="num">Taxa real</th><th class="num">Prob. média prevista</th><th class="num">Avaliação</th>
+        </tr></thead>
+        <tbody>
+        
+          <tr>
+            <td>90-99%</td>
+            <td class="num">101/106</td>
+            <td class="num"><strong>95%</strong></td>
+            <td class="num">94%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>80-89%</td>
+            <td class="num">56/62</td>
+            <td class="num"><strong>90%</strong></td>
+            <td class="num">87%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>70-79%</td>
+            <td class="num">10/13</td>
+            <td class="num"><strong>77%</strong></td>
+            <td class="num">77%</td>
+            <td class="num">
+              
+                <span class="pill pill-good">bem calibrado</span>
+              
+            </td>
+          </tr>
+        
+          <tr>
+            <td>60-69%</td>
+            <td class="num">0/1</td>
+            <td class="num"><strong>0%</strong></td>
+            <td class="num">67%</td>
+            <td class="num">
+              
+                <span class="pill pill-bad">modelo confiante demais</span>
+              
+            </td>
+          </tr>
+        
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+</details>
+
+
+<p class="subtitle">"Bem calibrado" = a taxa de acerto real fica a 7 pontos percentuais (ou menos) da probabilidade média que o modelo previu nesse escalão. "Confiante demais" = acerta menos do que previu; "pouco confiante" = acerta mais do que previu.</p>
+
+<script>
+(function () {
+  function openAndScroll(detailsId, scrollToId) {
+    var details = document.getElementById(detailsId);
+    if (details) details.open = true;
+    var target = document.getElementById(scrollToId || detailsId);
+    if (target) target.scrollIntoView({behavior: "smooth", block: "start"});
+  }
+
+  var select = document.getElementById("market-filter");
+  if (select) {
+    select.addEventListener("change", function () {
+      if (select.value === "all") return;
+      var outcomeEl = document.getElementById(select.value);
+      if (!outcomeEl) return;
+      var details = outcomeEl.closest("details");
+      if (details) details.open = true;
+      outcomeEl.scrollIntoView({behavior: "smooth", block: "start"});
+    });
+  }
+
+  document.querySelectorAll(".summary-link").forEach(function (link) {
+    link.addEventListener("click", function () {
+      openAndScroll(link.dataset.family);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2616 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apostas por taxa real — 2026-11-24</title>
+<style>
+  :root{
+    --bg:#f7f7f8; --panel:#ffffff; --border:#e3e3e6; --text:#1b1c1f; --muted:#6b6f76;
+    --accent:#2f6fed; --good:#12805c; --good-bg:#e6f6ef; --bad:#b3261e;
+    --warn:#9a6700; --warn-bg:#fdf3dd;
+    --chip-bg:#eef1f6; --shadow:0 1px 2px rgba(0,0,0,.04), 0 1px 8px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15161a; --panel:#1e2025; --border:#2c2e34; --text:#eef0f3; --muted:#9a9ea7;
+      --accent:#6ea1ff; --good:#3fd68f; --good-bg:#123527; --bad:#ff6b64;
+      --warn:#e0b84c; --warn-bg:#3a2f12;
+      --chip-bg:#26282e; --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 10px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15161a; --panel:#1e2025; --border:#2c2e34; --text:#eef0f3; --muted:#9a9ea7;
+    --accent:#6ea1ff; --good:#3fd68f; --good-bg:#123527; --bad:#ff6b64;
+    --warn:#e0b84c; --warn-bg:#3a2f12;
+    --chip-bg:#26282e; --shadow:0 1px 2px rgba(0,0,0,.3), 0 1px 10px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:20px 16px 64px; max-width:1080px; margin-inline:auto;
+  }
+  h1{font-size:1.4rem; margin:0 0 2px;}
+  .subtitle{color:var(--muted); font-size:.85rem; margin:0 0 22px;}
+  .panel{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow); padding:18px; margin-bottom:20px;
+  }
+  .panel h2{margin:0 0 12px; font-size:1.05rem;}
+  table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  th{text-align:left; color:var(--muted); font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.03em; padding:6px 8px; border-bottom:1px solid var(--border);}
+  td{padding:8px 8px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:.72rem; font-weight:600; background:var(--chip-bg); color:var(--muted);}
+  .value-pill{background:var(--good-bg); color:var(--good);}
+  .pill-good{background:var(--good-bg); color:var(--good);}
+  .pill-warn{background:var(--warn-bg); color:var(--warn);}
+  .model-note{color:var(--muted); font-size:.76rem;}
+  .empty{color:var(--muted); font-size:.85rem; padding:8px 0;}
+  a{color:var(--accent); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  details{background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); margin-bottom:14px; overflow:hidden;}
+  details > summary{list-style:none; padding:14px 18px; cursor:pointer;}
+  details > summary::-webkit-details-marker{display:none;}
+  details[open] > summary{border-bottom:1px solid var(--border);}
+  .details-body{padding:6px 18px 18px;}
+  .game-header{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; cursor:pointer;}
+  .game-header .teams{font-weight:600; font-size:1rem;}
+  .rank{color:var(--muted); width:1.6em; display:inline-block;}
+  @media (max-width:560px){
+    .panel{border-radius:10px;}
+    th,td{padding:6px 4px; font-size:.8rem;}
+  }
+</style>
+</head>
+<body>
+
+
+
+<h1>📈 Apostas por taxa real — 2026-11-24</h1>
+<p class="subtitle">gerado em 2026-11-24 11:59 · <a href="index.html">← ver página principal (probabilidade do modelo)</a> · <a href="../calibration.html">ver calibração do modelo</a></p>
+<p class="subtitle">Em vez da probabilidade que o modelo dá à jogada, esta página seleciona e ordena pela <strong>taxa de acerto real</strong> já observada para esse mercado + resultado + escalão (ver <a href="../calibration.html">calibração</a>). Uma jogada sem nenhum histórico ainda simplesmente não aparece aqui -- só entram mercados/escalões com pelo menos um jogo já emparelhado, marcados "⚠ ainda não atingiu os 30 jogos" enquanto a amostra for pequena, e "✓ confirmado" a partir de 30. Convém dar mais peso aos confirmados; os outros são só um indício, não uma certeza. A banda de probabilidade/odd da múltipla é a mesma da página principal, mas aqui limitada às melhores 4 pernas; a banda das apostas de probabilidade média é a sua própria, ajustada depois de testar vários dias de histórico (ver docs/CALIBRATION.md).</p>
+
+<div class="panel">
+  <h2>🎫 Múltipla do dia (taxa real) · 0.50€</h2>
+  <p class="subtitle" style="margin:-6px 0 12px;">As melhores 4 pernas (no máximo) entre as possíveis (uma por jogo no máximo), ordenadas por taxa real — taxa real ≥ 80%, odd Betclic entre 1.20 e 1.49 (inclusive) e valor (com a taxa real) ≥ 1.00×.</p>
+  
+  <table>
+    <thead><tr>
+      <th>Jogo</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+    </tr></thead>
+    <tbody>
+    
+      <tr>
+        <td><a href="index.html#game-real-madrid-psv">Real Madrid - PSV</a></td>
+        <td>Total Casa Mais/Menos de 4.5 - Menos</td>
+        <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (9j)</span>
+
+<br><span class="model-note">modelo: 81%</span>
+</td>
+        <td class="num">1.33</td>
+        <td class="num"><span class="pill value-pill">1.33×</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="index.html#game-rb-leipzig-lens">RB Leipzig - Lens</a></td>
+        <td>Resultado Final - Casa</td>
+        <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 76%</span>
+</td>
+        <td class="num">1.33</td>
+        <td class="num"><span class="pill value-pill">1.33×</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="index.html#game-como-aek">Como - AEK</a></td>
+        <td>Resultado Final - Casa</td>
+        <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 70%</span>
+</td>
+        <td class="num">1.24</td>
+        <td class="num"><span class="pill value-pill">1.24×</span></td>
+      </tr>
+    
+      <tr>
+        <td><a href="index.html#game-man-city-napoli">Man City - Napoli</a></td>
+        <td>Handicap Fora +2.5</td>
+        <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 64%</span>
+</td>
+        <td class="num">1.44</td>
+        <td class="num"><span class="pill value-pill">1.44×</span></td>
+      </tr>
+    
+    </tbody>
+  </table>
+  <p class="model-note" style="margin-top:10px;">
+    Odd combinada: <strong>3.16×</strong> ·
+    probabilidade combinada (taxa real): <strong>100%</strong> ·
+    retorno potencial: <strong>1.58€</strong>
+  </p>
+  
+</div>
+
+
+
+
+  
+
+
+<div class="panel">
+  <h2>📊 Apostas de probabilidade média (taxa real) · 1.00€</h2>
+  <p class="subtitle" style="margin:-6px 0 12px;">Todas as jogadas com taxa real ≥ 70%, odd Betclic entre 1.80 e 2.50 (inclusive) e valor (com a taxa real) ≥ 1.00×, ordenadas por taxa real.</p>
+  
+  <table>
+    <thead><tr>
+      <th>Jogo</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th><th class="num">Retorno</th>
+    </tr></thead>
+    <tbody>
+    
+      <tr>
+        <td><a href="index.html#game-feyenoord-porto">Feyenoord - Porto</a></td>
+        <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+        <td class="num">
+<strong>78%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 54%</span>
+</td>
+        <td class="num">1.81</td>
+        <td class="num"><span class="pill value-pill">1.41×</span></td>
+        <td class="num">1.81€</td>
+      </tr>
+    
+      <tr>
+        <td><a href="index.html#game-galatasaray-aston-villa">Galatasaray - Aston Villa</a></td>
+        <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+        <td class="num">
+<strong>78%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 51%</span>
+</td>
+        <td class="num">1.95</td>
+        <td class="num"><span class="pill value-pill">1.52×</span></td>
+        <td class="num">1.95€</td>
+      </tr>
+    
+      <tr>
+        <td><a href="index.html#game-bodo-glimt-lask">Bodø-Glimt - LASK</a></td>
+        <td>Total Casa Mais/Menos de 2.5 - Menos</td>
+        <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 60%</span>
+</td>
+        <td class="num">1.91</td>
+        <td class="num"><span class="pill value-pill">1.43×</span></td>
+        <td class="num">1.91€</td>
+      </tr>
+    
+    </tbody>
+  </table>
+  
+</div>
+
+
+<h2 style="font-size:1.05rem; margin:28px 0 6px;">📋 Todos os jogos com taxa real acima de 50%</h2>
+<p class="subtitle" style="margin:0 0 12px;">Tal como na página principal, mas por taxa real em vez da probabilidade do modelo -- todo o acontecimento de cada jogo com taxa real &gt; 50% e uma odd Betclic emparelhada, não só os que entram na múltipla ou na banda de probabilidade média acima.</p>
+
+
+<details id="game-real-bodo-glimt-lask" open>
+  <summary>
+    <div class="game-header">
+      <span class="teams">Bodø-Glimt - LASK</span>
+      <span class="model-note"><a href="index.html#game-bodo-glimt-lask">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>92%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (50j)</span>
+
+<br><span class="model-note">modelo: 92%</span>
+</td>
+          <td class="num">1.09</td>
+          <td class="num"><span class="pill value-pill">1.00×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Mais/Menos de 5.5 Golos - Menos</td>
+          <td class="num">
+<strong>89%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (47j)</span>
+
+<br><span class="model-note">modelo: 88%</span>
+</td>
+          <td class="num">1.20</td>
+          <td class="num"><span class="pill value-pill">1.07×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Total Casa Mais/Menos de 3.5 - Menos</td>
+          <td class="num">
+<strong>87%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (45j)</span>
+
+<br><span class="model-note">modelo: 80%</span>
+</td>
+          <td class="num">1.35</td>
+          <td class="num"><span class="pill value-pill">1.17×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 73%</span>
+</td>
+          <td class="num">1.42</td>
+          <td class="num"><span class="pill value-pill">1.16×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Dupla Hipótese - Casa ou Empate</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (26j)</span>
+
+<br><span class="model-note">modelo: 85%</span>
+</td>
+          <td class="num">1.10</td>
+          <td class="num"><span class="pill value-pill">0.89×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Mais/Menos de 4.5 Golos - Menos</td>
+          <td class="num">
+<strong>79%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (42j)</span>
+
+<br><span class="model-note">modelo: 76%</span>
+</td>
+          <td class="num">1.46</td>
+          <td class="num"><span class="pill value-pill">1.15×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Total Casa Mais/Menos de 1.5 - Mais</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (17j)</span>
+
+<br><span class="model-note">modelo: 67%</span>
+</td>
+          <td class="num">1.21</td>
+          <td class="num"><span class="pill value-pill">0.93×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Mais/Menos de 1.5 Golos - Mais</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (71j)</span>
+
+<br><span class="model-note">modelo: 88%</span>
+</td>
+          <td class="num">1.04</td>
+          <td class="num"><span class="pill value-pill">0.79×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Handicap Fora +2.5</td>
+          <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 76%</span>
+</td>
+          <td class="num">1.35</td>
+          <td class="num"><span class="pill value-pill">1.01×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Total Casa Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 60%</span>
+</td>
+          <td class="num">1.91</td>
+          <td class="num"><span class="pill value-pill">1.43×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Handicap Fora +3.5</td>
+          <td class="num">
+<strong>71%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 89%</span>
+</td>
+          <td class="num">1.13</td>
+          <td class="num"><span class="pill value-pill">0.81×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">12</td>
+          <td>Total Fora Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>63%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (30j)</span>
+
+<br><span class="model-note">modelo: 64%</span>
+</td>
+          <td class="num">1.31</td>
+          <td class="num"><span class="pill value-pill">0.83×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">13</td>
+          <td>Resultado Final - Casa</td>
+          <td class="num">
+<strong>62%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (8j)</span>
+
+<br><span class="model-note">modelo: 65%</span>
+</td>
+          <td class="num">1.36</td>
+          <td class="num"><span class="pill value-pill">0.85×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">14</td>
+          <td>Ambas Marcam - Sim</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (45j)</span>
+
+<br><span class="model-note">modelo: 64%</span>
+</td>
+          <td class="num">1.36</td>
+          <td class="num"><span class="pill value-pill">0.82×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">15</td>
+          <td>Handicap Casa -1.5</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (5j)</span>
+
+<br><span class="model-note">modelo: 43%</span>
+</td>
+          <td class="num">1.79</td>
+          <td class="num"><span class="pill value-pill">1.07×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">16</td>
+          <td>Mais/Menos de 3.5 Golos - Mais</td>
+          <td class="num">
+<strong>58%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (26j)</span>
+
+<br><span class="model-note">modelo: 41%</span>
+</td>
+          <td class="num">1.54</td>
+          <td class="num"><span class="pill value-pill">0.89×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">17</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (37j)</span>
+
+<br><span class="model-note">modelo: 68%</span>
+</td>
+          <td class="num">1.20</td>
+          <td class="num"><span class="pill value-pill">0.68×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<details id="game-real-galatasaray-aston-villa" open>
+  <summary>
+    <div class="game-header">
+      <span class="teams">Galatasaray - Aston Villa</span>
+      <span class="model-note"><a href="index.html#game-galatasaray-aston-villa">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Handicap Casa +2.5</td>
+          <td class="num">
+<strong>94%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (117j)</span>
+
+<br><span class="model-note">modelo: 92%</span>
+</td>
+          <td class="num">1.07</td>
+          <td class="num"><span class="pill value-pill">1.01×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Mais/Menos de 5.5 Golos - Menos</td>
+          <td class="num">
+<strong>89%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (47j)</span>
+
+<br><span class="model-note">modelo: 89%</span>
+</td>
+          <td class="num">1.08</td>
+          <td class="num"><span class="pill value-pill">0.97×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Total Casa Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>79%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (48j)</span>
+
+<br><span class="model-note">modelo: 79%</span>
+</td>
+          <td class="num">1.18</td>
+          <td class="num"><span class="pill value-pill">0.93×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Mais/Menos de 4.5 Golos - Menos</td>
+          <td class="num">
+<strong>79%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (42j)</span>
+
+<br><span class="model-note">modelo: 78%</span>
+</td>
+          <td class="num">1.24</td>
+          <td class="num"><span class="pill value-pill">0.97×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Total Casa Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>78%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (45j)</span>
+
+<br><span class="model-note">modelo: 79%</span>
+</td>
+          <td class="num">1.18</td>
+          <td class="num"><span class="pill value-pill">0.92×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Total Fora Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>78%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 80%</span>
+</td>
+          <td class="num">1.12</td>
+          <td class="num"><span class="pill value-pill">0.87×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>78%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 51%</span>
+</td>
+          <td class="num">1.95</td>
+          <td class="num"><span class="pill value-pill">1.52×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Handicap Fora +1.5</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (42j)</span>
+
+<br><span class="model-note">modelo: 82%</span>
+</td>
+          <td class="num">1.11</td>
+          <td class="num"><span class="pill value-pill">0.85×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Mais/Menos de 3.5 Golos - Menos</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (46j)</span>
+
+<br><span class="model-note">modelo: 62%</span>
+</td>
+          <td class="num">1.60</td>
+          <td class="num"><span class="pill value-pill">1.22×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Mais/Menos de 1.5 Golos - Mais</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (71j)</span>
+
+<br><span class="model-note">modelo: 87%</span>
+</td>
+          <td class="num">1.10</td>
+          <td class="num"><span class="pill value-pill">0.84×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>71%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (24j)</span>
+
+<br><span class="model-note">modelo: 77%</span>
+</td>
+          <td class="num">1.29</td>
+          <td class="num"><span class="pill value-pill">0.91×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">12</td>
+          <td>Dupla Hipótese - Casa ou Empate</td>
+          <td class="num">
+<strong>70%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (33j)</span>
+
+<br><span class="model-note">modelo: 61%</span>
+</td>
+          <td class="num">1.58</td>
+          <td class="num"><span class="pill value-pill">1.10×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">13</td>
+          <td>Total Casa Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>62%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (39j)</span>
+
+<br><span class="model-note">modelo: 54%</span>
+</td>
+          <td class="num">1.68</td>
+          <td class="num"><span class="pill value-pill">1.03×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">14</td>
+          <td>Handicap Casa +1.5</td>
+          <td class="num">
+<strong>61%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (18j)</span>
+
+<br><span class="model-note">modelo: 80%</span>
+</td>
+          <td class="num">1.22</td>
+          <td class="num"><span class="pill value-pill">0.75×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">15</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (37j)</span>
+
+<br><span class="model-note">modelo: 65%</span>
+</td>
+          <td class="num">1.38</td>
+          <td class="num"><span class="pill value-pill">0.78×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">16</td>
+          <td>Dupla Hipótese - Empate ou Fora</td>
+          <td class="num">
+<strong>56%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (32j)</span>
+
+<br><span class="model-note">modelo: 64%</span>
+</td>
+          <td class="num">1.35</td>
+          <td class="num"><span class="pill value-pill">0.76×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<details id="game-real-real-madrid-psv" open>
+  <summary>
+    <div class="game-header">
+      <span class="teams">Real Madrid - PSV</span>
+      <span class="model-note"><a href="index.html#game-real-madrid-psv">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Total Casa Mais/Menos de 4.5 - Menos</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (9j)</span>
+
+<br><span class="model-note">modelo: 81%</span>
+</td>
+          <td class="num">1.33</td>
+          <td class="num"><span class="pill value-pill">1.33×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Resultado Final - Casa</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 75%</span>
+</td>
+          <td class="num">1.13</td>
+          <td class="num"><span class="pill value-pill">1.13×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Total Casa Mais/Menos de 3.5 - Menos</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (5j)</span>
+
+<br><span class="model-note">modelo: 64%</span>
+</td>
+          <td class="num">1.78</td>
+          <td class="num"><span class="pill value-pill">1.78×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Dupla Hipótese - Casa ou Empate</td>
+          <td class="num">
+<strong>93%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (14j)</span>
+
+<br><span class="model-note">modelo: 90%</span>
+</td>
+          <td class="num">1.03</td>
+          <td class="num"><span class="pill value-pill">0.96×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>92%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (50j)</span>
+
+<br><span class="model-note">modelo: 90%</span>
+</td>
+          <td class="num">1.03</td>
+          <td class="num"><span class="pill value-pill">0.95×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>88%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (8j)</span>
+
+<br><span class="model-note">modelo: 82%</span>
+</td>
+          <td class="num">1.12</td>
+          <td class="num"><span class="pill value-pill">0.98×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 70%</span>
+</td>
+          <td class="num">1.24</td>
+          <td class="num"><span class="pill value-pill">1.01×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Mais/Menos de 3.5 Golos - Mais</td>
+          <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 60%</span>
+</td>
+          <td class="num">1.35</td>
+          <td class="num"><span class="pill value-pill">1.01×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Total Casa Mais/Menos de 2.5 - Mais</td>
+          <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 58%</span>
+</td>
+          <td class="num">1.30</td>
+          <td class="num"><span class="pill value-pill">0.98×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Mais/Menos de 5.5 Golos - Menos</td>
+          <td class="num">
+<strong>71%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 77%</span>
+</td>
+          <td class="num">1.34</td>
+          <td class="num"><span class="pill value-pill">0.96×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Total Fora Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>63%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (30j)</span>
+
+<br><span class="model-note">modelo: 66%</span>
+</td>
+          <td class="num">1.49</td>
+          <td class="num"><span class="pill value-pill">0.94×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<details id="game-real-feyenoord-porto" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Feyenoord - Porto</span>
+      <span class="model-note"><a href="index.html#game-feyenoord-porto">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Mais/Menos de 0.5 Golos - Mais</td>
+          <td class="num">
+<strong>95%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (127j)</span>
+
+<br><span class="model-note">modelo: 92%</span>
+</td>
+          <td class="num">1.02</td>
+          <td class="num"><span class="pill value-pill">0.97×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Handicap Casa +2.5</td>
+          <td class="num">
+<strong>94%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (117j)</span>
+
+<br><span class="model-note">modelo: 91%</span>
+</td>
+          <td class="num">1.06</td>
+          <td class="num"><span class="pill value-pill">1.00×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Mais/Menos de 4.5 Golos - Menos</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (64j)</span>
+
+<br><span class="model-note">modelo: 86%</span>
+</td>
+          <td class="num">1.16</td>
+          <td class="num"><span class="pill value-pill">0.94×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Mais/Menos de 1.5 Golos - Mais</td>
+          <td class="num">
+<strong>79%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (34j)</span>
+
+<br><span class="model-note">modelo: 79%</span>
+</td>
+          <td class="num">1.14</td>
+          <td class="num"><span class="pill value-pill">0.91×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Total Casa Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>79%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (43j)</span>
+
+<br><span class="model-note">modelo: 89%</span>
+</td>
+          <td class="num">1.12</td>
+          <td class="num"><span class="pill value-pill">0.89×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>78%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 54%</span>
+</td>
+          <td class="num">1.81</td>
+          <td class="num"><span class="pill value-pill">1.41×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Handicap Fora +1.5</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (42j)</span>
+
+<br><span class="model-note">modelo: 88%</span>
+</td>
+          <td class="num">1.09</td>
+          <td class="num"><span class="pill value-pill">0.83×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Dupla Hipótese - Empate ou Fora</td>
+          <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (16j)</span>
+
+<br><span class="model-note">modelo: 72%</span>
+</td>
+          <td class="num">1.31</td>
+          <td class="num"><span class="pill value-pill">0.98×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Total Fora Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>73%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (52j)</span>
+
+<br><span class="model-note">modelo: 79%</span>
+</td>
+          <td class="num">1.15</td>
+          <td class="num"><span class="pill value-pill">0.84×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>71%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (24j)</span>
+
+<br><span class="model-note">modelo: 80%</span>
+</td>
+          <td class="num">1.23</td>
+          <td class="num"><span class="pill value-pill">0.87×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Handicap Casa +1.5</td>
+          <td class="num">
+<strong>61%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (18j)</span>
+
+<br><span class="model-note">modelo: 77%</span>
+</td>
+          <td class="num">1.21</td>
+          <td class="num"><span class="pill value-pill">0.74×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">12</td>
+          <td>Ambas Marcam - Sim</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (45j)</span>
+
+<br><span class="model-note">modelo: 61%</span>
+</td>
+          <td class="num">1.45</td>
+          <td class="num"><span class="pill value-pill">0.87×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">13</td>
+          <td>Resultado Final - Fora</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (15j)</span>
+
+<br><span class="model-note">modelo: 45%</span>
+</td>
+          <td class="num">2.18</td>
+          <td class="num"><span class="pill value-pill">1.31×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">14</td>
+          <td>Total Casa Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (10j)</span>
+
+<br><span class="model-note">modelo: 69%</span>
+</td>
+          <td class="num">1.24</td>
+          <td class="num"><span class="pill value-pill">0.74×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">15</td>
+          <td>Mais/Menos de 3.5 Golos - Menos</td>
+          <td class="num">
+<strong>59%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (39j)</span>
+
+<br><span class="model-note">modelo: 74%</span>
+</td>
+          <td class="num">1.44</td>
+          <td class="num"><span class="pill value-pill">0.85×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">16</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>54%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (35j)</span>
+
+<br><span class="model-note">modelo: 52%</span>
+</td>
+          <td class="num">1.52</td>
+          <td class="num"><span class="pill value-pill">0.83×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">17</td>
+          <td>Total Casa Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>52%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (21j)</span>
+
+<br><span class="model-note">modelo: 67%</span>
+</td>
+          <td class="num">1.52</td>
+          <td class="num"><span class="pill value-pill">0.80×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<details id="game-real-slovan-bratislava-real-betis" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Slovan B. - Real Betis</span>
+      <span class="model-note"><a href="index.html#game-slovan-bratislava-real-betis">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Mais/Menos de 5.5 Golos - Menos</td>
+          <td class="num">
+<strong>96%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (89j)</span>
+
+<br><span class="model-note">modelo: 93%</span>
+</td>
+          <td class="num">1.12</td>
+          <td class="num"><span class="pill value-pill">1.07×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Total Casa Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>89%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (18j)</span>
+
+<br><span class="model-note">modelo: 94%</span>
+</td>
+          <td class="num">1.02</td>
+          <td class="num"><span class="pill value-pill">0.91×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Total Casa Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>88%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (8j)</span>
+
+<br><span class="model-note">modelo: 55%</span>
+</td>
+          <td class="num">1.55</td>
+          <td class="num"><span class="pill value-pill">1.36×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Handicap Casa +3.5</td>
+          <td class="num">
+<strong>83%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (6j)</span>
+
+<br><span class="model-note">modelo: 90%</span>
+</td>
+          <td class="num">1.16</td>
+          <td class="num"><span class="pill value-pill">0.97×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Total Fora Mais/Menos de 3.5 - Menos</td>
+          <td class="num">
+<strong>82%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (22j)</span>
+
+<br><span class="model-note">modelo: 84%</span>
+</td>
+          <td class="num">1.31</td>
+          <td class="num"><span class="pill value-pill">1.07×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Mais/Menos de 4.5 Golos - Menos</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (64j)</span>
+
+<br><span class="model-note">modelo: 84%</span>
+</td>
+          <td class="num">1.31</td>
+          <td class="num"><span class="pill value-pill">1.06×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Mais/Menos de 3.5 Golos - Menos</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (46j)</span>
+
+<br><span class="model-note">modelo: 70%</span>
+</td>
+          <td class="num">1.74</td>
+          <td class="num"><span class="pill value-pill">1.32×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Mais/Menos de 1.5 Golos - Mais</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (71j)</span>
+
+<br><span class="model-note">modelo: 86%</span>
+</td>
+          <td class="num">1.07</td>
+          <td class="num"><span class="pill value-pill">0.81×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Dupla Hipótese - Empate ou Fora</td>
+          <td class="num">
+<strong>73%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (11j)</span>
+
+<br><span class="model-note">modelo: 87%</span>
+</td>
+          <td class="num">1.06</td>
+          <td class="num"><span class="pill value-pill">0.77×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Total Casa Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>69%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (13j)</span>
+
+<br><span class="model-note">modelo: 79%</span>
+</td>
+          <td class="num">1.20</td>
+          <td class="num"><span class="pill value-pill">0.83×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Ambas Marcam - Sim</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (42j)</span>
+
+<br><span class="model-note">modelo: 54%</span>
+</td>
+          <td class="num">1.62</td>
+          <td class="num"><span class="pill value-pill">0.93×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">12</td>
+          <td>Handicap Casa +2.5</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 74%</span>
+</td>
+          <td class="num">1.42</td>
+          <td class="num"><span class="pill value-pill">0.81×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">13</td>
+          <td>Dupla Hipótese - Casa ou Empate</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 33%</span>
+</td>
+          <td class="num">3.22</td>
+          <td class="num"><span class="pill value-pill">1.84×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">14</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (37j)</span>
+
+<br><span class="model-note">modelo: 63%</span>
+</td>
+          <td class="num">1.29</td>
+          <td class="num"><span class="pill value-pill">0.73×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">15</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>55%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (11j)</span>
+
+<br><span class="model-note">modelo: 62%</span>
+</td>
+          <td class="num">1.83</td>
+          <td class="num"><span class="pill value-pill">1.00×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">16</td>
+          <td>Total Fora Mais/Menos de 1.5 - Mais</td>
+          <td class="num">
+<strong>54%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (13j)</span>
+
+<br><span class="model-note">modelo: 65%</span>
+</td>
+          <td class="num">1.23</td>
+          <td class="num"><span class="pill value-pill">0.66×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<details id="game-real-man-city-napoli" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Man City - Napoli</span>
+      <span class="model-note"><a href="index.html#game-man-city-napoli">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Resultado Final - Casa</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 75%</span>
+</td>
+          <td class="num">1.26</td>
+          <td class="num"><span class="pill value-pill">1.26×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Total Casa Mais/Menos de 3.5 - Menos</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (5j)</span>
+
+<br><span class="model-note">modelo: 66%</span>
+</td>
+          <td class="num">1.37</td>
+          <td class="num"><span class="pill value-pill">1.37×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Handicap Fora +2.5</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 64%</span>
+</td>
+          <td class="num">1.44</td>
+          <td class="num"><span class="pill value-pill">1.44×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Mais/Menos de 1.5 Golos - Mais</td>
+          <td class="num">
+<strong>96%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (25j)</span>
+
+<br><span class="model-note">modelo: 94%</span>
+</td>
+          <td class="num">1.05</td>
+          <td class="num"><span class="pill value-pill">1.01×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Dupla Hipótese - Casa ou Empate</td>
+          <td class="num">
+<strong>93%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (14j)</span>
+
+<br><span class="model-note">modelo: 90%</span>
+</td>
+          <td class="num">1.07</td>
+          <td class="num"><span class="pill value-pill">0.99×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>92%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (50j)</span>
+
+<br><span class="model-note">modelo: 91%</span>
+</td>
+          <td class="num">1.04</td>
+          <td class="num"><span class="pill value-pill">0.96×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Total Casa Mais/Menos de 1.5 - Mais</td>
+          <td class="num">
+<strong>88%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (8j)</span>
+
+<br><span class="model-note">modelo: 79%</span>
+</td>
+          <td class="num">1.20</td>
+          <td class="num"><span class="pill value-pill">1.05×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 72%</span>
+</td>
+          <td class="num">1.28</td>
+          <td class="num"><span class="pill value-pill">1.04×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Total Casa Mais/Menos de 2.5 - Mais</td>
+          <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 56%</span>
+</td>
+          <td class="num">1.62</td>
+          <td class="num"><span class="pill value-pill">1.22×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Handicap Fora +3.5</td>
+          <td class="num">
+<strong>71%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 80%</span>
+</td>
+          <td class="num">1.17</td>
+          <td class="num"><span class="pill value-pill">0.84×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Mais/Menos de 5.5 Golos - Menos</td>
+          <td class="num">
+<strong>71%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 79%</span>
+</td>
+          <td class="num">1.17</td>
+          <td class="num"><span class="pill value-pill">0.84×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">12</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>70%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (23j)</span>
+
+<br><span class="model-note">modelo: 80%</span>
+</td>
+          <td class="num">1.22</td>
+          <td class="num"><span class="pill value-pill">0.85×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">13</td>
+          <td>Total Fora Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>63%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (30j)</span>
+
+<br><span class="model-note">modelo: 65%</span>
+</td>
+          <td class="num">1.43</td>
+          <td class="num"><span class="pill value-pill">0.91×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">14</td>
+          <td>Ambas Marcam - Sim</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (45j)</span>
+
+<br><span class="model-note">modelo: 68%</span>
+</td>
+          <td class="num">1.49</td>
+          <td class="num"><span class="pill value-pill">0.89×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">15</td>
+          <td>Mais/Menos de 3.5 Golos - Mais</td>
+          <td class="num">
+<strong>56%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (9j)</span>
+
+<br><span class="model-note">modelo: 57%</span>
+</td>
+          <td class="num">1.60</td>
+          <td class="num"><span class="pill value-pill">0.89×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<details id="game-real-rb-leipzig-lens" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">RB Leipzig - Lens</span>
+      <span class="model-note"><a href="index.html#game-rb-leipzig-lens">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Resultado Final - Casa</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 76%</span>
+</td>
+          <td class="num">1.33</td>
+          <td class="num"><span class="pill value-pill">1.33×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Handicap Fora +3.5</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (6j)</span>
+
+<br><span class="model-note">modelo: 78%</span>
+</td>
+          <td class="num">1.13</td>
+          <td class="num"><span class="pill value-pill">1.13×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Total Casa Mais/Menos de 3.5 - Menos</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (5j)</span>
+
+<br><span class="model-note">modelo: 63%</span>
+</td>
+          <td class="num">1.32</td>
+          <td class="num"><span class="pill value-pill">1.32×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Mais/Menos de 1.5 Golos - Mais</td>
+          <td class="num">
+<strong>96%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (25j)</span>
+
+<br><span class="model-note">modelo: 94%</span>
+</td>
+          <td class="num">1.05</td>
+          <td class="num"><span class="pill value-pill">1.01×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>88%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (8j)</span>
+
+<br><span class="model-note">modelo: 85%</span>
+</td>
+          <td class="num">1.23</td>
+          <td class="num"><span class="pill value-pill">1.08×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>85%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (54j)</span>
+
+<br><span class="model-note">modelo: 88%</span>
+</td>
+          <td class="num">1.06</td>
+          <td class="num"><span class="pill value-pill">0.90×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Dupla Hipótese - Casa ou Empate</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (26j)</span>
+
+<br><span class="model-note">modelo: 89%</span>
+</td>
+          <td class="num">1.09</td>
+          <td class="num"><span class="pill value-pill">0.88×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Total Casa Mais/Menos de 1.5 - Mais</td>
+          <td class="num">
+<strong>80%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (5j)</span>
+
+<br><span class="model-note">modelo: 81%</span>
+</td>
+          <td class="num">1.23</td>
+          <td class="num"><span class="pill value-pill">0.98×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Handicap Fora +2.5</td>
+          <td class="num">
+<strong>80%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (5j)</span>
+
+<br><span class="model-note">modelo: 58%</span>
+</td>
+          <td class="num">1.35</td>
+          <td class="num"><span class="pill value-pill">1.08×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Mais/Menos de 3.5 Golos - Mais</td>
+          <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 62%</span>
+</td>
+          <td class="num">1.62</td>
+          <td class="num"><span class="pill value-pill">1.22×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Mais/Menos de 5.5 Golos - Menos</td>
+          <td class="num">
+<strong>71%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 75%</span>
+</td>
+          <td class="num">1.16</td>
+          <td class="num"><span class="pill value-pill">0.83×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">12</td>
+          <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>68%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (37j)</span>
+
+<br><span class="model-note">modelo: 67%</span>
+</td>
+          <td class="num">1.34</td>
+          <td class="num"><span class="pill value-pill">0.91×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">13</td>
+          <td>Total Casa Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>67%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (3j)</span>
+
+<br><span class="model-note">modelo: 39%</span>
+</td>
+          <td class="num">1.84</td>
+          <td class="num"><span class="pill value-pill">1.23×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">14</td>
+          <td>Total Fora Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>63%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (30j)</span>
+
+<br><span class="model-note">modelo: 63%</span>
+</td>
+          <td class="num">1.36</td>
+          <td class="num"><span class="pill value-pill">0.86×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">15</td>
+          <td>Ambas Marcam - Sim</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (45j)</span>
+
+<br><span class="model-note">modelo: 65%</span>
+</td>
+          <td class="num">1.43</td>
+          <td class="num"><span class="pill value-pill">0.86×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<details id="game-real-arsenal-borussia-d" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Arsenal - Borussia D.</span>
+      <span class="model-note"><a href="index.html#game-arsenal-borussia-d">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Mais/Menos de 0.5 Golos - Mais</td>
+          <td class="num">
+<strong>95%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (127j)</span>
+
+<br><span class="model-note">modelo: 94%</span>
+</td>
+          <td class="num">1.02</td>
+          <td class="num"><span class="pill value-pill">0.97×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Handicap Casa +1.5</td>
+          <td class="num">
+<strong>93%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (54j)</span>
+
+<br><span class="model-note">modelo: 96%</span>
+</td>
+          <td class="num">1.01</td>
+          <td class="num"><span class="pill value-pill">0.94×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>92%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (50j)</span>
+
+<br><span class="model-note">modelo: 96%</span>
+</td>
+          <td class="num">1.02</td>
+          <td class="num"><span class="pill value-pill">0.94×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 76%</span>
+</td>
+          <td class="num">1.17</td>
+          <td class="num"><span class="pill value-pill">0.95×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Mais/Menos de 4.5 Golos - Menos</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (64j)</span>
+
+<br><span class="model-note">modelo: 85%</span>
+</td>
+          <td class="num">1.12</td>
+          <td class="num"><span class="pill value-pill">0.91×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Dupla Hipótese - Casa ou Empate</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (26j)</span>
+
+<br><span class="model-note">modelo: 88%</span>
+</td>
+          <td class="num">1.10</td>
+          <td class="num"><span class="pill value-pill">0.89×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Total Casa Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>79%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (48j)</span>
+
+<br><span class="model-note">modelo: 71%</span>
+</td>
+          <td class="num">1.38</td>
+          <td class="num"><span class="pill value-pill">1.09×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Total Casa Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>79%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (61j)</span>
+
+<br><span class="model-note">modelo: 88%</span>
+</td>
+          <td class="num">1.09</td>
+          <td class="num"><span class="pill value-pill">0.86×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Total Casa Mais/Menos de 1.5 - Mais</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (17j)</span>
+
+<br><span class="model-note">modelo: 67%</span>
+</td>
+          <td class="num">1.52</td>
+          <td class="num"><span class="pill value-pill">1.16×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Mais/Menos de 3.5 Golos - Menos</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (46j)</span>
+
+<br><span class="model-note">modelo: 67%</span>
+</td>
+          <td class="num">1.35</td>
+          <td class="num"><span class="pill value-pill">1.03×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Mais/Menos de 1.5 Golos - Mais</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (71j)</span>
+
+<br><span class="model-note">modelo: 83%</span>
+</td>
+          <td class="num">1.19</td>
+          <td class="num"><span class="pill value-pill">0.91×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">12</td>
+          <td>Handicap Fora +2.5</td>
+          <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 80%</span>
+</td>
+          <td class="num">1.19</td>
+          <td class="num"><span class="pill value-pill">0.89×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">13</td>
+          <td>Total Fora Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>68%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (19j)</span>
+
+<br><span class="model-note">modelo: 56%</span>
+</td>
+          <td class="num">1.61</td>
+          <td class="num"><span class="pill value-pill">1.10×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">14</td>
+          <td>Resultado Final - Casa</td>
+          <td class="num">
+<strong>62%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (8j)</span>
+
+<br><span class="model-note">modelo: 64%</span>
+</td>
+          <td class="num">1.46</td>
+          <td class="num"><span class="pill value-pill">0.91×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">15</td>
+          <td>Handicap Casa -1.5</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (5j)</span>
+
+<br><span class="model-note">modelo: 41%</span>
+</td>
+          <td class="num">2.15</td>
+          <td class="num"><span class="pill value-pill">1.29×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">16</td>
+          <td>Ambas Marcam - Sim</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (42j)</span>
+
+<br><span class="model-note">modelo: 53%</span>
+</td>
+          <td class="num">1.78</td>
+          <td class="num"><span class="pill value-pill">1.02×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">17</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>54%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (35j)</span>
+
+<br><span class="model-note">modelo: 58%</span>
+</td>
+          <td class="num">1.63</td>
+          <td class="num"><span class="pill value-pill">0.88×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<details id="game-real-como-aek" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Como - AEK</span>
+      <span class="model-note"><a href="index.html#game-como-aek">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Resultado Final - Casa</td>
+          <td class="num">
+<strong>100%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 70%</span>
+</td>
+          <td class="num">1.24</td>
+          <td class="num"><span class="pill value-pill">1.24×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Mais/Menos de 5.5 Golos - Menos</td>
+          <td class="num">
+<strong>96%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (89j)</span>
+
+<br><span class="model-note">modelo: 91%</span>
+</td>
+          <td class="num">1.13</td>
+          <td class="num"><span class="pill value-pill">1.08×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>92%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (50j)</span>
+
+<br><span class="model-note">modelo: 96%</span>
+</td>
+          <td class="num">1.02</td>
+          <td class="num"><span class="pill value-pill">0.94×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Total Casa Mais/Menos de 3.5 - Menos</td>
+          <td class="num">
+<strong>87%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (45j)</span>
+
+<br><span class="model-note">modelo: 80%</span>
+</td>
+          <td class="num">1.34</td>
+          <td class="num"><span class="pill value-pill">1.16×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Total Fora Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>83%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (18j)</span>
+
+<br><span class="model-note">modelo: 82%</span>
+</td>
+          <td class="num">1.20</td>
+          <td class="num"><span class="pill value-pill">1.00×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Mais/Menos de 4.5 Golos - Menos</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (64j)</span>
+
+<br><span class="model-note">modelo: 81%</span>
+</td>
+          <td class="num">1.33</td>
+          <td class="num"><span class="pill value-pill">1.08×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Dupla Hipótese - Casa ou Empate</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (26j)</span>
+
+<br><span class="model-note">modelo: 90%</span>
+</td>
+          <td class="num">1.05</td>
+          <td class="num"><span class="pill value-pill">0.85×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Total Casa Mais/Menos de 1.5 - Mais</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (17j)</span>
+
+<br><span class="model-note">modelo: 66%</span>
+</td>
+          <td class="num">1.21</td>
+          <td class="num"><span class="pill value-pill">0.93×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Mais/Menos de 3.5 Golos - Menos</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (46j)</span>
+
+<br><span class="model-note">modelo: 66%</span>
+</td>
+          <td class="num">1.78</td>
+          <td class="num"><span class="pill value-pill">1.35×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Mais/Menos de 1.5 Golos - Mais</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (71j)</span>
+
+<br><span class="model-note">modelo: 84%</span>
+</td>
+          <td class="num">1.07</td>
+          <td class="num"><span class="pill value-pill">0.81×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Handicap Fora +2.5</td>
+          <td class="num">
+<strong>75%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (4j)</span>
+
+<br><span class="model-note">modelo: 73%</span>
+</td>
+          <td class="num">1.46</td>
+          <td class="num"><span class="pill value-pill">1.09×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">12</td>
+          <td>Handicap Fora +3.5</td>
+          <td class="num">
+<strong>71%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (7j)</span>
+
+<br><span class="model-note">modelo: 88%</span>
+</td>
+          <td class="num">1.18</td>
+          <td class="num"><span class="pill value-pill">0.84×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">13</td>
+          <td>Total Fora Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>68%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (19j)</span>
+
+<br><span class="model-note">modelo: 54%</span>
+</td>
+          <td class="num">1.55</td>
+          <td class="num"><span class="pill value-pill">1.06×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">14</td>
+          <td>Total Casa Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>64%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (22j)</span>
+
+<br><span class="model-note">modelo: 60%</span>
+</td>
+          <td class="num">1.90</td>
+          <td class="num"><span class="pill value-pill">1.21×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">15</td>
+          <td>Handicap Casa -1.5</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (5j)</span>
+
+<br><span class="model-note">modelo: 48%</span>
+</td>
+          <td class="num">1.59</td>
+          <td class="num"><span class="pill value-pill">0.95×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">16</td>
+          <td>Ambas Marcam - Sim</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (42j)</span>
+
+<br><span class="model-note">modelo: 54%</span>
+</td>
+          <td class="num">1.61</td>
+          <td class="num"><span class="pill value-pill">0.92×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">17</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (37j)</span>
+
+<br><span class="model-note">modelo: 61%</span>
+</td>
+          <td class="num">1.28</td>
+          <td class="num"><span class="pill value-pill">0.73×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+<details id="game-real-chapecoense-palmeiras" >
+  <summary>
+    <div class="game-header">
+      <span class="teams">Chapecoense - Palmeiras</span>
+      <span class="model-note"><a href="index.html#game-chapecoense-palmeiras">ver jogo completo →</a></span>
+    </div>
+  </summary>
+  <div class="details-body">
+    <table>
+      <thead><tr>
+        <th>#</th><th>Mercado</th><th class="num">Taxa real</th><th class="num">Odd</th><th class="num">Valor</th>
+      </tr></thead>
+      <tbody>
+      
+        <tr>
+          <td class="rank">1</td>
+          <td>Mais/Menos de 0.5 Golos - Mais</td>
+          <td class="num">
+<strong>95%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (127j)</span>
+
+<br><span class="model-note">modelo: 90%</span>
+</td>
+          <td class="num">1.02</td>
+          <td class="num"><span class="pill value-pill">0.97×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">2</td>
+          <td>Handicap Fora +1.5</td>
+          <td class="num">
+<strong>95%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (19j)</span>
+
+<br><span class="model-note">modelo: 98%</span>
+</td>
+          <td class="num">1.08</td>
+          <td class="num"><span class="pill value-pill">1.02×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">3</td>
+          <td>Total Casa Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>89%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (18j)</span>
+
+<br><span class="model-note">modelo: 91%</span>
+</td>
+          <td class="num">1.09</td>
+          <td class="num"><span class="pill value-pill">0.97×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">4</td>
+          <td>Handicap Casa +2.5</td>
+          <td class="num">
+<strong>88%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (17j)</span>
+
+<br><span class="model-note">modelo: 87%</span>
+</td>
+          <td class="num">1.06</td>
+          <td class="num"><span class="pill value-pill">0.94×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">5</td>
+          <td>Mais/Menos de 4.5 Golos - Menos</td>
+          <td class="num">
+<strong>81%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (64j)</span>
+
+<br><span class="model-note">modelo: 82%</span>
+</td>
+          <td class="num">1.14</td>
+          <td class="num"><span class="pill value-pill">0.93×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">6</td>
+          <td>Total Casa Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>78%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (45j)</span>
+
+<br><span class="model-note">modelo: 72%</span>
+</td>
+          <td class="num">1.26</td>
+          <td class="num"><span class="pill value-pill">0.98×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">7</td>
+          <td>Total Fora Mais/Menos de 0.5 - Mais</td>
+          <td class="num">
+<strong>78%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (27j)</span>
+
+<br><span class="model-note">modelo: 84%</span>
+</td>
+          <td class="num">1.15</td>
+          <td class="num"><span class="pill value-pill">0.89×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">8</td>
+          <td>Mais/Menos de 1.5 Golos - Mais</td>
+          <td class="num">
+<strong>76%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (71j)</span>
+
+<br><span class="model-note">modelo: 82%</span>
+</td>
+          <td class="num">1.16</td>
+          <td class="num"><span class="pill value-pill">0.88×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">9</td>
+          <td>Dupla Hipótese - Empate ou Fora</td>
+          <td class="num">
+<strong>73%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (11j)</span>
+
+<br><span class="model-note">modelo: 83%</span>
+</td>
+          <td class="num">1.29</td>
+          <td class="num"><span class="pill value-pill">0.94×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">10</td>
+          <td>Total Fora Mais/Menos de 2.5 - Menos</td>
+          <td class="num">
+<strong>71%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (24j)</span>
+
+<br><span class="model-note">modelo: 76%</span>
+</td>
+          <td class="num">1.20</td>
+          <td class="num"><span class="pill value-pill">0.85×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">11</td>
+          <td>Total Casa Mais/Menos de 1.5 - Menos</td>
+          <td class="num">
+<strong>69%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (13j)</span>
+
+<br><span class="model-note">modelo: 79%</span>
+</td>
+          <td class="num">1.44</td>
+          <td class="num"><span class="pill value-pill">1.00×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">12</td>
+          <td>Handicap Casa +1.5</td>
+          <td class="num">
+<strong>61%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (18j)</span>
+
+<br><span class="model-note">modelo: 74%</span>
+</td>
+          <td class="num">1.22</td>
+          <td class="num"><span class="pill value-pill">0.75×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">13</td>
+          <td>Ambas Marcam - Sim</td>
+          <td class="num">
+<strong>60%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (45j)</span>
+
+<br><span class="model-note">modelo: 67%</span>
+</td>
+          <td class="num">1.50</td>
+          <td class="num"><span class="pill value-pill">0.90×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">14</td>
+          <td>Mais/Menos de 3.5 Golos - Menos</td>
+          <td class="num">
+<strong>59%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (39j)</span>
+
+<br><span class="model-note">modelo: 74%</span>
+</td>
+          <td class="num">1.40</td>
+          <td class="num"><span class="pill value-pill">0.83×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">15</td>
+          <td>Mais/Menos de 2.5 Golos - Mais</td>
+          <td class="num">
+<strong>57%</strong><br>
+
+<span class="pill pill-good">✓ confirmado (37j)</span>
+
+<br><span class="model-note">modelo: 64%</span>
+</td>
+          <td class="num">1.57</td>
+          <td class="num"><span class="pill value-pill">0.89×</span></td>
+        </tr>
+      
+        <tr>
+          <td class="rank">16</td>
+          <td>Total Fora Mais/Menos de 1.5 - Mais</td>
+          <td class="num">
+<strong>54%</strong><br>
+
+<span class="pill pill-warn">⚠ ainda não atingiu os 30 jogos (13j)</span>
+
+<br><span class="model-note">modelo: 66%</span>
+</td>
+          <td class="num">1.78</td>
+          <td class="num"><span class="pill value-pill">0.96×</span></td>
+        </tr>
+      
+      </tbody>
+    </table>
+  </div>
+</details>
+
+
+
+<p class="model-note">Valor = taxa de acerto real × odd da Betclic (não a probabilidade do modelo). "✓ confirmado" = esse mercado+resultado+escalão já tem 30 jogos ou mais de histórico; "⚠" = ainda tem menos, por isso trata como um indício, não uma certeza. Esta página só mostra o que já tem pelo menos 1 jogo de histórico -- cresce sozinha à medida que <code>python -m tipsxgs calibrate</code> acumula mais dias.</p>
+
+</body>
+</html>

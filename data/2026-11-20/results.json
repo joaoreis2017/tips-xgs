@@ -1,0 +1,78 @@
+{
+  "date": "2026-11-20",
+  "generated_at": "2026-11-21T13:05:10.002720",
+  "results": [
+    {
+      "league": "Bundesliga",
+      "home_team": "Bayern M.",
+      "away_team": "Koln",
+      "kickoff": "2026-11-20T19:30:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "Denmark Superliga",
+      "home_team": "Aarhus",
+      "away_team": "Lyngby",
+      "kickoff": "2026-11-20T18:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "Brazil Serie A",
+      "home_team": "São Paulo",
+      "away_team": "Fluminense",
+      "kickoff": "2026-11-20T00:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Ligue 1",
+      "home_team": "Troyes",
+      "away_team": "Le Havre",
+      "kickoff": "2026-11-20T19:45:00+00:00",
+      "home_goals": 3,
+      "away_goals": 1
+    },
+    {
+      "league": "Ukraine Premier League",
+      "home_team": "Shakhtar",
+      "away_team": "Livyi Bereh",
+      "kickoff": "2026-11-20T16:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "MLS",
+      "home_team": "Seattle Sounders",
+      "away_team": "Real Salt Lake",
+      "kickoff": "2026-11-20T03:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 1
+    },
+    {
+      "league": "MLS",
+      "home_team": "Orlando City",
+      "away_team": "Cincinnati",
+      "kickoff": "2026-11-20T00:30:00+00:00",
+      "home_goals": 1,
+      "away_goals": 3
+    },
+    {
+      "league": "Norway Eliteserien",
+      "home_team": "Molde",
+      "away_team": "Bodø-Glimt",
+      "kickoff": "2026-11-20T18:00:00+00:00",
+      "home_goals": 2,
+      "away_goals": 4
+    },
+    {
+      "league": "La Liga",
+      "home_team": "Athletic",
+      "away_team": "Espanyol",
+      "kickoff": "2026-11-20T20:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    }
+  ]
+}

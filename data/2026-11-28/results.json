@@ -1,0 +1,86 @@
+{
+  "date": "2026-11-28",
+  "generated_at": "2026-11-28T16:33:00.456148",
+  "results": [
+    {
+      "league": "Ukraine Premier League",
+      "home_team": "Obolon",
+      "away_team": "Zorya",
+      "kickoff": "2026-11-28T11:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Mainz",
+      "away_team": "Union",
+      "kickoff": "2026-11-28T14:30:00+00:00",
+      "home_goals": 2,
+      "away_goals": 1
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Hamburg",
+      "away_team": "Bayern M.",
+      "kickoff": "2026-11-28T14:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 0
+    },
+    {
+      "league": "Ukraine Premier League",
+      "home_team": "Dynamo K.",
+      "away_team": "Chornomorets",
+      "kickoff": "2026-11-28T11:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 2
+    },
+    {
+      "league": "La Liga",
+      "home_team": "Real Betis",
+      "away_team": "R. Vallecano",
+      "kickoff": "2026-11-28T13:00:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Koln",
+      "away_team": "Elversberg",
+      "kickoff": "2026-11-28T14:30:00+00:00",
+      "home_goals": 5,
+      "away_goals": 0
+    },
+    {
+      "league": "MLS",
+      "home_team": "Real Salt Lake",
+      "away_team": "Whitecaps",
+      "kickoff": "2026-11-28T03:30:00+00:00",
+      "home_goals": 0,
+      "away_goals": 1
+    },
+    {
+      "league": "Serie A",
+      "home_team": "Frosinone",
+      "away_team": "Parma",
+      "kickoff": "2026-11-28T14:00:00+00:00",
+      "home_goals": 3,
+      "away_goals": 0
+    },
+    {
+      "league": "Bundesliga",
+      "home_team": "Paderborn",
+      "away_team": "Schalke",
+      "kickoff": "2026-11-28T14:30:00+00:00",
+      "home_goals": 8,
+      "away_goals": 1
+    },
+    {
+      "league": "MLS",
+      "home_team": "Columbus Crew",
+      "away_team": "Inter Miami",
+      "kickoff": "2026-11-28T01:00:00+00:00",
+      "home_goals": 1,
+      "away_goals": 0
+    }
+  ]
+}
